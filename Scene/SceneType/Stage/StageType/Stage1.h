@@ -5,9 +5,9 @@ class Stage1 :
 {
 private:
 	// 各種攻撃・敵キャラクターのポインタ定義
-	class Zako* zako;             // 雑魚敵その1
-	class EnemyShot1* e_shot1;      // 敵のショットタイプ1
-	class Boss1* boss;
+	class Zako* zako = nullptr;             // 雑魚敵その1
+	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
+	class Boss1* boss = nullptr;
 
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	bool zako_spawned = false;         // Zakoがすでに出現したかどうか

@@ -40,7 +40,7 @@ public:
 private:
     float custom_ascend_y = 0.0f; // è„è∏Å®ê‹ÇËï‘Çµà íu
     float custom_stop_y = 200.0f;   // ç~â∫Å®í‚é~ÅEçUåÇà íu
-    Player* player;
+    Player* player = nullptr;
 
 public:
     void SetAscendY(float y) { custom_ascend_y = y; }
@@ -61,7 +61,7 @@ private:
     Enemy1Pattern pattern = Enemy1Pattern::MoveStraight;
     float pattern_timer = 0.0f;
 
-    Vector2D start_location;
+    Vector2D start_location = 0.0f;
     bool is_returning = false;
     bool has_shot = false;
     float after_shot_timer = 0.0f;

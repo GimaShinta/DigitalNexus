@@ -62,8 +62,8 @@ private:
     float life_timer = 0.0f;
     bool is_returning = false;
     bool is_leaving = false;
-    Vector2D return_target;
-    Vector2D original_location_before_return;
+    Vector2D return_target = 0.0f;
+    Vector2D original_location_before_return = 0.0f;
     float return_timer = 0.0f;
     const float return_duration = 2.0f;
     float stop_timer = 0.0f;
@@ -77,7 +77,7 @@ private:
 
     void ChangePatternRandomly();
 
-    int sound_destroy;
+    int sound_destroy = NULL;
 
     // Entranceパターン専用：ワープフラグ
     bool entrance_warp_done[5] = { false };

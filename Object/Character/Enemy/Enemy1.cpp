@@ -8,13 +8,13 @@
 
 Enemy1::Enemy1()
 {
-    srand(static_cast<unsigned int>(time(nullptr)));
+    //srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 Enemy1::Enemy1(const Vector2D& pos)
 {
     location = pos;
-    srand(static_cast<unsigned int>(time(nullptr)));
+    //srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 Enemy1::~Enemy1()

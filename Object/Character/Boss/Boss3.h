@@ -1,6 +1,7 @@
 #pragma once
 #include "../CharacterBase.h"
 //#include "../../Shot/EnemyShot/EnemyShot3.h"
+#include "../../Beam/EnemyBeam.h"
 
 const int MAX_ATTACK_PATTRN = 8;
 
@@ -82,6 +83,17 @@ private:
 
 	Ripple ripples[5]; // 最大5つ
 
+	struct RotatingShotData
+	{
+		EnemyBullet3* shot;
+		float angle_deg;
+		Vector2D target_offset; // 中心からのオフセット（目標位置）
+		float arrival_timer;
+		enum class State { MoveToCircle, Rotate } state;
+		Vector2D fixed_offset; // 固定された中心位置
+
+	};
+
 	float ripple_spawn_timer = 0.0f;
 	int ripple_spawn_count = 0;
 	bool ripple_start = false; // 波紋出現を開始するフラグ
@@ -90,11 +102,11 @@ private:
 	int se[3];
 	std::map<int, std::pair<Vector2D, Vector2D>> ripple_positions;
 	bool is_drive = false;
-	bool is_shot;
-	float shot_timer;
+	bool is_shot = false;
+	float shot_timer = 0.0f;
 	float delta = 0.0f;
 	float beam_damage_timer = 0.0f;
-	bool on_hit;
+	bool on_hit = false;
 
 public:
 	Boss3();
@@ -175,32 +187,12 @@ public:
 private:
 	void Attack(float delta_second);
 
-	struct RotatingShotData
-	{
-		EnemyBullet3* shot;
-		float angle_deg;
-		Vector2D target_offset; // 中心からのオフセット（目標位置）
-		float arrival_timer;
-		enum class State { MoveToCircle, Rotate } state;
-		Vector2D fixed_offset; // 固定された中心位置
+	void Pattrn1(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
+	void Pattrn2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn3(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn4(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
+	void Pattrn5();
 
-	};
-
-	void Pattrn4(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn4_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn5(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
-	void Pattrn5_2(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
-	void Pattrn6(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn7(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn8(float wave_interval, float wave_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn9(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
-	void Pattrn9_2(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
-	void Pattrn10(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
-	void Pattrn10_2(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
-	void Pattrn11(float offsets_x);
-	void Pattrn12();
-	void Pattrn13(float delta_second);
+	void ResetAttackState();
 };
 

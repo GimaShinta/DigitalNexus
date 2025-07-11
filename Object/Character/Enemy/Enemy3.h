@@ -39,37 +39,37 @@ private:
     ZakoMode mode;
     ZakoState state;
 
-    float float_timer;
-    float appear_timer;
-    float appear_duration;
-    float descend_duration;
-    int  sound_destroy;
+    float float_timer = 0.0f;
+    float appear_timer = 0.0f;
+    float appear_duration = 0.0f;
+    float descend_duration = 0.0f;
+    int  sound_destroy = NULL;
 
-    float scale_min;
-    float scale_max;
+    float scale_min = 0.0f;
+    float scale_max = 0.0f;
 
-    float alpha;
-    float scale;
-    float rotation;
+    float alpha = 0.0f;
+    float scale = 0.0f;
+    float rotation = 0.0f;
 
-    bool is_from_left;
-    bool zako3_flip;
+    bool is_from_left = false;
+    bool zako3_flip = false;
 
-    Vector2D start_pos;
-    Vector2D target_pos;
-    Vector2D descend_pos;
-    Vector2D base_location;
+    Vector2D start_pos = 0.0f;
+    Vector2D target_pos = 0.0f;
+    Vector2D descend_pos = 0.0f;
+    Vector2D base_location = 0.0f;
 
     std::vector<int> zako2_images;
     std::vector<int> zako3_images;
 
-    int zako2_image;
-    int zako3_image;
-    int zako7_image;
-    int zako8_image;
+    int zako2_image = NULL;
+    int zako3_image = NULL;
+    int zako7_image = NULL;
+    int zako8_image = NULL;
 
     std::vector<int> enemy_jet;
-    int jet;
+    int jet = NULL;
     float jet_time = 0.0f;
     int jet_count = 0;
 

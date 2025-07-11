@@ -35,13 +35,12 @@ private:
 public:
 	int life;
 private:
-	bool is_shot;
-	int count_space;
+	bool is_shot = false;
 	float shot_timer = 0.0f;
-	bool on_hit;
+	bool on_hit = false;
 	bool beam_on = false;
 	bool stop = false;
-	bool is_damage;
+	bool is_damage = false;
 	bool shot_flip = false;
 	int reach_count = 0;
 	int brend = 255;
@@ -71,7 +70,7 @@ private:
 	int engen_count = 0;
 
 	bool is_shot_anim = false;
-	int se_shot;
+	int se_shot = NULL;
 
 	float shield_time = 0.0f;
 	int shield_count = 0;
@@ -85,9 +84,9 @@ private:
 	std::vector<int> engens;
 	std::vector<int> shields;
 	std::vector<int> shields2;
-	int engen;
-	int jet;
-	int shield;
+	int engen = NULL;
+	int jet = NULL;
+	int shield = NULL;
 
 	float last_explosion_time = -999.0f; // ÅŒã‚É”š”­‚ğÄ¶‚µ‚½ŠÔ
 	float invincible_time = 0.0f;

@@ -5,9 +5,9 @@ class Stage3 :
 {
 private:
 	// 各種攻撃・敵キャラクターのポインタ定義
-	class Zako* zako;             // 雑魚敵その1
-	class Boss3* boss;
-	class EnemyShot1* e_shot1;      // 敵のショットタイプ1
+	class Zako* zako = nullptr;             // 雑魚敵その1
+	class Boss3* boss = nullptr;
+	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
 
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	float enemy3_spawn_timer = 0.0f;

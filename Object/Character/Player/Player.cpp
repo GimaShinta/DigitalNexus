@@ -5,7 +5,7 @@
 #include "../../../Utility/SEManager.h"
 #include "../../Bullet/PlayerBullet.h"
 
-Player::Player() : is_shot(false), count_space(1), life(8), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
 {
 }
 

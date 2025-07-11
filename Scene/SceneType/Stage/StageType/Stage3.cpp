@@ -14,15 +14,18 @@ Stage3::~Stage3()
 {
 }
 
+// 初期化処理
 void Stage3::Initialize()
 {
     stage_id = StageID::Stage3;
 }
 
+// 終了時処理
 void Stage3::Finalize()
 {
 }
 
+// 更新処理
 void Stage3::Update(float delta_second)
 {
     // オブジェクトとエフェクトの更新処理
@@ -45,6 +48,7 @@ void Stage3::Update(float delta_second)
     ScrollEffectUpdate(delta_second);
 }
 
+// 描画処理
 void Stage3::Draw()
 {
     // 背景スクロールの描画
@@ -173,6 +177,7 @@ StageBase* Stage3::GetNextStage(Player* player)
     return new Stage4(player);
 }
 
+// 背景スクロールの描画
 void Stage3::DrawScrollBackground() const
 {
     // === 奥のグリッド描画 ===
@@ -213,6 +218,7 @@ void Stage3::DrawScrollBackground() const
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 
+// 背景スクロールの更新処理
 void Stage3::ScrollEffectUpdate(float delta_second)
 {
     scroll_back -= delta_second * 220.2f;   // 奥グリッドは遅く
@@ -516,7 +522,7 @@ void Stage3::UpdateGameStatus(float delta_second)
         scene_timer += delta_second;
         trans_timer += delta_second;
 
-        if (trans_timer >= 0.01f)
+        if (trans_timer >= 0.02f)
             if (transparent < 255)
                 transparent++;
 

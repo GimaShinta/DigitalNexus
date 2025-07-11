@@ -5,9 +5,9 @@ class Stage4 :
 {
 private:
 	// 各種攻撃・敵キャラクターのポインタ定義
-	class Zako* zako;             // 雑魚敵その1
-	class Boss4* boss;
-	class EnemyShot1* e_shot1;      // 敵のショットタイプ1
+	class Zako* zako = nullptr;             // 雑魚敵その1
+	class Boss4* boss = nullptr;
+	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
 
 	bool boss4_spawned = false;
 	bool draw_animation_first = false;  // デフォルトはfalse
