@@ -12,6 +12,29 @@ private:
 	bool boss4_spawned = false;
 	bool draw_animation_first = false;  // デフォルトはfalse
 
+	float result_timer = 0.0f;
+	float total_score = 0.0f;
+	bool result_displayed = false;
+
+	float clear_wait_timer = 0.0f;
+	bool result_started = false;
+
+	float glitch_timer = 0.0f;
+	bool glitch_started = false;
+	bool glitch_done = false;
+	float post_result_wait_timer = 0.0f;  // ←これを追加
+	float delta_draw = 0.0f;
+
+	bool result_fadeout_started = false;
+	float result_fadeout_timer = 0.0f;
+	bool result_ended = false;
+
+	bool final_thank_started = false;
+	bool final_thank_fadein_done = false;
+	bool return_to_title = false;
+	float final_thank_timer = 0.0f;
+	float final_fade_alpha = 0.0f;
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage4(Player* player);     // プレイヤー情報を引数に取るステージ初期化
@@ -28,5 +51,11 @@ private:
 	void DrawScrollBackground() const override; // 背景のスクロール描画
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
+	void ResultDraw(float delta_second);
+
+	float Min(float a, float b)
+	{
+		return (a < b) ? a : b;
+	}
 };
 

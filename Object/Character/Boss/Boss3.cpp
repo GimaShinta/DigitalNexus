@@ -28,6 +28,7 @@ void Boss3::Initialize()
 	z_layer = 3;
 	box_size = 30;
 	hp = 100000;
+	hp = 100;
 
 	// UŒ‚ƒpƒ^[ƒ“‚Ìİ’è
 	attack_pattrn_num = { 7, 12, 5, 12, 6, 12, 10, 12 };

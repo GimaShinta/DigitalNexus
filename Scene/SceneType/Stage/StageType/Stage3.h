@@ -31,6 +31,24 @@ private:
 	mutable float scroll_back = 0.0f;
 	mutable float scroll_front = 0.0f;
 
+
+	float result_timer = 0.0f;
+	float total_score = 0.0f;
+	bool result_displayed = false;
+
+	float clear_wait_timer = 0.0f;
+	bool result_started = false;
+
+	float glitch_timer = 0.0f;
+	bool glitch_started = false;
+	bool glitch_done = false;
+	float post_result_wait_timer = 0.0f;  // ←これを追加
+	float delta_draw = 0.0f;
+
+	bool result_fadeout_started = false;
+	float result_fadeout_timer = 0.0f;
+	bool result_ended = false;
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage3(Player* player);     // プレイヤー情報を引数に取るステージ初期化
@@ -49,6 +67,7 @@ private:
 	void DrawFrontGrid() const;
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
+	void ResultDraw(float delta_second);
 
 	template <typename T>
 	T my_max(const T& a, const T& b)

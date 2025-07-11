@@ -90,6 +90,10 @@ private:
 
 	WarningState warning_state = WarningState::None;
 
+	bool end_sequence_started = false;      // 終了演出が始まったか
+	float end_sequence_timer = 0.0f;        // 終了演出タイマー
+	int end_fade_alpha = 0;                 // フェードアウト用アルファ
+
 public:
 	GameMainScene();
 	virtual ~GameMainScene();

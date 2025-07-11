@@ -118,7 +118,7 @@ eSceneType GameMainScene::Update(float delta_second)
                     if (current_stage->GetStageID() == StageID::Stage3)
                     {
                         black_fade_timer += delta_second;
-                        //if (alpha >= 255)
+                        if (alpha >= 255)
                         {
                             StopSoundMem(stage_bgm3); // ← ステージ3のBGMを明示的に停止
 
@@ -136,10 +136,41 @@ eSceneType GameMainScene::Update(float delta_second)
                                 // ステージ4用のBGMを再生（必要なら stage_bgm4 を定義）
                                 current_bgm_handle = stage_bgm4;  // または stage_bgm4
                                 ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
-                                //  PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
                             }
                             else
                             {
+                                return eSceneType::eTitle;
+                            }
+                        }
+                    }
+                    else if (current_stage->GetStageID() == StageID::Stage4)
+                    {
+                        end_sequence_started = true; // 終了演出を開始
+
+                        if (end_sequence_started)
+                        {
+                            end_sequence_timer += delta_second;
+
+                            const float fade_duration = 2.0f; // 2秒フェード
+
+                            // 徐々に暗くする（非依存）
+                            if (end_sequence_timer >= 1.0f && end_sequence_timer < 1.0f + fade_duration)
+                            {
+                                float t = (end_sequence_timer - 1.0f) / fade_duration;
+                                if (t > 1.0f) t = 1.0f;
+                                end_fade_alpha = static_cast<int>(255 * t);
+                            }
+                            else if (end_sequence_timer >= 1.0f + fade_duration)
+                            {
+                                end_fade_alpha = 255;
+                            }
+
+                            // 4秒後にタイトルへ遷移
+                            if (end_sequence_timer >= 8.0f)
+                            {
+                                current_stage->Finalize();
+                                delete current_stage;
+                                current_stage = nullptr;
                                 return eSceneType::eTitle;
                             }
                         }
@@ -475,6 +506,30 @@ void GameMainScene::Draw()
             {
                 alpha = 0;
                 black_in_timer2 = 0.0f;
+            }
+        }
+
+        if (end_sequence_started)
+        {
+            // フェードアウト（黒）
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, end_fade_alpha);
+            DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+            // メッセージ表示（フェードと合わせて浮かび上がる）
+            if (end_sequence_timer >= 1.0f)
+            {
+                int alpha = (int)((end_sequence_timer - 1.0f) * 255);
+                if (alpha > 255) alpha = 255;
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+
+                const char* msg = "Thank you for playing";
+                int text_w = GetDrawStringWidthToHandle(msg, strlen(msg), font_digital);
+                int x = (D_WIN_MAX_X - text_w) / 2;
+                int y = D_WIN_MAX_Y / 2;
+
+                DrawStringToHandle(x, y, msg, GetColor(255, 255, 255), font_digital);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
             }
         }
 
