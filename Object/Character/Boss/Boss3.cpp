@@ -1368,7 +1368,7 @@ void Boss3::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_inter
 /// <param name="fan_duration_limit">攻撃時間</param>
 /// <param name="generate_location">生成する場所</param>
 /// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn7(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();

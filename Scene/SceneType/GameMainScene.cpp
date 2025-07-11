@@ -24,7 +24,7 @@ void GameMainScene::Initialize()
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     player = objm->CreateObject<Player>(Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) + 220.0f));
 
-    current_stage = new Stage3(player);
+    current_stage = new Stage1(player);
 
     current_stage->Initialize();
 
@@ -565,6 +565,7 @@ void GameMainScene::Draw()
 void GameMainScene::Finalize()
 {
     GameObjectManager::GetInstance()->Finalize();
+    //ScoreData::GetInstance()->
     StopSoundMem(current_bgm_handle); // åªç›ÇÃBGMÇí‚é~
 }
 
@@ -672,8 +673,8 @@ void GameMainScene::DrawUI()
         ScoreData* score = Singleton<ScoreData>::GetInstance();
         const auto& all_scores = score->GetScoreData();
 
-        float total_score = 0.0f;
-        for (float s : all_scores) total_score += s;
+        float total_score = score->GetTotalScore();
+        //for (float s : all_scores) total_score += s;
 
         int x = 30, y = 80;
         int w = 240, h = 80;

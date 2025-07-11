@@ -37,8 +37,8 @@ void Stage2::Update(float delta_second)
     // ステージ管理用タイマー
     stage_timer += delta_second;
 
-    if (stage_timer >= 1.0f)
-        is_clear = true;
+    //if (stage_timer >= 1.0f)
+    //    is_clear = true;
 
     // 敵の出現
     EnemyAppearance(delta_second);

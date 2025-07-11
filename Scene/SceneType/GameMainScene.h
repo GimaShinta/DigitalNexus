@@ -5,9 +5,9 @@
 class GameMainScene : public SceneBase
 {
 private:
-	class Player* player;
+	class Player* player = nullptr;
 	StageBase* current_stage;
-	float next_scene_timer;
+	float next_scene_timer = 0.0f;
 	bool isPaused = false;
 private:
 	int font_digital;
@@ -31,7 +31,7 @@ private:
 	float pause_timer = 0.0f;
 	int transparent = 0.0f;
 
-	int se_charge;
+	int se_charge = NULL;
 	int cursor_se = NULL;
 
 	// ↓ スコアログ処理用構造体と変数
