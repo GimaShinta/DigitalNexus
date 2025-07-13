@@ -6,7 +6,6 @@ class Exp : public ItemBase
 {
 private:
     float lifetime;        //5•b‚Å©“®íœ
-    bool is_collected = false;
 
 public:
     Exp();

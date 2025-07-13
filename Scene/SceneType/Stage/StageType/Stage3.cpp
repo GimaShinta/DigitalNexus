@@ -577,11 +577,6 @@ void Stage3::UpdateGameStatus(float delta_second)
         {
             is_finished = true;
         }
-        else
-        {
-            if (player)
-                player->SetShotStop();
-        }
     }
 }
 

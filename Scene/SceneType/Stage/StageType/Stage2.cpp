@@ -398,27 +398,7 @@ void Stage2::UpdateGameStatus(float delta_second)
             is_finished = true;
         }
     }
-
-    //// ゲームオーバーだった時の演出準備
-    //if (is_over == true)
-    //{
-    //    scene_timer += delta_second;
-    //    gameover_timer += delta_second;
-
-    //    if (gameover_timer >= 0.005f)
-    //    {
-    //        transparent++;
-    //        gameover_timer = 0.0f;
-    //    }
-
-    //    if (scene_timer >= 5.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //}
-
-    // ステージ終了時の動き
-    if (is_over == true)
+    else if (is_over == true)
     {
         // 少し待機したら終了
         scene_timer += delta_second;
@@ -426,17 +406,12 @@ void Stage2::UpdateGameStatus(float delta_second)
 
         if (trans_timer >= 0.02f)
             trans_timer = 0.0f;
-            if (transparent < 255)
-                transparent++;
+        if (transparent < 255)
+            transparent++;
 
-        if (scene_timer >= 8.0f)
+        if (scene_timer >= 7.0f)
         {
             is_finished = true;
-        }
-        else
-        {
-            if (player)
-                player->SetShotStop();
         }
     }
 }

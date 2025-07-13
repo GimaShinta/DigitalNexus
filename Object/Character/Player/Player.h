@@ -77,6 +77,8 @@ private:
 
 	bool shield_anim_on = false;
 
+	bool shot_stop = false;
+
 	// ‰æ‘œŒn
 	std::vector<int> player_image_right;
 	std::vector<int> player_image_left;
@@ -150,7 +152,7 @@ public:
 	int GetPowerd() const;
 	bool GetShieldOn() const;
 	int GetLife() const;
-	void SetShotStop();
+	void SetShotStop(bool stoping);
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }

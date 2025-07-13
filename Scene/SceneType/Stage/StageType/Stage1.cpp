@@ -396,7 +396,7 @@ void Stage1::UpdateGameStatus(float delta_second)
     //}
 
     // ステージ終了時の動き
-    if (is_clear == true || is_over == true)
+    if (is_clear == true)
     {
         // 少し待機したら終了
         scene_timer += delta_second;
@@ -405,10 +405,22 @@ void Stage1::UpdateGameStatus(float delta_second)
         {
             is_finished = true;
         }
-        else
+    }
+    else if (is_over == true)
+    {
+        // 少し待機したら終了
+        scene_timer += delta_second;
+        trans_timer += delta_second;
+
+        if (trans_timer >= 0.02f)
+            trans_timer = 0.0f;
+        if (transparent < 255)
+            transparent++;
+
+        if (scene_timer >= 7.0f)
         {
-            if (player)
-                player->SetShotStop();
+            is_finished = true;
         }
     }
+
 }

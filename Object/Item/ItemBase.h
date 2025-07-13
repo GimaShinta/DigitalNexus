@@ -16,6 +16,8 @@ protected:
 
 	std::vector<int> images;
 
+	bool is_collected = false;
+
 public:
 	// ‰Šú‰»ˆ—
 	virtual void Initialize();

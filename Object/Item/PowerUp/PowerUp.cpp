@@ -96,8 +96,13 @@ void PowerUp::Draw(const Vector2D& offset) const
 
 void PowerUp::OnHitCollision(GameObjectBase* hit_object)
 {
+    // ‚·‚Å‚É‹zŽûÏ‚Ý‚È‚ç–³Ž‹
+    if (is_collected) return;
+
     if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
     {
+        is_collected = true;
+
         SEManager::GetInstance()->PlaySE(SE_NAME::Get2);
         Singleton<ScoreData>::GetInstance()->AddScore(10000);
         this->SetDestroy();

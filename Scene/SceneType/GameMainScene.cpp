@@ -293,11 +293,14 @@ eSceneType GameMainScene::Update(float delta_second)
     // ======= スコアログのスライド演出更新 =======
     for (auto& log : score_logs)
     {
-        if (log.y_offset < 0)
+        if (log.y_offset < 0.0f)
         {
-            log.y_offset += delta_second * 40;  // 下にスライド（40px/sec）
-            if (log.y_offset > 0)
-                log.y_offset = 0; // オーバー補正
+            // イージング風に滑らかに補正（速度を比例減衰）
+            log.y_offset += (-log.y_offset) * 10.0f * delta_second;
+
+            // 誤差吸収（0に近づいたら0にする）
+            if (log.y_offset > -0.5f)
+                log.y_offset = 0.0f;
         }
     }
 
@@ -743,10 +746,7 @@ void GameMainScene::DrawUI()
     // ==== トータルスコア（左上） ====
     {
         ScoreData* score = Singleton<ScoreData>::GetInstance();
-        const auto& all_scores = score->GetScoreData();
-
         float total_score = score->GetTotalScore();
-        //for (float s : all_scores) total_score += s;
 
         int x = 30, y = 80;
         int w = 240, h = 80;
@@ -754,8 +754,19 @@ void GameMainScene::DrawUI()
         DrawLine(x, y, x + w, y, GetColor(0, 255, 255));         // 上
         DrawLine(x, y + h, x + w, y + h, GetColor(0, 255, 255)); // 下
 
+        // 見出し
         DrawStringToHandle(x + 10, y + 8, "TOTAL SCORE", GetColor(0, 255, 255), font_orbitron);
-        DrawFormatStringToHandle(x + 20, y + 40, GetColor(255, 255, 100), font_digital, "%.0f", total_score);
+
+        // 数値部分の文字列を一度生成
+        char score_str[64];
+        sprintf_s(score_str, sizeof(score_str), "%.0f", total_score);
+
+        // 幅を測って右寄せ位置を計算（x+w?padding?幅）
+        int score_width = GetDrawStringWidthToHandle(score_str, strlen(score_str), font_digital);
+        int score_x = x + w - 20 - score_width; // ←右から20px余白
+
+        // 右寄せ描画
+        DrawStringToHandle(score_x, y + 40, score_str, GetColor(255, 255, 100), font_digital);
     }
 
     // ==== スコアログ（左下） ====
@@ -769,8 +780,35 @@ void GameMainScene::DrawUI()
         const auto& log = score_logs[count - 1 - i];
         int draw_y = log_base_y + static_cast<int>(i * line_height + log.y_offset);
 
-        DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 200, draw_y - 2, GetColor(0, 255, 255)); // 上ライン
-        DrawFormatStringToHandle(log_base_x, draw_y, GetColor(0, 255, 255), font_digital, "%s", log.text.c_str());
+        // ライン描画
+        DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 200, draw_y - 2, GetColor(0, 255, 255));
+
+        // 「Score 」部分と「+xxxx」部分を分ける
+        std::string label = "Score ";
+        std::string value;
+
+        // 「Score +xxxx」から+以降を切り出す
+        const char* plus_pos = strchr(log.text.c_str(), '+');
+        if (plus_pos)
+        {
+            value = plus_pos; // "+1234" など
+        }
+        else
+        {
+            value = ""; // 念のため
+        }
+
+        // 「+1234」の横幅を測る
+        int value_width = GetDrawStringWidthToHandle(value.c_str(), (int)value.size(), font_orbitron);
+
+        // 右端を log_base_x + 200 に固定して、数値部分を右寄せ
+        int value_x = log_base_x + 200 - value_width;
+
+        // 左側に「Score 」を描画
+        DrawStringToHandle(log_base_x, draw_y, label.c_str(), GetColor(0, 255, 255), font_orbitron);
+
+        // 右寄せで「+1234」描画
+        DrawStringToHandle(value_x, draw_y, value.c_str(), GetColor(0, 255, 255), font_orbitron);
     }
 
     // ==== LIFE - STOCK（右上） ====
@@ -1086,7 +1124,11 @@ void GameMainScene::WarningUpdate(float delta_second)
             warning_timer = 0.0f;
             band_half_height = 0.0f; // 念のため初期化
             warning_text_x = 1020;   // 文字位置初期化（右端から流す場合）
+
+            if (player)
+                player->SetShotStop(true);
         }
+
     }
 
     black_in_timer2 += delta_second;
@@ -1129,6 +1171,10 @@ void GameMainScene::WarningUpdate(float delta_second)
         }
         // ステージ4のBGM再生
         PlaySoundMem(stage_bgm4, DX_PLAYTYPE_LOOP);
+
+        if (player)
+            player->SetShotStop(false);
+
         break;
 
     default:

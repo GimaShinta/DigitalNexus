@@ -87,8 +87,13 @@ void Player::Update(float delta_second)
 	}
 	else
 	{
-		// 弾を打つ
-		Shot(delta_second);
+		// 打てる状態だったら打つ
+		if (shot_stop == false)
+		{
+			// 弾を打つ
+			Shot(delta_second);
+		}
+
 		// ライフが０になったらゲームオーバー
 		if (life < 0)
 		{
@@ -693,9 +698,9 @@ int Player::GetLife() const
 {
 	return life;
 }
-void Player::SetShotStop()
+void Player::SetShotStop(bool stoping)
 {
-	stop = true;
+	shot_stop = stoping;
 }
 void Player::ForceNeutralAnim(bool enable)
 {
