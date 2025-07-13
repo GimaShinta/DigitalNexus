@@ -24,6 +24,14 @@ void Stage4::Initialize()
 
 void Stage4::Finalize()
 {
+    if (font_orbitron != -1) {
+        DeleteFontToHandle(font_orbitron);
+        font_orbitron = -1;
+    }
+    if (font_warning != -1) {
+        DeleteFontToHandle(font_warning);
+        font_warning = -1;
+    }
 }
 
 void Stage4::Update(float delta_second)
@@ -335,7 +343,7 @@ void Stage4::ResultDraw(float delta_second)
     };
 
     std::vector<ResultLine> lines = {
-        {  30, -80, "RESULT", "" },
+        {  30, -80, "TRUE RESULT", "" },
         {  70, -20, "BASE SCORE", "BASE SCORE : %.0f" },
         { 110,  20, "LIFE BONUS", "LIFE BONUS : %d" },
         { 160,  80, "TOTAL SCORE", "TOTAL SCORE : %.0f" },

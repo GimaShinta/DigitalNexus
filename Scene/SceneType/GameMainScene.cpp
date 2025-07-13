@@ -622,6 +622,23 @@ void GameMainScene::Finalize()
     GameObjectManager::GetInstance()->Finalize();
     //ScoreData::GetInstance()->
     StopSoundMem(current_bgm_handle); // åªç›ÇÃBGMÇí‚é~
+
+    if (font_orbitron != -1) {
+        DeleteFontToHandle(font_orbitron);
+        font_orbitron = -1;
+    }
+    if (font_warning != -1) {
+        DeleteFontToHandle(font_warning);
+        font_warning = -1;
+    }
+    if (font_digital != -1) {
+        DeleteFontToHandle(font_digital);
+        font_digital = -1;
+    }
+    if (m_menuFontHandle != -1) {
+        DeleteFontToHandle(m_menuFontHandle);
+        m_menuFontHandle = -1;
+    }
 }
 
 /// <summary>

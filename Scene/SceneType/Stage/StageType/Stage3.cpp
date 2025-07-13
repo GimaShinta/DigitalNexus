@@ -27,6 +27,14 @@ void Stage3::Initialize()
 // I—¹ˆ—
 void Stage3::Finalize()
 {
+    if (font_orbitron != -1) {
+        DeleteFontToHandle(font_orbitron);
+        font_orbitron = -1;
+    }
+    if (font_warning != -1) {
+        DeleteFontToHandle(font_warning);
+        font_warning = -1;
+    }
 }
 
 // XVˆ—

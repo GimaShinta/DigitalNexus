@@ -282,6 +282,10 @@ void TitleScene::Draw()
 // 終了時処理（使ったインスタンスの削除とか）
 void TitleScene::Finalize()
 {
+    if (m_menuFontHandle != -1) {
+        DeleteFontToHandle(m_menuFontHandle);
+        m_menuFontHandle = -1;
+    }
 }
 
 /// <summary>

@@ -22,12 +22,19 @@ void Stage1::Initialize()
 
     font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
     font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
-
 }
 
 // I—¹ˆ—
 void Stage1::Finalize()
 {
+    if (font_orbitron != -1) {
+        DeleteFontToHandle(font_orbitron);
+        font_orbitron = -1;
+    }
+    if (font_warning != -1) {
+        DeleteFontToHandle(font_warning);
+        font_warning = -1;
+    }
 }
 
 // XVˆ—
