@@ -1,11 +1,6 @@
 #pragma once
 #include "../SceneBase.h"
-
-struct ScoreEntry
-{
-	float score;
-	std::string date;
-};
+#include "../../Utility/ScoreData.h"
 
 class RankingScene : public SceneBase
 {

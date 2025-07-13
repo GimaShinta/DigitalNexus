@@ -274,7 +274,7 @@ void Enemy3::Update(float delta_second)
         anim_id = manager->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
         manager->SetScale(anim_id, 0.5f);
 
-        Singleton<ScoreData>::GetInstance()->SetScoreData(500);
+        Singleton<ScoreData>::GetInstance()->AddScore(500);
     }
 
     std::vector<int> animation_num;

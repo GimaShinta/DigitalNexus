@@ -1,8 +1,6 @@
 #include "RankingScene.h"
 #include "../../Utility/ScoreData.h"
 #include <fstream>
-#include <algorithm>
-#include <ctime>
 
 RankingScene::RankingScene()
 {
@@ -23,26 +21,26 @@ void RankingScene::Initialize()
     auto* score_data = Singleton<ScoreData>::GetInstance();
 
     // ƒXƒRƒA‡Œv
-    auto scores = score_data->GetScoreData();
-    for (float s : scores)
-        total_score += s;
+    total_score = score_data->GetTotalScore();
 
     LoadRankingFromFile();
 
-    // šˆê“x‚¾‚¯“o˜^
-    if (total_score > 0.9f && !score_data->IsSubmitted())
-    {
-        entries.push_back({ total_score, GetTodayString() });
-        std::sort(entries.begin(), entries.end(), [](auto& a, auto& b) {
-            return a.score > b.score;
-            });
-        if (entries.size() > 10)
-            entries.resize(10);
-        SaveRankingToFile();
+    //// šˆê“x‚¾‚¯“o˜^
+    //if (total_score > 0.9f && !score_data->IsSubmitted())
+    //{
+    //    entries.push_back({ total_score, GetTodayString() });
+    //    std::sort(entries.begin(), entries.end(), [](auto& a, auto& b) {
+    //        return a.score > b.score;
+    //        });
+    //    if (entries.size() > 10)
+    //        entries.resize(10);
+    //    SaveRankingToFile();
 
-        // š“o˜^Ï‚Ý‚Éƒ}[ƒN
-        score_data->MarkSubmitted();
-    }
+    //    // š“o˜^Ï‚Ý‚Éƒ}[ƒN
+    //    score_data->MarkSubmitted();
+    //}
+
+    entries = ScoreData::GetInstance()->GetEntries();
 }
 
 /// <summary>
@@ -268,15 +266,15 @@ void RankingScene::ResetRankingFile()
     LoadRankingFromFile();
 }
 
-std::string RankingScene::GetTodayString()
-{
-    time_t now = time(nullptr);
-    tm t;
-    localtime_s(&t, &now);
-    char buf[32];
-    sprintf_s(buf, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-    return std::string(buf);
-}
+//std::string RankingScene::GetTodayString()
+//{
+//    time_t now = time(nullptr);
+//    tm t;
+//    localtime_s(&t, &now);
+//    char buf[32];
+//    sprintf_s(buf, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+//    return std::string(buf);
+//}
 
 void RankingScene::DrawNeonText(int x, int y, const char* text, int baseColor, int glowColor, int glowPulse)
 {

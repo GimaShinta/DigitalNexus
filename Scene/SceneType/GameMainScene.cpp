@@ -147,6 +147,9 @@ eSceneType GameMainScene::Update(float delta_second)
                     {
                         end_sequence_started = true; // 終了演出を開始
 
+                        if (player)
+                            player->SetShotStop(true);
+
                         if (end_sequence_started)
                         {
                             end_sequence_timer += delta_second;
@@ -642,6 +645,9 @@ void GameMainScene::Finalize()
         DeleteFontToHandle(m_menuFontHandle);
         m_menuFontHandle = -1;
     }
+
+    // トータルスコアをランキングにエントリー
+    ScoreData::GetInstance()->ScoreEntrie(ScoreData::GetInstance()->GetTotalScore());
 }
 
 /// <summary>
@@ -1171,7 +1177,6 @@ void GameMainScene::WarningUpdate(float delta_second)
         }
         // ステージ4のBGM再生
         PlaySoundMem(stage_bgm4, DX_PLAYTYPE_LOOP);
-
         if (player)
             player->SetShotStop(false);
 

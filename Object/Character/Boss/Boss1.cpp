@@ -327,7 +327,7 @@ void Boss1::Update(float delta_second)
         int anim_id = manager->PlayerAnimation(EffectName::eExprotion, location, 0.05f, false);
         manager->SetScale(anim_id, 0.5f);
 
-        Singleton<ScoreData>::GetInstance()->SetScoreData(1000);
+        Singleton<ScoreData>::GetInstance()->AddScore(1000);
     }
 
 

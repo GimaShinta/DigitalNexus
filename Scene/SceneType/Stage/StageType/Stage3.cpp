@@ -622,10 +622,8 @@ void Stage3::ResultDraw(float delta_second)
 
     // スコア集計
     ScoreData* score = Singleton<ScoreData>::GetInstance();
-    const auto& scores = score->GetScoreData();
-    float base_score = 0.0f;
-    for (float s : scores) base_score += s;
-    int life_bonus = player->life * 1000;
+    float base_score = score->GetTotalScore();
+    int life_bonus = player->GetLife() * 1000;
     total_score = base_score + life_bonus;
 
     // 表示ライン設定
@@ -638,9 +636,9 @@ void Stage3::ResultDraw(float delta_second)
 
     std::vector<ResultLine> lines = {
         {  30, -80, "RESULT", "" },
-        {  70, -20, "BASE SCORE", "BASE SCORE : %.0f" },
+        {  70, -20, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
         { 110,  20, "LIFE BONUS", "LIFE BONUS : %d" },
-        { 160,  80, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
+        { 160,  80, "FINAL SCORE", "FINAL SCORE : %.0f" },
     };
 
     // 表示位置（左右揃え用）
@@ -669,13 +667,13 @@ void Stage3::ResultDraw(float delta_second)
             // ラベルと値を分けて描画
             char value_buf[64];
 
-            if (line.label == "BASE SCORE") {
+            if (line.label == "TOTAL SCORE") {
                 sprintf_s(value_buf, "%.0f", base_score);
             }
             else if (line.label == "LIFE BONUS") {
                 sprintf_s(value_buf, "%d", life_bonus);
             }
-            else if (line.label == "TOTAL SCORE") {
+            else if (line.label == "FINAL SCORE") {
                 sprintf_s(value_buf, "%.0f", total_score);
             }
 
@@ -687,7 +685,7 @@ void Stage3::ResultDraw(float delta_second)
             DrawStringToHandle(value_x - value_width, y, value_buf, color, font_orbitron);
 
             // TOTAL SCORE の横線と終了判定
-            if (line.label == "TOTAL SCORE") {
+            if (line.label == "FINAL SCORE") {
                 int line_y = y - 20;
                 DrawLine(cx - 600, line_y, cx + 600, line_y, GetColor(255, 255, 255));
 
