@@ -125,7 +125,6 @@ void Application::Graph() const
 
 	// ƒV[ƒ“‚Ì•`‰æˆ—
 	scene->Draw();
-	DrawFormatString(10, 10, GetColor(255, 255, 255), "delta: %.3f", delta_second);
 
 	// — ‰æ–Ê‚Ì“à—e‚ð•\‰æ–Ê‚É”½‰f‚·‚é
 	ScreenFlip();

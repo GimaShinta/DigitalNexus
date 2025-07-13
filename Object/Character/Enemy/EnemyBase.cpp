@@ -84,20 +84,19 @@ void EnemyBase::DropItems()
 {
 	GameObjectManager* manager = Singleton<GameObjectManager>::GetInstance();
 
-	// 100%でExpはドロップ
-    Exp* exp = manager->CreateObject<Exp>(location);
+	// Exp（確定）
+	Exp* exp = manager->CreateObject<Exp>(location);
 	exp->SetPlayer(player);
 
-	//1%でPowerUpドロップ
-	if (rand() % 100 < 2) {
+	// 一つの乱数で判断（最大で1種類しか出ない）
+	int dropRoll = rand() % 100;
+
+	if (dropRoll < 1) {
 		MaxCharge* charge = manager->CreateObject<MaxCharge>(location);
 		charge->SetPlayer(player);
 	}
-
-	// 5%でShieldドロップ
-	if (rand() % 100 < 2) {
+	else if (dropRoll < 6) {
 		Shield* shi = manager->CreateObject<Shield>(location);
 		shi->SetPlayer(player);
-
 	}
 }

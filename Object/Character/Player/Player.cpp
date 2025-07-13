@@ -42,14 +42,10 @@ void Player::Initialize()
 	jet = player_jet[2];
 
 	engens = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
-	//engens = rm->GetImages("Resource/Image/Effect/E_BigHit_2.png", 27, 9, 3, 516, 516);
 	engen = engens[0];
 
 	shields2 = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206_480.png", 20, 5, 4, 480, 480);
 	shields = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206h_480.png", 15, 5, 3, 480, 480);
-
-	//se_shot = rm->GetSounds("Resource/sound/se/shot/shot_02.mp3");
-	//ChangeVolumeSoundMem(255 * 60 / 100, se_shot);
 
 }
 
@@ -348,21 +344,6 @@ void Player::Shot(float delta_second)
 	// 打つまでの時間を計測
 	shot_timer += delta_second;
 
-	//// スペースを押したら単発で発射
-	//if (input->GetKeyDown(KEY_INPUT_SPACE) ||
-	//	input->GetButtonDown(XINPUT_BUTTON_A))
-	//{
-	//	am->PlaySE(SE_NAME::Shot);
-	//	am->ChangeSEVolume(SE_NAME::Shot, 60);
-	//	// 何も打ってなかったら打てるようにする
-	//	if (stop == false)
-	//	{
-	//		is_shot_anim = true;
-	//		is_shot = true;
-	//		shot_timer = 0.0f;
-	//	}
-	//	GenarateBullet();
-	//}
 	// スペースを長押ししたら一定間隔で発射
 	if (input->GetKey(KEY_INPUT_SPACE) ||
 		input->GetButton(XINPUT_BUTTON_A))
@@ -389,6 +370,24 @@ void Player::Shot(float delta_second)
 		shot_timer = SHOT_INTERVAL;
 	}
 
+#if _DEBUG
+	// Bを押したらビーム発射
+	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B)))  // チャージ完了時のみ
+	{
+		if (stop == false)
+		{
+			beam_on = true;
+			stop = true;
+			beam_timer = 0.0f;
+			invincible_time = 5.0f;
+			UseSpecial();  // ゲージ消費
+			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
+			beam->SetPlayer(this);
+			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+		}
+	}
+#else
 	// Bを押したらビーム発射
 	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B)) &&
 		CanUseSpecial())  // チャージ完了時のみ
@@ -403,8 +402,10 @@ void Player::Shot(float delta_second)
 			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
 			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
 			beam->SetPlayer(this);
+			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
 		}
 	}
+#endif
 
 	// ５秒経ったらビームの再起
 	if (beam_timer >= 5.0f)

@@ -118,9 +118,14 @@ void Exp::Draw(const Vector2D& offset) const
 // Õ“Ëˆ—
 void Exp::OnHitCollision(GameObjectBase* hit_object)
 {
+    // ‚·‚Å‚É‹zŽûÏ‚Ý‚È‚ç–³Ž‹
+    if (is_collected) return;
+
     // ƒvƒŒƒCƒ„[‚Æ“–‚½‚Á‚½‚ç
     if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
     {
+        is_collected = true;
+
         SEManager::GetInstance()->PlaySE(SE_NAME::Get);
         SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Get, 80);
 

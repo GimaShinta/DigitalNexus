@@ -11,14 +11,11 @@ StartScene::~StartScene()
 // 初期化処理
 void StartScene::Initialize()
 {
-
-    // m_seTypeSound = LoadSoundMem("C:\PG\SAGA_TGS2025\Resource\sound\se\se_effect\tap.mp3"); // 任意のSEファイル
-
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     m_seTypeSound = rm->GetSounds("Resource/sound/se/se_effect/tap.mp3");
+    movie_handle = LoadGraph("Resource/pv/pv.mp4");
 
-    m_nextCharDelay = 0.08f + (GetRand(120) / 1000.0f);  // → 0.08～0.2秒
-
+    m_nextCharDelay = 0.08f + (GetRand(120) / 1000.0f);  // 0.08～0.2秒
 
     m_step = Step::WaitForInput;
     m_elapsedTime = 0.0f;
@@ -27,30 +24,55 @@ void StartScene::Initialize()
     m_fontDigital = CreateFontToHandle("DS-Digital", 28, 6, DX_FONTTYPE_ANTIALIASING);
     m_fontJP = CreateFontToHandle("メイリオ", 22, 6, DX_FONTTYPE_ANTIALIASING);
 
-
     m_introText[0] = "これはプロトタイプAIに託された任務―― 記憶を失ったデジタル世界が崩壊の危機に瀕している。";
     m_introText[1] = "侵蝕するウイルスを排除し、秩序を取り戻せ。君の戦いが、再起動の鍵となる。";
+
+    m_idleTimer = 0.0f;
+    m_demoPlaying = false;
 }
 
-/// <summary>
 /// 更新処理
-/// </summary>
-/// <param name="delta_second">１フレーム当たりの時間</param>
-/// <returns></returns>
 eSceneType StartScene::Update(float delta_second)
 {
-	//InputManager* input = Singleton<InputManager>::GetInstance();
-
-	//if (input->GetKeyDown(KEY_INPUT_SPACE))
-	//	return eSceneType::eTitle;
-
     InputManager* input = Singleton<InputManager>::GetInstance();
     m_elapsedTime += delta_second;
+
+    bool inputDetected =
+        input->GetKeyDown(KEY_INPUT_A) || input->GetKeyDown(KEY_INPUT_Z) || input->GetKeyDown(KEY_INPUT_SPACE) ||
+        input->GetButtonDown(XINPUT_BUTTON_A);
+
+    // 動画再生中にボタンが押されたら停止して戻る
+    if (m_demoPlaying && inputDetected) {
+        PauseMovieToGraph(movie_handle);
+        SeekMovieToGraph(movie_handle, 0);
+        m_demoPlaying = false;
+        m_step = Step::WaitForInput;
+        m_idleTimer = 0.0f;
+        m_elapsedTime = 0.0f;
+        return GetNowSceneType();
+    }
+
+    // 入力がなければアイドルタイマーを進める（WaitForInput中のみ）
+    if (m_step == Step::WaitForInput) {
+        if (!inputDetected) {
+            m_idleTimer += delta_second;
+
+            if (m_idleTimer > 4.0f) {
+                m_step = Step::DemoMovie;
+                m_demoPlaying = true;
+                PlayMovieToGraph(movie_handle, DX_PLAYTYPE_NORMAL);
+            }
+        }
+        else {
+            m_idleTimer = 0.0f; // ★ 入力があればリセット！
+        }
+    }
 
     switch (m_step)
     {
     case Step::WaitForInput:
-        if (input->GetKeyDown(KEY_INPUT_A) || input->GetButtonDown(XINPUT_BUTTON_A)) {
+        if (inputDetected) {
+            m_idleTimer = 0.0f; // ← ここでも明示的にリセットしておくと安全
             m_step = Step::IntroText;
             m_elapsedTime = 0.0f;
             m_displayCharCount = 0;
@@ -60,26 +82,20 @@ eSceneType StartScene::Update(float delta_second)
     case Step::IntroText:
     {
         int totalLength = (int)(std::strlen(m_introText[0]) + std::strlen(m_introText[1]));
-        if (m_displayCharCount < totalLength)
-        {
-            if (m_elapsedTime > m_nextCharDelay)
-            {
+        if (m_displayCharCount < totalLength) {
+            if (m_elapsedTime > m_nextCharDelay) {
                 PlaySoundMem(m_seTypeSound, DX_PLAYTYPE_BACK);
                 m_displayCharCount++;
                 m_elapsedTime = 0.0f;
-
-                // 次の文字表示までのディレイ（0.08?0.2秒）
                 m_nextCharDelay = 0.08f + (GetRand(120) / 1000.0f);
             }
         }
-
         else {
             m_step = Step::GoToTitle;
             m_elapsedTime = 0.0f;
         }
 
-        if (input->GetKeyDown(KEY_INPUT_Z) || input->GetKeyDown(KEY_INPUT_SPACE) ||
-            input->GetButtonDown(XINPUT_BUTTON_A)) {
+        if (inputDetected) {
             m_displayCharCount = totalLength;
             m_step = Step::GoToTitle;
             m_elapsedTime = 0.0f;
@@ -88,24 +104,43 @@ eSceneType StartScene::Update(float delta_second)
     }
 
     case Step::GoToTitle:
-        if (m_elapsedTime > 2.0f || input->GetKeyDown(KEY_INPUT_A) || input->GetButtonDown(XINPUT_BUTTON_A)) {
+        if (m_elapsedTime > 10.0f || inputDetected) {
             return eSceneType::eTitle;
+        }
+        break;
+
+    case Step::DemoMovie:
+        if (GetMovieStateToGraph(movie_handle) == 0) {
+            // 一度消して読み直す
+            if (movie_handle != -1) {
+                DeleteGraph(movie_handle);
+                movie_handle = -1;
+            }
+
+            movie_handle = LoadGraph("Resource/pv/pv.mp4");
+
+            m_demoPlaying = false;
+            m_step = Step::WaitForInput;
+            m_idleTimer = 0.0f;
+            m_elapsedTime = 0.0f;
         }
         break;
     }
 
-	return GetNowSceneType();
+    return GetNowSceneType();
 }
 
-/// <summary>
 /// 描画処理
-/// </summary>
-/// <returns></returns>
 void StartScene::Draw()
 {
 #if _DEBUG
-	DrawString(0, 0, "StartScene", GetColor(255, 255, 255));
+    DrawString(0, 0, "StartScene", GetColor(255, 255, 255));
 #endif
+
+    if (m_step == Step::DemoMovie) {
+        DrawExtendGraph(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, movie_handle, FALSE);
+        return;
+    }
 
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(10, 10, 30), TRUE);
 
@@ -146,32 +181,39 @@ void StartScene::Draw()
         break;
     }
     }
-
 }
 
-// 終了時処理（使ったインスタンスの削除とか）
+/// 終了処理
 void StartScene::Finalize()
 {
-    if (m_fontDigital != -1 &&
-        m_fontJP != -1) {
+    if (m_fontDigital != -1) {
         DeleteFontToHandle(m_fontDigital);
-        DeleteFontToHandle(m_fontJP);
         m_fontDigital = -1;
-        m_fontJP = -1;
+    }
 
+    if (m_fontJP != -1) {
+        DeleteFontToHandle(m_fontJP);
+        m_fontJP = -1;
     }
 
     if (m_seTypeSound != -1) {
         DeleteSoundMem(m_seTypeSound);
         m_seTypeSound = -1;
     }
+
+    if (movie_handle != -1) {
+        DeleteGraph(movie_handle);
+        movie_handle = -1;
+    }
+
+    if (movie_handle != -1) {
+        DeleteGraph(movie_handle);
+        movie_handle = -1;
+    }
 }
 
-/// <summary>
-/// 現在のシーン情報
-/// </summary>
-/// <returns>現在はリザルトシーンです</returns>
+/// 現在のシーンタイプを返す
 eSceneType StartScene::GetNowSceneType() const
 {
-	return eSceneType::eStart;
+    return eSceneType::eStart;
 }

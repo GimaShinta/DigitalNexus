@@ -50,7 +50,7 @@ private:
 	bool is_shield_damage = false;
 	// 追加：シールドの切り替え直後1フレームスキップ用フラグ
 	bool just_switched_to_second = false;
-	int powerd = 3;
+	int powerd = 2;
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;

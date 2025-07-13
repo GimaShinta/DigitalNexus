@@ -393,7 +393,7 @@ void Enemy1::Update(float delta_second)
         int anim_id = am->PlayerAnimation(EffectName::eExprotion2, location, 0.03f, false);
         am->SetScale(anim_id, 0.5f);
 
-        Singleton<ScoreData>::GetInstance()->AddScore(GetRand(100) + 200);
+        Singleton<ScoreData>::GetInstance()->AddScore(300);
         is_destroy = true;
     }
 

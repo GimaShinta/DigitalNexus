@@ -16,7 +16,8 @@ enum class SE_NAME
 	Hamon,
 	EnemyBeam,
 	Get,
-	Get2
+	Get2,
+	PlayerBeam
 	// •K—v‚É‰ž‚¶‚Ä’Ç‰Á
 };
 

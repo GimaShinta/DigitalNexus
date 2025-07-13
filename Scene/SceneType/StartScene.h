@@ -6,7 +6,8 @@ private:
 	enum class Step {
 		WaitForInput,
 		IntroText,
-		GoToTitle
+		GoToTitle,
+		DemoMovie,
 	};
 
 	Step m_step;
@@ -20,6 +21,10 @@ private:
 
 	int m_seTypeSound = -1;  // 1•¶Žš‚¸‚Â–Â‚éSE
 	float m_nextCharDelay = 0.0f; // ŽŸ‚Ì•¶Žš‚Ü‚Å‚Ìƒ‰ƒ“ƒ_ƒ€‘Ò‹@ŽžŠÔ
+
+	bool m_demoPlaying = false;
+	float m_idleTimer = 0.0f;
+	int movie_handle = NULL;
 
 public:
 	StartScene();

@@ -15,8 +15,11 @@ void Boss4::Initialize()
 {
 	z_layer = 3;
 	box_size = 30;
-	hp = 150000;
+#if _DEBUG
 	hp = 150;
+#else
+	hp = 150000;
+#endif
 
 	// çUåÇÉpÉ^Å[ÉìÇÃê›íË
 	attack_pattrn_num = { 11, 4, 6, 5, 7, 8, 9 };
@@ -420,7 +423,7 @@ void Boss4::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 			}
 			else
@@ -449,7 +452,7 @@ void Boss4::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 
 			}

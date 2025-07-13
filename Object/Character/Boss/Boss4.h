@@ -1,10 +1,10 @@
 #pragma once
-#include "../CharacterBase.h"
+#include "../Enemy/EnemyBase.h"
 #include "../../Bullet/EnemyBullet3.h"
 #include "../../Bullet/EnemyBullet4.h"
 #include "../../Beam/EnemyBeam.h"
 
-class Boss4 : public CharacterBase
+class Boss4 : public EnemyBase
 {
 private:
 	int attack_pattrn = 0;

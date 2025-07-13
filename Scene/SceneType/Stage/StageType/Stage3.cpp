@@ -43,6 +43,7 @@ void Stage3::Update(float delta_second)
     // オブジェクトとエフェクトの更新処理
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     objm->Update(delta_second);
+
     EffectManager* manager = Singleton<EffectManager>::GetInstance();
     manager->Update(delta_second);
 
@@ -181,10 +182,35 @@ void Stage3::Draw()
     // ゲームオーバー時の演出
     if (is_over)
     {
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
         DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
         SetFontSize(32);
         DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "GAME OVER", GetColor(255, 255, 255), TRUE);
         SetFontSize(16);
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+    }
+
+    // 遷移された瞬間のノイズの描画
+    if (entry_effect_playing)
+    {
+        float t = entry_effect_timer / 1.0f;
+        if (t > 1.0f) t = 1.0f;
+        int alpha = static_cast<int>((1.0f - t) * 255);
+
+        for (int i = 0; i < 30; ++i)
+        {
+            int x = GetRand(D_WIN_MAX_X);
+            int y = GetRand(D_WIN_MAX_Y);
+            int w = 40 + GetRand(100);
+            int h = 5 + GetRand(20);
+            int col = GetColor(200 + GetRand(55), 200 + GetRand(55), 255);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+            DrawBox(x, y, x + w, y + h, col, TRUE);
+        }
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha / 3);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE); // フラッシュ効果
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }
 
@@ -492,6 +518,16 @@ void Stage3::EnemyAppearance(float delta_second)
 // クリア判定
 void Stage3::UpdateGameStatus(float delta_second)
 {
+    // 遷移の際のノイズを表示on
+    if (entry_effect_playing)
+    {
+        entry_effect_timer += delta_second;
+        if (entry_effect_timer >= 1.0f) // 1秒間表示
+        {
+            entry_effect_playing = false;
+        }
+    }
+
     // ボスが倒れたらレイヤーを変更する
     if (boss != nullptr && boss->GetIsCrashing() == true)
     {
@@ -514,24 +550,6 @@ void Stage3::UpdateGameStatus(float delta_second)
         is_over = true;
     }
 
-    //// ゲームオーバーだった時の演出準備
-    //if (is_over == true)
-    //{
-    //    scene_timer += delta_second;
-    //    //gameover_timer += delta_second;
-
-    //    //if (gameover_timer >= 0.005f)
-    //    //{
-    //    //    transparent++;
-    //    //    gameover_timer = 0.0f;
-    //    //}
-
-    //    if (scene_timer >= 5.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //}
-
     // クリアしたらリザルトを描画
     if (is_clear == true && result_started == false)
     {
@@ -543,27 +561,28 @@ void Stage3::UpdateGameStatus(float delta_second)
         }
     }
 
-    //// ステージ終了時の動き
-    //if (is_clear == true || is_over == true)
-    //{
-    //    // 少し待機したら終了
-    //    scene_timer += delta_second;
-    //    trans_timer += delta_second;
+    // ステージ終了時の動き
+    if (is_over == true)
+    {
+        // 少し待機したら終了
+        scene_timer += delta_second;
+        trans_timer += delta_second;
 
-    //    if (trans_timer >= 0.02f)
-    //        if (transparent < 255)
-    //            transparent++;
+        if (trans_timer >= 0.02f)
+            trans_timer = 0.0f;
+        if (transparent < 255)
+            transparent++;
 
-    //    if (scene_timer >= 15.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //    else
-    //    {
-    //        if (player)
-    //            player->SetShotStop();
-    //    }
-    //}
+        if (scene_timer >= 8.0f)
+        {
+            is_finished = true;
+        }
+        else
+        {
+            if (player)
+                player->SetShotStop();
+        }
+    }
 }
 
 void Stage3::ResultDraw(float delta_second)

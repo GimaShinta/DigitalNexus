@@ -1,11 +1,11 @@
 #pragma once
-#include "../CharacterBase.h"
+#include "../Enemy/EnemyBase.h"
 //#include "../../Shot/EnemyShot/EnemyShot3.h"
 #include "../../Beam/EnemyBeam.h"
 
 const int MAX_ATTACK_PATTRN = 8;
 
-class Boss3 : public CharacterBase
+class Boss3 : public EnemyBase
 {
 private:
 	int se_beam;

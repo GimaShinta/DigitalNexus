@@ -27,8 +27,11 @@ void Boss3::Initialize()
 {
 	z_layer = 3;
 	box_size = 30;
-	hp = 100000;
+#if _DEBUG
 	hp = 100;
+#else
+	hp = 100000;
+#endif
 
 	// çUåÇÉpÉ^Å[ÉìÇÃê›íË
 	attack_pattrn_num = { 7, 12, 5, 12, 6, 12, 10, 12 };
@@ -502,7 +505,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 			}
 			else
@@ -531,7 +534,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 			}
 		}
