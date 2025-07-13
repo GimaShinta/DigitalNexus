@@ -3,6 +3,8 @@
 class Shield : public ItemBase
 {
 public:
+    Shield();
+    ~Shield();
     void Initialize() override;
     void Update(float delta) override;
     void Draw(const Vector2D& offset) const override;

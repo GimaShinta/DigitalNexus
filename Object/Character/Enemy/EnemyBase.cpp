@@ -82,22 +82,22 @@ void EnemyBase::SetPlayer(Player* p)
 
 void EnemyBase::DropItems()
 {
-	//auto& manager = *Singleton<GameObjectManager>::GetInstance();
+	GameObjectManager* manager = Singleton<GameObjectManager>::GetInstance();
 
-	//// 100%でExpはドロップ
-	//auto exp = manager.CreateObject<Exp>(location);
-	//exp->SetPlayer(player);
+	// 100%でExpはドロップ
+    Exp* exp = manager->CreateObject<Exp>(location);
+	exp->SetPlayer(player);
 
-	////1%でPowerUpドロップ
-	//if (rand() % 100 < 2) {
-	//	auto charge = manager.CreateObject<MaxCharge>(location);
-	//	charge->SetPlayer(player);
-	//}
+	//1%でPowerUpドロップ
+	if (rand() % 100 < 2) {
+		MaxCharge* charge = manager->CreateObject<MaxCharge>(location);
+		charge->SetPlayer(player);
+	}
 
-	//// 5%でShieldドロップ
-	//if (rand() % 100 < 2) {
-	//	auto shi = manager.CreateObject<Shield>(location);
-	//	shi->SetPlayer(player);
+	// 5%でShieldドロップ
+	if (rand() % 100 < 2) {
+		Shield* shi = manager->CreateObject<Shield>(location);
+		shi->SetPlayer(player);
 
-	//}
+	}
 }

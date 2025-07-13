@@ -22,6 +22,8 @@ void SEManager::LoadSE()
 	//ChangeVolumeSoundMem(255 * 100 / 100, se_handles[SE_NAME::Bakuhatu]);
 	//ChangeVolumeSoundMem(255 * 100 / 100, se_handles[SE_NAME::Kill]);
 	//ChangeVolumeSoundMem(255 * 100 / 100, se_handles[SE_NAME::Bakuhatu_End]);
+	se_handles[SE_NAME::Get] = rm->GetSounds("Resource/sound/se/effect/audiostock_890909.mp3");
+	se_handles[SE_NAME::Get2] = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
 
 }
 

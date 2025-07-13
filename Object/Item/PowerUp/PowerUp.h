@@ -3,6 +3,8 @@
 class PowerUp : public ItemBase
 {
 public:
+    PowerUp();
+    ~PowerUp();
     void Initialize() override;
     void Update(float delta) override;
     void Draw(const Vector2D& offset) const override;

@@ -4,6 +4,7 @@
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/SEManager.h"
 #include "../../Bullet/PlayerBullet.h"
+#include "../../Beam/PlayerBeam.h"
 
 Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
 {
@@ -347,23 +348,23 @@ void Player::Shot(float delta_second)
 	// 打つまでの時間を計測
 	shot_timer += delta_second;
 
-	// スペースを押したら単発で発射
-	if (input->GetKeyDown(KEY_INPUT_SPACE) ||
-		input->GetButtonDown(XINPUT_BUTTON_A))
-	{
-		am->PlaySE(SE_NAME::Shot);
-		am->ChangeSEVolume(SE_NAME::Shot, 60);
-		// 何も打ってなかったら打てるようにする
-		if (stop == false)
-		{
-			is_shot_anim = true;
-			is_shot = true;
-			shot_timer = 0.0f;
-		}
-		GenarateBullet();
-	}
+	//// スペースを押したら単発で発射
+	//if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+	//	input->GetButtonDown(XINPUT_BUTTON_A))
+	//{
+	//	am->PlaySE(SE_NAME::Shot);
+	//	am->ChangeSEVolume(SE_NAME::Shot, 60);
+	//	// 何も打ってなかったら打てるようにする
+	//	if (stop == false)
+	//	{
+	//		is_shot_anim = true;
+	//		is_shot = true;
+	//		shot_timer = 0.0f;
+	//	}
+	//	GenarateBullet();
+	//}
 	// スペースを長押ししたら一定間隔で発射
-	else if (input->GetKey(KEY_INPUT_SPACE) ||
+	if (input->GetKey(KEY_INPUT_SPACE) ||
 		input->GetButton(XINPUT_BUTTON_A))
 	{
 		// 何も打ってなかったら打てるようにする
@@ -399,6 +400,9 @@ void Player::Shot(float delta_second)
 			beam_timer = 0.0f;
 			invincible_time = 5.0f;
 			UseSpecial();  // ゲージ消費
+			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
+			beam->SetPlayer(this);
 		}
 	}
 
@@ -603,12 +607,23 @@ void Player::GenarateBullet()
 		}
 		else
 		{
+#if 1
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
 			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+#else
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 70, location.y + (D_OBJECT_SIZE * 2)));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 70, location.y + (D_OBJECT_SIZE * 2)));
+#endif
 		}
 	}
 }

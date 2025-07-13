@@ -19,6 +19,10 @@ void Stage1::Initialize()
 {
     // ステージIDの設定
 	stage_id = StageID::Stage1;
+
+    font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
+    font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
+
 }
 
 // 終了時処理
@@ -97,13 +101,13 @@ void Stage1::Draw()
         int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
         int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
 
-        SetFontSize(44);
-        DrawString(stage_name_x, 320,
-            "Neural Grid", GetColor(255, 255, 255));
-        SetFontSize(22);
-        DrawString(sub_text_x, 370,
-            "Eliminate all hostile units.", GetColor(120, 255, 255));
-        SetFontSize(16);
+        //SetFontSize(44);
+        DrawStringToHandle(stage_name_x, 320,
+            "Neural Grid", GetColor(255, 255, 255), font_warning);
+        //SetFontSize(22);
+        DrawStringToHandle(sub_text_x, 370,
+            "Eliminate all hostile units.", GetColor(120, 255, 255), font_orbitron);
+        //SetFontSize(16);
     }
 
     // クリア時の演出

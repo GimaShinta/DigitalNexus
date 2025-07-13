@@ -14,7 +14,9 @@ enum class SE_NAME
 	Hit,
 	EnemyShot,
 	Hamon,
-	EnemyBeam
+	EnemyBeam,
+	Get,
+	Get2
 	// •K—v‚É‰ž‚¶‚Ä’Ç‰Á
 };
 

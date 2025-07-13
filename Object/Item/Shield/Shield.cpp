@@ -2,6 +2,14 @@
 #include "../../../Utility/InputManager.h"
 #include "../../../Utility/ScoreData.h"
 
+Shield::Shield()
+{
+}
+
+Shield::~Shield()
+{
+}
+
 void Shield::Initialize()
 {
     velocity.y = 60.0f;
@@ -19,8 +27,6 @@ void Shield::Initialize()
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     images = rm->GetImages("Resource/Image/Object/Item/PowerUp/anime_item32.png", 12, 6, 2, 32, 32);
     image = images[0];
-    se = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
-    ChangeVolumeSoundMem(255 * 100 / 100, se);
 }
 
 void Shield::Update(float delta)
@@ -85,19 +91,15 @@ void Shield::Update(float delta)
 
 void Shield::Draw(const Vector2D& offset) const
 {
-    //DrawBox(location.x - box_size.x, location.y - box_size.y,
-    //    location.x + box_size.x, location.y + box_size.y, GetColor(0, 255, 0), TRUE);
-
     DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
-
 }
 
 void Shield::OnHitCollision(GameObjectBase* hit_object)
 {
     if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
     {
-        PlaySoundMem(se, DX_PLAYTYPE_BACK);
-        Singleton<ScoreData>::GetInstance()->AddScore(GetRand(100) + 50);
+        SEManager::GetInstance()->PlaySE(SE_NAME::Get2);
+        Singleton<ScoreData>::GetInstance()->AddScore(2500);
         this->SetDestroy();
     }
 }

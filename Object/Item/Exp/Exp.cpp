@@ -30,13 +30,8 @@ void Exp::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
-    se = rm->GetSounds("Resource/sound/se/effect/audiostock_890909.mp3");
-    ChangeVolumeSoundMem(255 * 80 / 100, se);
-
     images = rm->GetImages("Resource/Image/Effect/pipo-gate01c.png", 15, 5, 3, 480, 480);
     image = images[0];
-
-
 }
 
 // 更新処理
@@ -118,13 +113,6 @@ void Exp::Update(float delta)
 void Exp::Draw(const Vector2D& offset) const
 {
     DrawRotaGraph(location.x, location.y, 0.07f, 0.0f, image, TRUE);
-
-
-    //// 外側：水色（グロー感）
-    //DrawCircle(location.x, location.y, (int)box_size.x, GetColor(0, 255, 255), TRUE);
-
-    //// 内側：黄色
-    //DrawCircle(location.x, location.y, (int)box_size.x - 2.0f, GetColor(255, 255, 0), TRUE);
 }
 
 // 衝突処理
@@ -133,13 +121,14 @@ void Exp::OnHitCollision(GameObjectBase* hit_object)
     // プレイヤーと当たったら
     if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
     {
+        SEManager::GetInstance()->PlaySE(SE_NAME::Get);
+        SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Get, 80);
 
-        PlaySoundMem(se, DX_PLAYTYPE_BACK);
         if (player && !player->GetBeamOn())  // ビーム中でなければ加算
         {
             player->AddCharge(1.0f);  // 調整可能
         }
-        Singleton<ScoreData>::GetInstance()->AddScore(10);
+        Singleton<ScoreData>::GetInstance()->AddScore(100);
         this->SetDestroy(); // 吸収 → 削除
     }
 }

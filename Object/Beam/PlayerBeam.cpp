@@ -56,14 +56,7 @@ void PlayerBeam::Update(float delta_second)
 	if (player != nullptr)
 	{
 		location.x = player->GetLocation().x;
-		if (Beam_flip == false)
-		{
-			location.y = (player->GetLocation().y - (D_OBJECT_SIZE + 12.0f)) - box_size.y;
-		}
-		else
-		{
-			location.y = (player->GetLocation().y + D_OBJECT_SIZE) + box_size.y;
-		}
+		location.y = (player->GetLocation().y - (D_OBJECT_SIZE + 12.0f)) - box_size.y;
 	}
 
 	destroy_time += delta_second;
@@ -164,7 +157,7 @@ void PlayerBeam::OnHitCollision(GameObjectBase* hit_object)
 	}
 }
 
-void PlayerBeam::SetPlayer(Player* player)
+void PlayerBeam::SetPlayer(Player* p)
 {
-	player = player;
+	player = p;
 }

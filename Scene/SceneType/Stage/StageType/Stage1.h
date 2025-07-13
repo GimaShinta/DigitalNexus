@@ -12,7 +12,8 @@ private:
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	bool zako_spawned = false;         // Zakoがすでに出現したかどうか
 
-
+	int font_orbitron;
+	int font_warning;
 public:
 	// コンストラクタ・デストラクタ
 	Stage1(Player* player);     // プレイヤー情報を引数に取るステージ初期化

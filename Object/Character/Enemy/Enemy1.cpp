@@ -8,13 +8,11 @@
 
 Enemy1::Enemy1()
 {
-    //srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 Enemy1::Enemy1(const Vector2D& pos)
 {
     location = pos;
-    //srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 Enemy1::~Enemy1()
@@ -390,7 +388,7 @@ void Enemy1::Update(float delta_second)
         EffectManager* am = Singleton<EffectManager>::GetInstance();
         SEManager* sm = Singleton<SEManager>::GetInstance();
         sm->PlaySE(SE_NAME::Destroy);
-        //DropItems();
+        DropItems();
 
         int anim_id = am->PlayerAnimation(EffectName::eExprotion2, location, 0.03f, false);
         am->SetScale(anim_id, 0.5f);

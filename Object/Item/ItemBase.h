@@ -15,7 +15,6 @@ protected:
 	float acceleration = 100.0f;    // ‰Á‘¬“xi1•b‚ ‚½‚è‚Ì‘‰Á—Êj
 
 	std::vector<int> images;
-	int se;
 
 public:
 	// ‰Šú‰»ˆ—

@@ -17,6 +17,9 @@ Stage4::~Stage4()
 void Stage4::Initialize()
 {
     stage_id = StageID::Stage4;
+
+    font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
+    font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
 }
 
 void Stage4::Finalize()
@@ -122,36 +125,6 @@ void Stage4::Draw()
         DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "GAME OVER", GetColor(255, 255, 255), TRUE);
         SetFontSize(16);
     }
-
-
-    //// --- リザルト後：最終感謝表示演出 ---
-    //if (final_thank_started) {
-    //    final_thank_timer += delta_draw;
-
-    //    // フェードイン（2秒かけて）
-    //    if (!final_thank_fadein_done) {
-    //        final_fade_alpha = Min(255.0f, final_thank_timer * 255.0f / 2.0f);
-    //        if (final_fade_alpha >= 255.0f) {
-    //            final_fade_alpha = 255.0f;
-    //            final_thank_fadein_done = true;
-    //            final_thank_timer = 0.0f;
-    //        }
-    //    }
-
-    //    // フェードイン中 or 完了後待機中
-    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(final_fade_alpha));
-    //    DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(final_fade_alpha));
-    //    SetFontSize(36);
-    //    DrawString(D_WIN_MAX_X / 2 - 180, D_WIN_MAX_Y / 2 - 20, "Thank you for playing", GetColor(255, 255, 255));
-    //    SetFontSize(16);
-    //    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-    //    // 表示して数秒後にタイトルに戻る
-    //    if (final_thank_fadein_done && final_thank_timer >= 5.0f) {
-    //        is_finished = true;
-    //    }
-    //}
 }
 
 // 次のステージを取得
@@ -365,15 +338,17 @@ void Stage4::ResultDraw(float delta_second)
         {  30, -80, "RESULT", "" },
         {  70, -20, "BASE SCORE", "BASE SCORE : %.0f" },
         { 110,  20, "LIFE BONUS", "LIFE BONUS : %d" },
-        { 160,  60, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
+        { 160,  80, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
     };
 
-    SetFontSize(32);
+    // 表示位置（左右揃え用）
+    const int label_x = cx - 250;
+    const int value_x = cx + 250;
+
     for (size_t i = 0; i < lines.size(); ++i)
     {
         const auto& line = lines[i];
 
-        // 遅延をフレームから秒に変換
         int delay_frame = result_fadeout_started ? lines.back().delay_frame - line.delay_frame : line.delay_frame;
         float delay_sec = static_cast<float>(delay_frame) / 60.0f;
 
@@ -383,35 +358,51 @@ void Stage4::ResultDraw(float delta_second)
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
-        char buf[128];
         if (line.format.empty()) {
-            sprintf_s(buf, "%s", line.label.c_str());
+            // ラベルだけ描画（"RESULT" など）
+            int label_width = GetDrawStringWidth(line.label.c_str(), line.label.size());
+            DrawStringToHandle(cx - label_width / 2, y, line.label.c_str(), color, font_orbitron);
         }
-        else if (line.label == "BASE SCORE") {
-            sprintf_s(buf, line.format.c_str(), base_score);
-        }
-        else if (line.label == "LIFE BONUS") {
-            sprintf_s(buf, line.format.c_str(), life_bonus);
-        }
-        else if (line.label == "TOTAL SCORE") {
-            sprintf_s(buf, line.format.c_str(), total_score);
-        }
+        else {
+            // ラベルと値を分けて描画
+            char value_buf[64];
 
-        int width = GetDrawStringWidth(buf, strlen(buf));
-        DrawString(cx - width / 2, y, buf, color);
+            if (line.label == "BASE SCORE") {
+                sprintf_s(value_buf, "%.0f", base_score);
+            }
+            else if (line.label == "LIFE BONUS") {
+                sprintf_s(value_buf, "%d", life_bonus);
+            }
+            else if (line.label == "TOTAL SCORE") {
+                sprintf_s(value_buf, "%.0f", total_score);
+            }
 
-        if (line.label == "TOTAL SCORE" && alpha == 255 && !result_fadeout_started) {
-            result_displayed = true;
+            // ラベル描画（左寄せ）
+            DrawStringToHandle(label_x, y, line.label.c_str(), color, font_orbitron);
+
+            // 数値描画（右寄せ）
+            int value_width = GetDrawStringWidth(value_buf, strlen(value_buf));
+            DrawStringToHandle(value_x - value_width, y, value_buf, color, font_orbitron);
+
+            // TOTAL SCORE の横線と終了判定
+            if (line.label == "TOTAL SCORE") {
+                int line_y = y - 20;
+                DrawLine(cx - 600, line_y, cx + 600, line_y, GetColor(255, 255, 255));
+
+                if (alpha == 255 && !result_fadeout_started) {
+                    result_displayed = true;
+                }
+            }
         }
     }
-    SetFontSize(16);
 
+    //SetFontSize(16);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
     // 表示後のグリッチ待機
     if (result_displayed && !glitch_started && !glitch_done) {
         post_result_wait_timer += delta_second;
-        if (post_result_wait_timer >= 5.0f) {
+        if (post_result_wait_timer >= 8.0f) {
             glitch_started = true;
             glitch_timer = 0.0f;
         }
@@ -437,7 +428,7 @@ void Stage4::ResultDraw(float delta_second)
         if (result_fadeout_timer >= fade_duration + last_delay_sec) {
             result_ended = true;
             is_finished = true;
-            //final_thank_started = true; // ← ここを追加！
+            // シーン遷移処理など必要があればここに
         }
     }
 

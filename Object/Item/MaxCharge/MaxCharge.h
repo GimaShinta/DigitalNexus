@@ -4,6 +4,8 @@ class MaxCharge :
     public ItemBase
 {
 public:
+    MaxCharge();
+    ~MaxCharge();
     void Initialize() override;
     void Update(float delta) override;
     void Draw(const Vector2D& offset) const override;

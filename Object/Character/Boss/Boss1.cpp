@@ -14,7 +14,6 @@ constexpr float PI = 3.1415926f;
 
 Boss1::Boss1()
 {
-    srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 Boss1::~Boss1()

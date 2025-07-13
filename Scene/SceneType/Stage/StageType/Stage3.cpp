@@ -19,6 +19,9 @@ Stage3::~Stage3()
 void Stage3::Initialize()
 {
     stage_id = StageID::Stage3;
+
+    font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
+    font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
 }
 
 // 終了時処理
@@ -615,15 +618,17 @@ void Stage3::ResultDraw(float delta_second)
         {  30, -80, "RESULT", "" },
         {  70, -20, "BASE SCORE", "BASE SCORE : %.0f" },
         { 110,  20, "LIFE BONUS", "LIFE BONUS : %d" },
-        { 160,  60, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
+        { 160,  80, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
     };
 
-    SetFontSize(32);
+    // 表示位置（左右揃え用）
+    const int label_x = cx - 250;
+    const int value_x = cx + 250;
+
     for (size_t i = 0; i < lines.size(); ++i)
     {
         const auto& line = lines[i];
 
-        // 遅延をフレームから秒に変換
         int delay_frame = result_fadeout_started ? lines.back().delay_frame - line.delay_frame : line.delay_frame;
         float delay_sec = static_cast<float>(delay_frame) / 60.0f;
 
@@ -633,28 +638,45 @@ void Stage3::ResultDraw(float delta_second)
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
-        char buf[128];
         if (line.format.empty()) {
-            sprintf_s(buf, "%s", line.label.c_str());
+            // ラベルだけ描画（"RESULT" など）
+            int label_width = GetDrawStringWidth(line.label.c_str(), line.label.size());
+            DrawStringToHandle(cx - label_width / 2, y, line.label.c_str(), color, font_orbitron);
         }
-        else if (line.label == "BASE SCORE") {
-            sprintf_s(buf, line.format.c_str(), base_score);
-        }
-        else if (line.label == "LIFE BONUS") {
-            sprintf_s(buf, line.format.c_str(), life_bonus);
-        }
-        else if (line.label == "TOTAL SCORE") {
-            sprintf_s(buf, line.format.c_str(), total_score);
-        }
+        else {
+            // ラベルと値を分けて描画
+            char value_buf[64];
 
-        int width = GetDrawStringWidth(buf, strlen(buf));
-        DrawString(cx - width / 2, y, buf, color);
+            if (line.label == "BASE SCORE") {
+                sprintf_s(value_buf, "%.0f", base_score);
+            }
+            else if (line.label == "LIFE BONUS") {
+                sprintf_s(value_buf, "%d", life_bonus);
+            }
+            else if (line.label == "TOTAL SCORE") {
+                sprintf_s(value_buf, "%.0f", total_score);
+            }
 
-        if (line.label == "TOTAL SCORE" && alpha == 255 && !result_fadeout_started) {
-            result_displayed = true;
+            // ラベル描画（左寄せ）
+            DrawStringToHandle(label_x, y, line.label.c_str(), color, font_orbitron);
+
+            // 数値描画（右寄せ）
+            int value_width = GetDrawStringWidth(value_buf, strlen(value_buf));
+            DrawStringToHandle(value_x - value_width, y, value_buf, color, font_orbitron);
+
+            // TOTAL SCORE の横線と終了判定
+            if (line.label == "TOTAL SCORE") {
+                int line_y = y - 20;
+                DrawLine(cx - 600, line_y, cx + 600, line_y, GetColor(255, 255, 255));
+
+                if (alpha == 255 && !result_fadeout_started) {
+                    result_displayed = true;
+                }
+            }
         }
     }
-    SetFontSize(16);
+
+    //SetFontSize(16);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
     // 表示後のグリッチ待機

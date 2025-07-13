@@ -40,6 +40,9 @@ protected:
 
     mutable std::vector<StarParticle> star_particles;
 
+    int font_orbitron;
+    int font_warning;
+
 public:
     StageBase(Player* player) : player(player) {}
     virtual ~StageBase() {}

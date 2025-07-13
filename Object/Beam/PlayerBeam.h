@@ -55,6 +55,6 @@ public:
 	/// </summary>
 	/// <param name="hit_object">“–‚½‚Á‚½‘ŠŽè</param>
 	virtual void OnHitCollision(GameObjectBase* hit_object) override;
-	void SetPlayer(class Player* player);
+	void SetPlayer(class Player* p);
 };
 
