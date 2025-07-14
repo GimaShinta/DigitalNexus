@@ -37,5 +37,6 @@ private:
 	void DrawScrollBackground() const override; // ”wŒi‚ÌƒXƒNƒ[ƒ‹•`‰æ
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
+	void StageLabel() const override;
 };
 

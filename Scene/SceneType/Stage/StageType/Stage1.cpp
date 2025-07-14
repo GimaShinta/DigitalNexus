@@ -22,6 +22,19 @@ void Stage1::Initialize()
 
     font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
     font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
+
+    if (player)
+    {
+        entry_start_pos = Vector2D(D_WIN_MAX_X / 2, 360);             // 中央あたりから
+        entry_end_pos = Vector2D(D_WIN_MAX_X / 2, D_WIN_MAX_Y - 120); // 通常の定位置
+
+        player_entry_timer = 0.0f; // タイマーリセット
+
+        player->SetMobility(false); // 操作禁止
+        player->SetLocation(entry_start_pos); // 最初の位置を設定
+        player->ForceNeutralAnim(true); // ← アニメも固定
+        player->SetShotStop(false);
+    }
 }
 
 // 終了時処理
@@ -57,6 +70,12 @@ void Stage1::Update(float delta_second)
 
     // スクロールの更新処理
 	UpdateBackgroundScroll(delta_second);
+
+    // プレイヤーの登場シーン
+    AppearancePlayer(delta_second);
+
+    // 登場時のステージラベルの更新処理
+    UpdateRabel(delta_second);
 }
 
 // 描画処理
@@ -74,59 +93,10 @@ void Stage1::Draw()
     em->Draw();
 
     // -------- ステージ演出：Neural Grid --------
-    if (stage_timer < 5.0f)
-    {
-        int y_top = (360 - 100);  // 固定値でもOK
-        int y_bottom = (360 + 100);
+    StageLabel();
 
-        // パルスライティング（明滅ライン）
-        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
-        int pulse_alpha = static_cast<int>(pulse * 180);
-
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
-        DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
-        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
-        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-        // グリッチ風のランダムスキャンライン（ちらつき演出）
-        for (int i = 0; i < 8; ++i)
-        {
-            int glitch_y = y_top + rand() % (2 * 100);
-            int glitch_len = 50 + rand() % 100;
-            int glitch_x = rand() % (1280 - glitch_len);
-
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
-            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-        }
-
-        int center_x = D_WIN_MAX_X / 2;
-
-        float slide_in = 1.0f;  // 一定表示でアニメしないなら固定値でも
-        float t = slide_in;
-
-        int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-        int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-
-        //SetFontSize(44);
-        DrawStringToHandle(stage_name_x, 320,
-            "Neural Grid", GetColor(255, 255, 255), font_warning);
-        //SetFontSize(22);
-        DrawStringToHandle(sub_text_x, 370,
-            "Eliminate all hostile units.", GetColor(120, 255, 255), font_orbitron);
-        //SetFontSize(16);
-    }
-
-    // クリア時の演出
-    if (is_clear)
-    {
-        //DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-        //SetFontSize(32);
-        //DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "NEXT STAGE", GetColor(255, 255, 255), TRUE);
-        //SetFontSize(16);
-    }
     // ゲームオーバー時の演出
-    else if (is_over)
+    if (is_over)
     {
         DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
         SetFontSize(32);
@@ -403,5 +373,90 @@ void Stage1::UpdateGameStatus(float delta_second)
         {
             is_finished = true;
         }
+    }
+}
+
+void Stage1::StageLabel() const
+{
+    if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
+    {
+        int y_top = static_cast<int>(360 - warning_label_band_height);
+        int y_bottom = static_cast<int>(360 + warning_label_band_height);
+
+        // パルスライティング（明滅ライン）
+        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
+        int pulse_alpha = static_cast<int>(pulse * 180);
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
+        DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
+        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // グリッチ風のランダムスキャンライン（ちらつき演出）
+        for (int i = 0; i < 8; ++i)
+        {
+            int glitch_y = y_top + rand() % (2 * static_cast<int>(warning_label_band_height));
+            int glitch_len = 50 + rand() % 100;
+            int glitch_x = rand() % (1280 - glitch_len);
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
+            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+        if (
+            warning_label_state == WarningLabelState::Displaying ||
+            warning_label_state == WarningLabelState::SlideOut
+            )
+        {
+            int center_x = D_WIN_MAX_X / 2;
+
+            // スライドイン
+            float slide_in_t = warning_label_timer / 0.5f;
+            if (slide_in_t > 1.0f) slide_in_t = 1.0f;
+            float slide_in = 1.0f - powf(1.0f - slide_in_t, 3.0f);
+
+            // スライドアウト（右→左）
+            float slide_out_t = slide_out_timer / 0.5f;
+            if (slide_out_t > 1.0f) slide_out_t = 1.0f;
+            float slide_out = 1.0f + slide_out_t;  // ? 左へ流す補正
+
+            float t = (warning_label_state == WarningLabelState::Displaying) ? slide_in : slide_out;
+
+            int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+            int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+
+            DrawStringToHandle(stage_name_x, 320,
+                "Neural Grid", GetColor(255, 255, 255), font_warning);
+
+            DrawStringToHandle(sub_text_x, 370,
+                "Eliminate all hostile units.", GetColor(120, 255, 255), font_orbitron);
+        }
+    }
+}
+
+// プレイヤーの登場処理
+void Stage1::AppearancePlayer(float delta_second)
+{
+    // プレイヤーの登場の動き
+    if (is_player_entering)
+    {
+        player->SetShotStop(true);
+        const float duration = 2.5f; // ゆっくり2.5秒かけて降下
+        player_entry_timer += delta_second;
+
+        float t = player_entry_timer / duration;
+        if (t >= 1.0f)
+        {
+            t = 1.0f;
+            is_player_entering = false;
+            player->SetMobility(true);
+            player->ForceNeutralAnim(false); // ← アニメーション許可
+            player->SetShotStop(false);
+        }
+
+        // 緩やかに下降するイージング（easeOutQuad）
+        float eased = 1.0f - (1.0f - t) * (1.0f - t);
+        Vector2D new_pos = entry_start_pos + (entry_end_pos - entry_start_pos) * eased;
+        player->SetLocation(new_pos);
     }
 }

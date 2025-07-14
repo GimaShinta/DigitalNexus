@@ -59,6 +59,9 @@ void Stage4::Update(float delta_second)
 
     // スクロールの更新処理
     UpdateBackgroundScroll(delta_second);
+
+    // 登場時のステージラベルの更新処理
+    UpdateRabel(delta_second);
 }
 
 void Stage4::Draw()
@@ -115,50 +118,8 @@ void Stage4::Draw()
         em->Draw();       // 後にアニメーション
     }
 
-
     // -------- ステージ演出：Neural Grid --------
-    if (stage_timer < 5.0f)
-    {
-        int y_top = (360 - 100);  // 固定値でもOK
-        int y_bottom = (360 + 100);
-
-        // パルスライティング（明滅ライン）
-        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
-        int pulse_alpha = static_cast<int>(pulse * 180);
-
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
-        DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
-        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
-        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-        // グリッチ風のランダムスキャンライン（ちらつき演出）
-        for (int i = 0; i < 8; ++i)
-        {
-            int glitch_y = y_top + rand() % (2 * 100);
-            int glitch_len = 50 + rand() % 100;
-            int glitch_x = rand() % (1280 - glitch_len);
-
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
-            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-        }
-
-        int center_x = D_WIN_MAX_X / 2;
-
-        float slide_in = 1.0f;  // 一定表示でアニメしないなら固定値でも
-        float t = slide_in;
-
-        int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-        int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-
-        SetFontSize(44);
-        DrawString(stage_name_x, 320,
-            "Neural Grid", GetColor(255, 255, 255));
-        SetFontSize(22);
-        DrawString(sub_text_x, 370,
-            "Eliminate all hostile units.", GetColor(120, 255, 255));
-        SetFontSize(16);
-    }
+    StageLabel();
 
     // クリア時の演出
     if (is_clear)
@@ -192,7 +153,7 @@ StageBase* Stage4::GetNextStage(Player* player)
 void Stage4::DrawScrollBackground() const
 {
     static float time = 0.0f;
-    time += 0.05f;
+    time += scroll_timer;
 
     // 背景色：やや赤みがかったグレー
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(30, 10, 10), TRUE);
@@ -424,7 +385,6 @@ void Stage4::ResultDraw(float delta_second)
         }
     }
 
-    //SetFontSize(16);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
     // 表示後のグリッチ待機
@@ -462,3 +422,61 @@ void Stage4::ResultDraw(float delta_second)
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
+
+void Stage4::StageLabel() const
+{
+    if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
+    {
+        int y_top = static_cast<int>(360 - warning_label_band_height);
+        int y_bottom = static_cast<int>(360 + warning_label_band_height);
+
+        // パルスライティング（赤系に変更）
+        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f;
+        int pulse_alpha = static_cast<int>(pulse * 180);
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
+        DrawLine(0, y_top, 1280, y_top, GetColor(255, 80, 80));      // ← 赤めに変更
+        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(255, 80, 80)); // ← 同上
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // グリッチ風スキャンライン（赤系に変更）
+        for (int i = 0; i < 8; ++i)
+        {
+            int glitch_y = y_top + rand() % (2 * static_cast<int>(warning_label_band_height));
+            int glitch_len = 50 + rand() % 100;
+            int glitch_x = rand() % (1280 - glitch_len);
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
+            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(255, 100, 100), TRUE); // ← 柔らか赤
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+
+        if (
+            warning_label_state == WarningLabelState::Displaying ||
+            warning_label_state == WarningLabelState::SlideOut
+            )
+        {
+            int center_x = D_WIN_MAX_X / 2;
+
+            float slide_in_t = warning_label_timer / 0.5f;
+            if (slide_in_t > 1.0f) slide_in_t = 1.0f;
+            float slide_in = 1.0f - powf(1.0f - slide_in_t, 3.0f);
+
+            float slide_out_t = slide_out_timer / 0.5f;
+            if (slide_out_t > 1.0f) slide_out_t = 1.0f;
+            float slide_out = 1.0f + slide_out_t;
+
+            float t = (warning_label_state == WarningLabelState::Displaying) ? slide_in : slide_out;
+
+            int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+            int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+
+            DrawStringToHandle(stage_name_x, 320,
+                "The Core Nexus", GetColor(255, 0, 0), font_warning);  // 赤強調のままでOK
+
+            DrawStringToHandle(sub_text_x, 370,
+                "Eliminate all hostile units.", GetColor(255, 160, 160), font_orbitron); // ← 赤寄りに変更
+        }
+    }
+}
+

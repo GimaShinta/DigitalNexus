@@ -3,6 +3,7 @@
 #include "DxLib.h"
 #include <algorithm>
 
+// エフェクト画像の読み込み
 void EffectManager::LoadAllEffects()
 {
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
@@ -12,20 +13,19 @@ void EffectManager::LoadAllEffects()
 
 	std::vector<int> charge = rm->GetImages("Resource/Image/Effect/E_Charged.png", 80, 10, 8, 357, 295);
 	std::vector<int> charge_2;
-
+	// 25枚分のエフェクト画像を取得
 	for (int i = 0; i < 25; i++)
 	{
 		charge_2.push_back(charge[i]);
 	}
-
 	effect_images[EffectName::eChenge] = charge_2;
 }
 
+// エフェクトの再生
 EffectID EffectManager::PlayerAnimation(EffectName effect_name, const Vector2D& position, float frame_time_sec, bool loop)
 {
 	auto it = effect_images.find(effect_name);
 
-	// ★防御コード：未登録 or 空 vector を検出
 	if (it == effect_images.end() || it->second.empty())
 	{
 		// デバッグ時の通知
@@ -44,6 +44,7 @@ EffectID EffectManager::PlayerAnimation(EffectName effect_name, const Vector2D& 
 	return id;
 }
 
+// エフェクトの更新処理
 void EffectManager::Update(const float& delta_second)
 {
 	for (auto it = animations.begin(); it != animations.end(); )
@@ -90,6 +91,7 @@ void EffectManager::Update(const float& delta_second)
 	}
 }
 
+// エフェクトの描画処理
 void EffectManager::Draw()
 {
 	std::vector<Effect*> draw_list;
@@ -125,11 +127,13 @@ void EffectManager::Draw()
 	}
 }
 
+// 終了時にエフェクトの削除
 void EffectManager::Finalize()
 {
 	animations.clear();
 }
 
+// 指定したエフェクトが再生されているかを見る
 bool EffectManager::GetAnimationFinished(EffectID id) const
 {
 	auto it = animations.find(id);
@@ -140,11 +144,13 @@ bool EffectManager::GetAnimationFinished(EffectID id) const
 	return false;
 }
 
+// 指定したエフェクトの即削除
 void EffectManager::RemoveAnimation(EffectID id)
 {
 	animations.erase(id);
 }
 
+// 指定したエフェクトの透明度を設定する
 void EffectManager::SetAlpha(EffectID id, int alpha)
 {
 	if (animations.count(id))
@@ -156,6 +162,7 @@ void EffectManager::SetAlpha(EffectID id, int alpha)
 	}
 }
 
+// 指定したエフェクトの大きさを設定する
 void EffectManager::SetScale(EffectID id, float scale)
 {
 	if (animations.count(id))
@@ -164,6 +171,7 @@ void EffectManager::SetScale(EffectID id, float scale)
 	}
 }
 
+// 指定したエフェクトを停止させる
 void EffectManager::PauseAnimation(EffectID id)
 {
 	if (animations.count(id))
@@ -172,6 +180,7 @@ void EffectManager::PauseAnimation(EffectID id)
 	}
 }
 
+// 指定したエフェクトを再再生させる
 void EffectManager::ResumeAnimation(EffectID id)
 {
 	if (animations.count(id))
@@ -180,14 +189,16 @@ void EffectManager::ResumeAnimation(EffectID id)
 	}
 }
 
+// 指定したエフェクトのレイヤーを変更する
 void EffectManager::SetZLayer(EffectID id, int z)
 {
 	if (animations.count(id))
 	{
-		animations[id]->z_layer = z;  // ← 修正済み：代入漏れを修正
+		animations[id]->z_layer = z; 
 	}
 }
 
+// 指定したエフェクトの再生位置を変更する
 void EffectManager::SetPosition(EffectID id, const Vector2D& posi)
 {
 	if (animations.count(id))

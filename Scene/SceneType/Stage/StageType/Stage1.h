@@ -14,6 +14,9 @@ private:
 
 	int font_orbitron;
 	int font_warning;
+
+
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage1(Player* player);     // プレイヤー情報を引数に取るステージ初期化
@@ -30,5 +33,7 @@ private:
 	void DrawScrollBackground() const override; // 背景のスクロール描画
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
+	void StageLabel() const override;
+	void AppearancePlayer(float delta_second);
 };
 

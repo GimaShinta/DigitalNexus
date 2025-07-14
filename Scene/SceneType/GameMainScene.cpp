@@ -24,7 +24,7 @@ void GameMainScene::Initialize()
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     player = objm->CreateObject<Player>(Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) + 220.0f));
 
-    current_stage = new Stage4(player);
+    current_stage = new Stage1(player);
 
     current_stage->Initialize();
 
@@ -709,13 +709,13 @@ void GameMainScene::DrawUI()
 
         if (current_stage)
         {
-            float scanline_speed = 0.0f;  // ó·ÅF1ïbÇ≈60pxâ∫Ç÷à⁄ìÆ
+            float scanline_speed = 0.0f;
             int color = 0;
 
             if (current_stage->GetStageID() == StageID::Stage4)
             {
-                scanline_speed = 600.0f;  // ó·ÅF1ïbÇ≈60pxâ∫Ç÷à⁄ìÆ
-                color = GetColor(255, 150, 0);
+                scanline_speed = 600.0f;  // ó·ÅF1ïbÇ≈600pxâ∫Ç÷à⁄ìÆ
+                color = GetColor(255, 0, 0);
             }
             else
             {
@@ -723,7 +723,7 @@ void GameMainScene::DrawUI()
                 color = GetColor(0, 150, 255);
             }
             int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
-            DrawLine(left_x1, scan_y, left_x2, scan_y, GetColor(255, 150, 0));
+            DrawLine(left_x1, scan_y, left_x2, scan_y, color);
         }
     }
 
@@ -745,12 +745,12 @@ void GameMainScene::DrawUI()
 
         if (current_stage)
         {
-            float scanline_speed = 0.0f;  // ó·ÅF1ïbÇ≈60pxâ∫Ç÷à⁄ìÆ
+            float scanline_speed = 0.0f; 
             int color = 0;
 
             if (current_stage->GetStageID() == StageID::Stage4)
             {
-                scanline_speed = 600.0f;  // ó·ÅF1ïbÇ≈60pxâ∫Ç÷à⁄ìÆ
+                scanline_speed = 600.0f;  // ó·ÅF1ïbÇ≈600pxâ∫Ç÷à⁄ìÆ
                 color = GetColor(255, 0, 0);
             }
             else
@@ -759,7 +759,7 @@ void GameMainScene::DrawUI()
                 color = GetColor(0, 150, 255);
             }
             int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
-            DrawLine(right_x1, scan_y, right_x2, scan_y, GetColor(255, 150, 0));
+            DrawLine(right_x1, scan_y, right_x2, scan_y, color);
         }
     }
 

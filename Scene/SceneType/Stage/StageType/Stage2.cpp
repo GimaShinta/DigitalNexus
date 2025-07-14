@@ -18,11 +18,22 @@ void Stage2::Initialize()
 {
     // ステージIDの設定
     stage_id = StageID::Stage2;
+
+    font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
+    font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
 }
 
 // 終了時処理
 void Stage2::Finalize()
 {
+    if (font_orbitron != -1) {
+        DeleteFontToHandle(font_orbitron);
+        font_orbitron = -1;
+    }
+    if (font_warning != -1) {
+        DeleteFontToHandle(font_warning);
+        font_warning = -1;
+    }
 }
 
 // 更新処理
@@ -46,6 +57,9 @@ void Stage2::Update(float delta_second)
 
     // スクロールの更新処理
     UpdateBackgroundScroll(delta_second);
+
+    // 登場時のステージラベルの更新処理
+    UpdateRabel(delta_second);
 }
 
 // 描画処理
@@ -62,49 +76,8 @@ void Stage2::Draw()
     EffectManager* em = Singleton<EffectManager>::GetInstance();
     em->Draw();
 
-    //// -------- ステージ演出：Neural Grid --------
-    //if (stage_timer < 5.0f)
-    //{
-    //    int y_top = (360 - 100);  // 固定値でもOK
-    //    int y_bottom = (360 + 100);
-
-    //    // パルスライティング（明滅ライン）
-    //    float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
-    //    int pulse_alpha = static_cast<int>(pulse * 180);
-
-    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
-    //    DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
-    //    DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
-    //    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-    //    // グリッチ風のランダムスキャンライン（ちらつき演出）
-    //    for (int i = 0; i < 8; ++i)
-    //    {
-    //        int glitch_y = y_top + rand() % (2 * 100);
-    //        int glitch_len = 50 + rand() % 100;
-    //        int glitch_x = rand() % (1280 - glitch_len);
-
-    //        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
-    //        DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
-    //        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-    //    }
-
-    //    int center_x = D_WIN_MAX_X / 2;
-
-    //    float slide_in = 1.0f;  // 一定表示でアニメしないなら固定値でも
-    //    float t = slide_in;
-
-    //    int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-    //    int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-
-    //    SetFontSize(44);
-    //    DrawString(stage_name_x, 320,
-    //        "Neural Grid", GetColor(255, 255, 255));
-    //    SetFontSize(22);
-    //    DrawString(sub_text_x, 370,
-    //        "Eliminate all hostile units.", GetColor(120, 255, 255));
-    //    SetFontSize(16);
-    //}
+    // -------- ステージ演出：Neural Grid --------
+    StageLabel();
 
     // 遷移された瞬間のノイズの描画
     if (entry_effect_playing)
@@ -412,6 +385,64 @@ void Stage2::UpdateGameStatus(float delta_second)
         if (scene_timer >= 7.0f)
         {
             is_finished = true;
+        }
+    }
+}
+
+void Stage2::StageLabel() const
+{
+    if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
+    {
+        int y_top = static_cast<int>(360 - warning_label_band_height);
+        int y_bottom = static_cast<int>(360 + warning_label_band_height);
+
+        // パルスライティング（明滅ライン）
+        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
+        int pulse_alpha = static_cast<int>(pulse * 180);
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
+        DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
+        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // グリッチ風のランダムスキャンライン（ちらつき演出）
+        for (int i = 0; i < 8; ++i)
+        {
+            int glitch_y = y_top + rand() % (2 * static_cast<int>(warning_label_band_height));
+            int glitch_len = 50 + rand() % 100;
+            int glitch_x = rand() % (1280 - glitch_len);
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
+            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+        if (
+            warning_label_state == WarningLabelState::Displaying ||
+            warning_label_state == WarningLabelState::SlideOut
+            )
+        {
+            int center_x = D_WIN_MAX_X / 2;
+
+            // スライドイン
+            float slide_in_t = warning_label_timer / 0.5f;
+            if (slide_in_t > 1.0f) slide_in_t = 1.0f;
+            float slide_in = 1.0f - powf(1.0f - slide_in_t, 3.0f);
+
+            // スライドアウト（右→左）
+            float slide_out_t = slide_out_timer / 0.5f;
+            if (slide_out_t > 1.0f) slide_out_t = 1.0f;
+            float slide_out = 1.0f + slide_out_t;  // ? 左へ流す補正
+
+            float t = (warning_label_state == WarningLabelState::Displaying) ? slide_in : slide_out;
+
+            int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+            int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+
+            DrawStringToHandle(stage_name_x, 320,
+                "Memory Forge", GetColor(255, 255, 255), font_warning);
+
+            DrawStringToHandle(sub_text_x, 370,
+                "Eliminate all hostile units.", GetColor(120, 255, 255), font_orbitron);
         }
     }
 }

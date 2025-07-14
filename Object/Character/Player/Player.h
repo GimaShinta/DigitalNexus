@@ -6,7 +6,7 @@ const int BULLET_MAX = 100; // 自機が発射する弾の最大数
 const int PLAYER_SHIELD_MAX = 8; // 自機のシールドの最大値
 const int WEAPON_LV_MAX = 10; // 武器レベルの最大値
 const int PLAYER_SPEED_MAX = 450; // 自機の速さの最大値
-const float SHOT_INTERVAL = 0.1f; // 0.25秒ごとに撃つ
+const float SHOT_INTERVAL = 0.07f; // 0.25秒ごとに撃つ
 const float BEAM_TIME = 5.0f; // 0.25秒ごとに撃つ
 const float beam_duration = 5.0f; // 5秒間
 

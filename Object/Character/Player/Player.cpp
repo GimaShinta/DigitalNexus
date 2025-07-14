@@ -137,7 +137,6 @@ void Player::Update(float delta_second)
 		collision.hit_object_type = { eObjectType::eEnemy, eObjectType::eExp, eObjectType::ePowerUp };
 	}
 
-
 	// 親クラスの更新処理を呼び出す
 	__super::Update(delta_second);
 }

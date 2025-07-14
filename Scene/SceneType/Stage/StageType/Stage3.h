@@ -68,6 +68,7 @@ private:
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
 	void ResultDraw(float delta_second);
+	void StageLabel() const override;
 
 	template <typename T>
 	T my_max(const T& a, const T& b)

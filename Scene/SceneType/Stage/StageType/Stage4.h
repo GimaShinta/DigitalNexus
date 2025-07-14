@@ -35,6 +35,8 @@ private:
 	float final_thank_timer = 0.0f;
 	float final_fade_alpha = 0.0f;
 
+	float scroll_timer = 0.0f;
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage4(Player* player);     // プレイヤー情報を引数に取るステージ初期化
@@ -52,6 +54,7 @@ private:
 	void EnemyAppearance(float delta_second) override;
 	void UpdateGameStatus(float delta_second) override;
 	void ResultDraw(float delta_second);
+	void StageLabel() const override;
 
 	float Min(float a, float b)
 	{

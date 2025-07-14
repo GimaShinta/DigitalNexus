@@ -43,6 +43,35 @@ protected:
     int font_orbitron;
     int font_warning;
 
+
+    // 警告ラベル演出用
+    enum class WarningLabelState {
+        None,
+        Expanding,
+        Displaying,
+        SlideOut,
+        Shrinking
+    };
+
+    WarningLabelState warning_label_state = WarningLabelState::None;
+    float warning_label_timer = 0.0f;
+    float warning_label_band_height = 0.0f;
+
+    const float warning_label_max_height = 60.0f;
+    const float warning_label_expand_speed = 200.0f;
+    const float warning_label_display_duration = 2.5f;
+
+    bool warning_label_shown = false;
+    float slide_out_timer = 0.0f;
+
+    Vector2D entry_start_pos = 0.0f;             // 中央あたりから
+    Vector2D entry_end_pos = 0.0f; // 通常の定位置
+    float player_entry_timer = 0.0f; // タイマーリセット
+    bool is_player_entering = true;
+
+
+
+
 public:
     StageBase(Player* player) : player(player) {}
     virtual ~StageBase() {}
@@ -63,6 +92,61 @@ protected:
     virtual void EnemyAppearance(float delta_second) = 0;       // 敵の出現処理
     // クリア判定
     virtual void UpdateGameStatus(float delta_second) = 0;
+    virtual void StageLabel() const = 0;
+    virtual void UpdateRabel(float delta_second)
+    {
+        // ミッションラベル演出（開始3秒間）
+        // ステージ開始演出（バンドと文字）
+        if (!warning_label_shown || warning_label_state != WarningLabelState::None)
+        {
+            switch (warning_label_state)
+            {
+            case WarningLabelState::None:
+                warning_label_state = WarningLabelState::Expanding;
+                warning_label_timer = 0.0f;
+                warning_label_band_height = 0.0f;
+                slide_out_timer = 0.0f;
+                break;
+
+            case WarningLabelState::Expanding:
+                warning_label_band_height += warning_label_expand_speed * delta_second;
+                if (warning_label_band_height >= warning_label_max_height)
+                {
+                    warning_label_band_height = warning_label_max_height;
+                    warning_label_state = WarningLabelState::Displaying;
+                    warning_label_timer = 0.0f;
+                }
+                break;
+
+            case WarningLabelState::Displaying:
+                warning_label_timer += delta_second;
+                if (warning_label_timer >= warning_label_display_duration)
+                {
+                    warning_label_state = WarningLabelState::SlideOut;
+                    slide_out_timer = 0.0f;
+                }
+                break;
+
+            case WarningLabelState::SlideOut:
+                slide_out_timer += delta_second;
+                if (slide_out_timer >= 0.5f) // スライドアウト完了
+                {
+                    warning_label_state = WarningLabelState::Shrinking;
+                }
+                break;
+
+            case WarningLabelState::Shrinking:
+                warning_label_band_height -= warning_label_expand_speed * delta_second;
+                if (warning_label_band_height <= 0.0f)
+                {
+                    warning_label_band_height = 0.0f;
+                    warning_label_state = WarningLabelState::None;
+                    warning_label_shown = true;
+                }
+                break;
+            }
+        }
+    }
 
 protected:
     float bg_scroll_speed_layer1 = 100.0f;  // 背面のスクロール速度
