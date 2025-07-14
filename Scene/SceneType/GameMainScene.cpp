@@ -532,7 +532,7 @@ void GameMainScene::Draw()
                 if (alpha > 255) alpha = 255;
                 SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
-                const char* msg = "Thank you for playing";
+                const char* msg = "GAME CLEAR";
                 int text_w = GetDrawStringWidthToHandle(msg, strlen(msg), font_digital);
                 int x = (D_WIN_MAX_X - text_w) / 2;
                 int y = D_WIN_MAX_Y / 2;

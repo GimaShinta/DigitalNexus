@@ -104,15 +104,18 @@ eSceneType TitleScene::Update(float delta_second)
         }
     }
 
-    if (movedUp)
+    if (!exit_scene)
     {
-        PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-        m_selectedIndex = (m_selectedIndex + 3) % 4;
-    }
-    if (movedDown)
-    {
-        PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-        m_selectedIndex = (m_selectedIndex + 1) % 4;
+        if (movedUp)
+        {
+            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+            m_selectedIndex = (m_selectedIndex + 3) % 4;
+        }
+        if (movedDown)
+        {
+            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+            m_selectedIndex = (m_selectedIndex + 1) % 4;
+        }
     }
 
 
@@ -133,6 +136,25 @@ eSceneType TitleScene::Update(float delta_second)
             return eSceneType::eCredit;
         }
         else if (m_selectedIndex == 3) {
+            exit_scene = true;
+        }
+    }
+
+    if (exit_scene == true)
+    {
+        exit_scene_timer += delta_second;
+        exit_trans_timer += delta_second;
+        if (exit_trans_timer >= 0.01f)
+        {
+            exit_trans_timer = 0.0f;
+            if (exit_trans < 255)
+                exit_trans++;
+            else
+                text_alpha++;
+        }
+
+        if (exit_scene_timer >= 8.0f)
+        {
             return eSceneType::eExit;
         }
     }
@@ -275,6 +297,23 @@ void TitleScene::Draw()
             const char* msg = "LOADING";
             int msgWidth = GetDrawStringWidthToHandle(msg, strlen(msg), m_menuFontHandle);
             DrawStringToHandle(cx - msgWidth / 2, cy - 30, msg, GetColor(200, 255, 255), m_menuFontHandle);
+        }
+    }
+
+    if (exit_scene)
+    {
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, exit_trans);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // 2. 暗転完了後に文字をフェードイン
+        if (exit_trans >= 255)
+        {
+            SetFontSize(32);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, text_alpha);
+            DrawString(D_WIN_MAX_X / 2 - 200, D_WIN_MAX_Y / 2, "Thank You For Playing", GetColor(255, 255, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+            SetFontSize(16);
         }
     }
 }

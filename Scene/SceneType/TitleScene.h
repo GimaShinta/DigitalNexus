@@ -46,6 +46,12 @@ private:
 	};
 	std::vector<Particle> m_particles;
 
+	float exit_scene_timer = 0.0f;
+	bool exit_scene = false;
+	float exit_trans_timer = 0.0f;
+	int exit_trans = 0;
+	int text_alpha = 0;     // 0?255 ‚Å•¶Žš‚Ì–¾‚é‚³
+	bool on_text = false;
 public:
 	TitleScene();
 	virtual ~TitleScene();
