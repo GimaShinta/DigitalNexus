@@ -550,6 +550,7 @@ void Stage3::UpdateGameStatus(float delta_second)
         is_over = true;
     }
 
+    // ステージ終了時の動き
     // クリアしたらリザルトを描画
     if (is_clear == true && result_started == false)
     {
@@ -560,9 +561,7 @@ void Stage3::UpdateGameStatus(float delta_second)
             result_timer = 0.0f; // スコア演出タイマーリセット
         }
     }
-
-    // ステージ終了時の動き
-    if (is_over == true)
+    else if (is_over == true)
     {
         // 少し待機したら終了
         scene_timer += delta_second;

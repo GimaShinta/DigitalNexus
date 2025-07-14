@@ -691,6 +691,11 @@ bool Boss4::GetIsCrashing() const
 	return is_crashing;
 }
 
+bool Boss4::GetGenerate() const
+{
+	return generate;
+}
+
 // ƒ{ƒX‚Q‚ÌUŒ‚
 void Boss4::Attack(float delta_second)
 {

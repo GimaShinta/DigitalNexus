@@ -179,11 +179,6 @@ public:
 	//	return (value < min) ? min : (value > max) ? max : value;
 	//}
 
-	class Player* player = nullptr;
-
-public:
-	void SetPlayer(Player* p) { player = p; }
-
 private:
 	void Attack(float delta_second);
 

@@ -68,11 +68,53 @@ void Stage4::Draw()
 
     // オブジェクトの描画処理
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-    objm->Draw();
-
     // エフェクトの描画処理
     EffectManager* em = Singleton<EffectManager>::GetInstance();
-    em->Draw();
+
+
+    if (draw_animation_first)  // ← このフラグで順序を切り替える
+    {
+        DrawScrollBackground(); // 背景 & 背面グリッド（奥）
+
+        // グリッドの裏に描画するタイミング：未生成 or 墜落中
+        if (boss != nullptr && (!boss->GetGenerate()))
+        {
+            objm->DrawBoss();
+        }
+
+        em->Draw();       // 先にアニメーション
+
+        // 通常戦闘中：生成済み & 墜落していない → グリッドの前に描画
+        if (boss != nullptr && boss->GetGenerate())
+        {
+            objm->DrawBoss();
+        }
+
+        // オブジェクト描画の前に必ずブレンドモードを戻す
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        objm->DrawWithoutBoss();      // プレイヤー・ザコなど
+    }
+    else
+    {
+        // グリッドの裏に描画するタイミング：未生成 or 墜落中
+        if (boss != nullptr && (!boss->GetGenerate()))
+        {
+            objm->DrawBoss();
+        }
+
+        DrawScrollBackground(); // 背景 & 背面グリッド（奥）
+
+        // 通常戦闘中：生成済み & 墜落していない → グリッドの前に描画
+        if (boss != nullptr && boss->GetGenerate())
+        {
+            objm->DrawBoss();
+        }
+        // オブジェクト描画の前に必ずブレンドモードを戻す
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        objm->DrawWithoutBoss();      // プレイヤー・ザコなど
+        em->Draw();       // 後にアニメーション
+    }
+
 
     // -------- ステージ演出：Neural Grid --------
     if (stage_timer < 5.0f)
@@ -238,46 +280,6 @@ void Stage4::UpdateGameStatus(float delta_second)
         is_over = true;
     }
 
-    //// ゲームオーバーだった時の演出準備
-    //if (is_over == true)
-    //{
-    //    scene_timer += delta_second;
-    //    //gameover_timer += delta_second;
-
-    //    //if (gameover_timer >= 0.005f)
-    //    //{
-    //    //    transparent++;
-    //    //    gameover_timer = 0.0f;
-    //    //}
-
-    //    if (scene_timer >= 5.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //}
-
-    //// ステージ終了時の動き
-    //if (is_clear == true || is_over == true)
-    //{
-    //    // 少し待機したら終了
-    //    scene_timer += delta_second;
-    //    trans_timer += delta_second;
-
-    //    if (trans_timer >= 0.01f)
-    //        if (transparent < 255)
-    //            transparent++;
-
-    //    if (scene_timer >= 5.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //    else
-    //    {
-    //        if (player)
-    //            player->SetShotStop();
-    //    }
-    //}
-
     // クリアしたらリザルトを描画
     if (is_clear == true && result_started == false)
     {
@@ -288,7 +290,22 @@ void Stage4::UpdateGameStatus(float delta_second)
             result_timer = 0.0f; // スコア演出タイマーリセット
         }
     }
+    else if (is_over == true)
+    {
+        // 少し待機したら終了
+        scene_timer += delta_second;
+        trans_timer += delta_second;
 
+        if (trans_timer >= 0.02f)
+            trans_timer = 0.0f;
+        if (transparent < 255)
+            transparent++;
+
+        if (scene_timer >= 8.0f)
+        {
+            is_finished = true;
+        }
+    }
 }
 
 void Stage4::ResultDraw(float delta_second)

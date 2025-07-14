@@ -94,6 +94,9 @@ private:
 	float end_sequence_timer = 0.0f;        // 終了演出タイマー
 	int end_fade_alpha = 0;                 // フェードアウト用アルファ
 
+	// グローバル or メンバ変数としてタイマーを用意
+	float red_alpha_timer = 0.0f;
+
 public:
 	GameMainScene();
 	virtual ~GameMainScene();

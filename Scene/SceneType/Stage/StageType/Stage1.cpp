@@ -377,24 +377,6 @@ void Stage1::UpdateGameStatus(float delta_second)
         is_over = true;
     }
 
-    //// ゲームオーバーだった時の演出準備
-    //if (is_over == true)
-    //{
-    //    scene_timer += delta_second;
-    //    //gameover_timer += delta_second;
-
-    //    //if (gameover_timer >= 0.005f)
-    //    //{
-    //    //    transparent++;
-    //    //    gameover_timer = 0.0f;
-    //    //}
-
-    //    if (scene_timer >= 5.0f)
-    //    {
-    //        is_finished = true;
-    //    }
-    //}
-
     // ステージ終了時の動き
     if (is_clear == true)
     {
@@ -422,5 +404,4 @@ void Stage1::UpdateGameStatus(float delta_second)
             is_finished = true;
         }
     }
-
 }

@@ -133,12 +133,8 @@ public:
 	int GetAttackPattrn() const;
 	int GetIsAlive() const;
 	bool GetIsCrashing() const;
+	bool GetGenerate() const;
 	bool IsBoss() const override { return true; }
-
-	class Player* player = nullptr;
-
-public:
-	void SetPlayer(Player* p) { player = p; }
 
 	float Clamp(float value, float min, float max)
 	{

@@ -393,15 +393,13 @@ void Boss3::Draw(const Vector2D& screen_offset) const
 	//DrawBox(location.x - box_size.x, location.y - box_size.y,
 	//	location.x + box_size.x, location.y + box_size.y, GetColor(0, 255, 0), TRUE);
 
-	//DrawBoss3(location);
-
-	if (!show_hpbar) {
-		DrawBoss3(location);
-		return;
-	}
 
 	// ボス本体描画
 	DrawBoss3(location);
+
+	if (!show_hpbar) {
+		return;
+	}
 
 	// フェード＋スケール率（0.0?1.0）
 	const float t = hpbar_fade_timer;

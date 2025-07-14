@@ -24,7 +24,7 @@ void GameMainScene::Initialize()
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     player = objm->CreateObject<Player>(Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) + 220.0f));
 
-    current_stage = new Stage1(player);
+    current_stage = new Stage4(player);
 
     current_stage->Initialize();
 
@@ -47,7 +47,7 @@ void GameMainScene::Initialize()
     //フォント
     font_digital = CreateFontToHandle("Orbitron", 28, 6, DX_FONTTYPE_ANTIALIASING);
     font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
-    font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
+    font_warning = CreateFontToHandle("Orbitron", 20, 6, DX_FONTTYPE_ANTIALIASING);
 
     m_menuFontHandle = CreateFontToHandle("Orbitron", 36, 6); // メニュー専用フォント
 
@@ -107,6 +107,9 @@ eSceneType GameMainScene::Update(float delta_second)
             // 進行中のステージがステージ４になったら警告演出をする
             if (current_stage->GetStageID() == StageID::Stage4)
             {
+                // 毎フレーム加算（delta_second を使うならそのまま代入）
+                red_alpha_timer += delta_second * 1.0f * DX_PI; // 数値を上げれば速く、下げればゆっくり
+
                 WarningUpdate(delta_second);
             }
 
@@ -454,7 +457,7 @@ void GameMainScene::Draw()
                 int scroll_color = GetColor(255, 100 + GetRand(80), 80);
 
                 float scale = 3.0f;
-                int base_w = GetDrawStringWidthToHandle(warn_text, strlen(warn_text), font_orbitron);
+                int base_w = GetDrawStringWidthToHandle(warn_text, strlen(warn_text), font_warning);
                 int draw_w = (int)(base_w * scale);
                 int draw_h = (int)(32 * scale);
 
@@ -468,7 +471,7 @@ void GameMainScene::Draw()
                 int color = GetColor(255, pulse, pulse);
 
                 // 中央巨大 WARNING
-                DrawExtendStringToHandle(x + offset_x, y + offset_y, scale, scale, warn_text, color, font_orbitron);
+                DrawExtendStringToHandle(x + offset_x, y + offset_y, scale, scale, warn_text, color, font_warning);
 
                 // === 上帯背景とライン ===
                 DrawBox(0, 0, D_WIN_MAX_X, band_height, GetColor(30, 0, 0), TRUE);
@@ -704,11 +707,24 @@ void GameMainScene::DrawUI()
         DrawLine(left_x1, 0, left_x2, 0, neon_color);
         DrawLine(left_x1, D_WIN_MAX_Y - 1, left_x2, D_WIN_MAX_Y - 1, neon_color);
 
+        if (current_stage)
+        {
+            float scanline_speed = 0.0f;  // 例：1秒で60px下へ移動
+            int color = 0;
 
-
-        const float scanline_speed = 60.0f;  // 例：1秒で60px下へ移動
-        int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
-        DrawLine(left_x1, scan_y, left_x2, scan_y, GetColor(0, 150, 255));
+            if (current_stage->GetStageID() == StageID::Stage4)
+            {
+                scanline_speed = 600.0f;  // 例：1秒で60px下へ移動
+                color = GetColor(255, 150, 0);
+            }
+            else
+            {
+                scanline_speed = 60.0f;  // 例：1秒で60px下へ移動
+                color = GetColor(0, 150, 255);
+            }
+            int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
+            DrawLine(left_x1, scan_y, left_x2, scan_y, GetColor(255, 150, 0));
+        }
     }
 
     // === 右のサイドパネル（サイバー風） ===
@@ -727,14 +743,32 @@ void GameMainScene::DrawUI()
         DrawLine(right_x1, 0, right_x2, 0, neon_color);
         DrawLine(right_x1, D_WIN_MAX_Y - 1, right_x2, D_WIN_MAX_Y - 1, neon_color);
 
+        if (current_stage)
+        {
+            float scanline_speed = 0.0f;  // 例：1秒で60px下へ移動
+            int color = 0;
 
-        const float scanline_speed = 60.0f;  // 例：1秒で60px下へ移動
-        int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
-        DrawLine(right_x1, scan_y, right_x2, scan_y, GetColor(0, 150, 255));
+            if (current_stage->GetStageID() == StageID::Stage4)
+            {
+                scanline_speed = 600.0f;  // 例：1秒で60px下へ移動
+                color = GetColor(255, 0, 0);
+            }
+            else
+            {
+                scanline_speed = 60.0f;  // 例：1秒で60px下へ移動
+                color = GetColor(0, 150, 255);
+            }
+            int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
+            DrawLine(right_x1, scan_y, right_x2, scan_y, GetColor(255, 150, 0));
+        }
     }
-    if (current_stage->GetStageID() == StageID::Stage4) {
 
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 50);
+    if (current_stage && current_stage->GetStageID() == StageID::Stage4) 
+    {
+        // α値を0～50の範囲で往復させる（sin波を使う）
+        int alpha = static_cast<int>((sinf(red_alpha_timer) + 1.0f) * 0.5f * 130.0f);  // → 0～50に
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
         DrawBox(0, 0, 290, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
         DrawBox(990, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
@@ -787,7 +821,7 @@ void GameMainScene::DrawUI()
         int draw_y = log_base_y + static_cast<int>(i * line_height + log.y_offset);
 
         // ライン描画
-        DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 200, draw_y - 2, GetColor(0, 255, 255));
+        DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 210, draw_y - 2, GetColor(0, 255, 255));
 
         // 「Score 」部分と「+xxxx」部分を分ける
         std::string label = "Score ";
