@@ -902,6 +902,7 @@ void GameMainScene::DrawUI()
     // ==== POWER（ゲージ型） ====
     if (player)
     {
+#if 0
         int x = D_WIN_MAX_X - 230;
         int y = 220;
 
@@ -917,6 +918,42 @@ void GameMainScene::DrawUI()
         }
 
         DrawLine(x, y + 60, x + 200, y + 60, GetColor(0, 255, 255));
+
+#else
+
+        int x = D_WIN_MAX_X - 230;
+        int y = 220;
+
+        DrawStringToHandle(x + 10, y + 2, "POWER", GetColor(0, 255, 255), font_orbitron);
+
+        int level = player->GetPowerd(); // 0?8 くらいで想定（最大値は調整可能）
+        const int max_level = 3;
+
+        // ゲージ描画
+        for (int i = 0; i < max_level; ++i)
+        {
+            int px = x + 20 + i * 20;
+            int py = y + 25;
+            int color = (i < level)
+                ? (level == max_level ? GetColor(100, 255, 100) : GetColor(255, 255, 100)) // max時は緑
+                : GetColor(50, 50, 50);
+
+            DrawBox(px, py, px + 14, py + 14, color, TRUE);
+        }
+
+        // 下のライン（燃料ゲージのような）
+        int bar_start = x + 20;
+        int bar_end = x + 20 + (max_level - 1) * 20 + 14;
+        int bar_y = y + 42;
+        DrawLine(bar_start, bar_y, bar_end, bar_y, GetColor(255, 255, 255));
+
+        // E（Empty）とF（Full）のラベル
+        DrawStringToHandle(bar_start - 10, bar_y + 5, "E", GetColor(255, 255, 255), font_orbitron);
+        DrawStringToHandle(bar_end + 5, bar_y + 5, "F", GetColor(255, 255, 255), font_orbitron);
+
+        // 給電アイコン（任意）例: "?"
+        DrawStringToHandle((bar_start + bar_end) / 2 - 6, bar_y + 3, "?", GetColor(255, 255, 255), font_orbitron);
+#endif
     }
 
     // ==== SHIELD ====
