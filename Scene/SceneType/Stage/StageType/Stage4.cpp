@@ -133,14 +133,14 @@ void Stage4::Draw()
             ResultDraw(delta_draw);
         }
     }
-    // ゲームオーバー時の演出
-    else if (is_over)
-    {
-        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-        SetFontSize(32);
-        DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "GAME OVER", GetColor(255, 255, 255), TRUE);
-        SetFontSize(16);
-    }
+    //// ゲームオーバー時の演出
+    //else if (is_over)
+    //{
+    //    DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+    //    SetFontSize(32);
+    //    DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "GAME OVER", GetColor(255, 255, 255), TRUE);
+    //    SetFontSize(16);
+    //}
 }
 
 // 次のステージを取得
@@ -235,10 +235,11 @@ void Stage4::UpdateGameStatus(float delta_second)
     // プレイヤーが倒れたらゲームオーバー
     if (player != nullptr && player->GetIsAlive() == false && is_clear == false)
     {
-        // オブジェクト管理クラスのインスタンスを取得
-        GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-        objm->Finalize();
-        is_over = true;
+        //// オブジェクト管理クラスのインスタンスを取得
+        //GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+        //objm->Finalize();
+        //is_over = true;
+        player->SetDestroy();
     }
 
     // クリアしたらリザルトを描画
@@ -251,21 +252,23 @@ void Stage4::UpdateGameStatus(float delta_second)
             result_timer = 0.0f; // スコア演出タイマーリセット
         }
     }
-    else if (is_over == true)
+    else if (player && player->GetGameOver())
     {
-        // 少し待機したら終了
-        scene_timer += delta_second;
-        trans_timer += delta_second;
+        //// 少し待機したら終了
+        //scene_timer += delta_second;
+        //trans_timer += delta_second;
 
-        if (trans_timer >= 0.02f)
-            trans_timer = 0.0f;
-        if (transparent < 255)
-            transparent++;
+        //if (trans_timer >= 0.02f)
+        //    trans_timer = 0.0f;
+        //if (transparent < 255)
+        //    transparent++;
 
-        if (scene_timer >= 8.0f)
-        {
-            is_finished = true;
-        }
+        //if (scene_timer >= 7.0f)
+        //{
+        //    is_finished = true;
+        //}
+        is_over = true;
+        is_finished = true;
     }
 }
 

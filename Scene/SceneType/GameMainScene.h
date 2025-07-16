@@ -97,6 +97,12 @@ private:
 	// グローバル or メンバ変数としてタイマーを用意
 	float red_alpha_timer = 0.0f;
 
+	float gameover_alp_timer = 0.0f;
+	float gameover_timer = 0.0f;
+	int gameover_alpha = 0; // 赤フィルター＆文字のアルファ
+	int gameover_text_alpha = 0; // 赤フィルター＆文字のアルファ
+
+	float scene_timer = 0.0f;
 public:
 	GameMainScene();
 	virtual ~GameMainScene();
@@ -131,5 +137,13 @@ public:
 
 	// 警告演出の更新処理
 	void WarningUpdate(float delta_second);
+
+	void DrawGameOverEffect();
+
+	template <typename T>
+	T Clamp(T value, T min, T max) {
+		return (value < min) ? min : (value > max) ? max : value;
+	}
+
 };
 

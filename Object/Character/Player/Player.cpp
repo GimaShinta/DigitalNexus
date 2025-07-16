@@ -6,7 +6,7 @@
 #include "../../Bullet/PlayerBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
-Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(1), on_hit(false), is_damage(false)
 {
 }
 
@@ -66,23 +66,28 @@ void Player::Update(float delta_second)
 
 		if (dead_animation_timer >= dead_animation_duration)
 		{
+			EffectManager* fm = Singleton<EffectManager>::GetInstance();
+			int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
+
 			is_alive = false;
 		}
 		else
 		{
-			// 爆発演出を定期的に再生
-			if (dead_animation_timer - last_explosion_time > 0.2f)  // 0.2秒ごとに
-			{
-				last_explosion_time = dead_animation_timer;
+			game_over_player = true;
 
-				Vector2D effect_pos = location;
-				effect_pos.x += GetRand(30);
-				effect_pos.y += GetRand(30);
+			//// 爆発演出を定期的に再生
+			//if (dead_animation_timer - last_explosion_time > 0.2f)  // 0.2秒ごとに
+			//{
+			//	last_explosion_time = dead_animation_timer;
 
-				EffectManager* fm = Singleton<EffectManager>::GetInstance();
-				int id = fm->PlayerAnimation(EffectName::eExprotion2, effect_pos, 0.05f, false); // スケール2倍
-				fm->SetScale(id, 1.0f);
-			}
+			//	Vector2D effect_pos = location;
+			//	effect_pos.x += GetRand(30);
+			//	effect_pos.y += GetRand(30);
+
+			//	EffectManager* fm = Singleton<EffectManager>::GetInstance();
+			//	int id = fm->PlayerAnimation(EffectName::eExprotion2, effect_pos, 0.05f, false); // スケール2倍
+			//	fm->SetScale(id, 1.0f);
+			//}
 		}
 	}
 	else
@@ -700,6 +705,10 @@ int Player::GetLife() const
 void Player::SetShotStop(bool stoping)
 {
 	shot_stop = stoping;
+}
+bool Player::GetGameOver() const
+{
+	return game_over_player;
 }
 void Player::ForceNeutralAnim(bool enable)
 {

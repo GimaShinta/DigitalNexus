@@ -59,7 +59,7 @@ private:
 
 	bool is_dead_animation_playing = false;
 	float dead_animation_timer = 0.0f;    // 演出再生用タイマー
-	const float dead_animation_duration = 2.0f; // 例：2秒間の死の演出
+	const float dead_animation_duration = 1.5f; // 例：2秒間の死の演出
 
 private:
 	float charge = 0.0f;
@@ -92,6 +92,8 @@ private:
 
 	float last_explosion_time = -999.0f; // 最後に爆発を再生した時間
 	float invincible_time = 0.0f;
+
+	bool game_over_player = false;
 
 public:
 	Player();
@@ -153,6 +155,7 @@ public:
 	bool GetShieldOn() const;
 	int GetLife() const;
 	void SetShotStop(bool stoping);
+	bool GetGameOver() const;
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }

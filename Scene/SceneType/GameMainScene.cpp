@@ -212,11 +212,26 @@ eSceneType GameMainScene::Update(float delta_second)
                 }
                 else if (current_stage->IsOver() == true)
                 {
-                    current_stage->Finalize();
-                    delete current_stage;
-                    current_stage = nullptr;
+                    // ==== ゲームオーバー演出処理 ====
+                    gameover_timer += delta_second;
+                    // ゲームオーバーテキストのアルファフェード（0→255）
+                    //if (gameover_text_alpha < 255)
+                    //{
+                    //    gameover_text_alpha += static_cast<int>(delta_second * 100.0f);
+                    //    if (gameover_text_alpha > 255) gameover_text_alpha = 255;
+                    //}
 
-                    return eSceneType::eTitle;
+                    scene_timer += delta_second;
+                    // 10秒後にタイトルへ遷移
+                    if (scene_timer >= 10.0f)
+                    {
+                        current_stage->Finalize();
+                        delete current_stage;
+                        current_stage = nullptr;
+                        return eSceneType::eTitle;
+                    }
+
+                    return eSceneType::eGameMain;
                 }
             }
         }
@@ -343,27 +358,30 @@ eSceneType GameMainScene::Update(float delta_second)
         previous_score_count += 1.0f;
     }
 
-    // シールドON検出
-    static bool prev_shield = false;
-    bool now_shield = player->GetShieldOn();
-    if (!prev_shield && now_shield) {
-        effect_shield_on = true;
-        effect_timer = 0.0f;
-    }
-    if (prev_shield && !now_shield) {
-        effect_shield_off = true;
-        effect_timer = 0.0f;
-    }
-    prev_shield = now_shield;
+    if (player)
+    {
+        // シールドON検出
+        static bool prev_shield = false;
+        bool now_shield = player->GetShieldOn();
+        if (!prev_shield && now_shield) {
+            effect_shield_on = true;
+            effect_timer = 0.0f;
+        }
+        if (prev_shield && !now_shield) {
+            effect_shield_off = true;
+            effect_timer = 0.0f;
+        }
+        prev_shield = now_shield;
 
-    // パワーアップ検出（1フレームのみ）
-    static int prev_power = 1;
-    int now_power = player->GetPowerd();
-    if (now_power > prev_power) {
-        effect_powerup = true;
-        effect_timer = 0.0f;
+        // パワーアップ検出（1フレームのみ）
+        static int prev_power = 1;
+        int now_power = player->GetPowerd();
+        if (now_power > prev_power) {
+            effect_powerup = true;
+            effect_timer = 0.0f;
+        }
+        prev_power = now_power;
     }
-    prev_power = now_power;
 
     // タイマー進行
     effect_timer += delta_second;
@@ -618,7 +636,14 @@ void GameMainScene::Draw()
                 }
             }
         }
+
+        if (player && player->GetGameOver())
+        {
+            DrawGameOverEffect();
+            return;
+        }
     }
+
 #if _DEBUG
     if(current_stage)
         DrawFormatString(0, 30, GetColor(255, 255, 255), "Stage %d", current_stage->GetStageID());
@@ -763,7 +788,7 @@ void GameMainScene::DrawUI()
         }
     }
 
-    if (current_stage && current_stage->GetStageID() == StageID::Stage4) 
+    if (current_stage && current_stage->GetStageID() == StageID::Stage4 && !player->GetGameOver())
     {
         // α値を0～50の範囲で往復させる（sin波を使う）
         int alpha = static_cast<int>((sinf(red_alpha_timer) + 1.0f) * 0.5f * 130.0f);  // → 0～50に
@@ -880,6 +905,8 @@ void GameMainScene::DrawUI()
         DrawStringToHandle(x + 10, y + 2, "CHARGE", GetColor(0, 255, 255), font_orbitron);
 
         float rate = player->GetChargeRate();
+        rate = Clamp(rate, 0.0f, 1.0f);
+
         int bar_x = x + 10, bar_y = y + 25;
         int bar_w = 180, bar_h = 12;
 
@@ -888,7 +915,7 @@ void GameMainScene::DrawUI()
         DrawBox(bar_x, bar_y, bar_x + static_cast<int>(bar_w * rate), bar_y + bar_h, fill, TRUE);
 
         // "Press B!!" 表示
-        if (player->CanUseSpecial())
+        if (player->CanUseSpecial() && !player->GetGameOver())
         {
             int text_x = x + 140;
             int text_y = y + 30;
@@ -951,8 +978,8 @@ void GameMainScene::DrawUI()
         DrawStringToHandle(bar_start - 10, bar_y + 5, "E", GetColor(255, 255, 255), font_orbitron);
         DrawStringToHandle(bar_end + 5, bar_y + 5, "F", GetColor(255, 255, 255), font_orbitron);
 
-        // 給電アイコン（任意）例: "?"
-        DrawStringToHandle((bar_start + bar_end) / 2 - 6, bar_y + 3, "?", GetColor(255, 255, 255), font_orbitron);
+        //// 給電アイコン（任意）例: "?"
+        //DrawStringToHandle((bar_start + bar_end) / 2 - 6, bar_y + 3, "?", GetColor(255, 255, 255), font_orbitron);
 #endif
     }
 
@@ -1255,5 +1282,92 @@ void GameMainScene::WarningUpdate(float delta_second)
 
     default:
         break;
+    }
+}
+
+#define D 0
+void GameMainScene::DrawGameOverEffect() {
+
+    int gameover_alpha = 0;
+
+    if (gameover_timer < 0.5f)
+    {
+        // 0～130の間をsin波で高速に往復（周波数を高める）
+        float wave = sinf(gameover_timer * 80.0f); // 周期が短い（高速）
+        gameover_alpha = static_cast<int>((wave + 1.0f) * 0.5f * 130.0f); // → 0～130
+
+#if D
+        // 両端に赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, 290, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        DrawBox(990, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+#else
+        // 赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+#endif
+
+    }
+    else if (gameover_timer < 3.5f)
+    {
+        gameover_alpha = 110;
+
+#if D
+        // 両端に赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, 290, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        DrawBox(990, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+#else
+        // 赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+
+        // 横長ノイズを描画（赤い帯をランダムに表示）
+        for (int i = 0; i < 200; ++i)
+        {
+            int x = 0;
+            int y = rand() % D_WIN_MAX_Y;
+            int w = D_WIN_MAX_X;
+            int h = 2 + rand() % 4; // 高さ2?5ピクセル程度
+            int r = 220 + rand() % 35;
+            int g = rand() % 40;
+            int b = rand() % 40;
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 110);
+            DrawBox(x, y, x + w, y + h, GetColor(r, g, b), TRUE);
+        }
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+#endif
+
+    }
+    else
+    {
+        // 2秒経過後は固定
+        gameover_alpha = 110;
+
+#if D
+        // 両端に赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, 290, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        DrawBox(990, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+#else
+        // 赤いフィルターを描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, gameover_alpha);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+#endif
+
+        SetFontSize(54);
+        DrawString(D_WIN_MAX_X / 2 - 200, D_WIN_MAX_Y / 2 - 32, "GAME OVER", GetColor(255, 255, 255));
+        SetFontSize(16);
     }
 }
