@@ -6,6 +6,7 @@
 #include "../../../Utility/EffectManager.h"
 #include "../../../Object/GameObjectManager.h"
 #include "../../../Utility/SEManager.h"
+#include "../../../Utility/ShakeManager.h"
 
 // StageBase.h
 enum class StageID {

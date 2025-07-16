@@ -205,7 +205,6 @@ void Player::Draw(const Vector2D& screen_offset) const
 
 	// ライフ表示などはそのまま
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-	DrawFormatString(D_WIN_MAX_X - 150, 0, GetColor(255, 255, 255), "残りライフ : %d", life);
 }
 
 // 終了時処理
