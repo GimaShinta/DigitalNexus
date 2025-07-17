@@ -29,7 +29,7 @@ private:
 
 
 	float pause_timer = 0.0f;
-	int transparent = 0.0f;
+	int transparent = 0;
 
 	int se_charge = NULL;
 	int cursor_se = NULL;

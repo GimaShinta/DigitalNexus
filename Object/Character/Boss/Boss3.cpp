@@ -87,6 +87,9 @@ void Boss3::Initialize()
 	ripple_positions[6] = { Vector2D(-100,  70), Vector2D(100,  70) };
 	ripple_positions[10] = { Vector2D(-100,  70), Vector2D(100,  70) };
 	ripple_positions[12] = { Vector2D(-160,  100), Vector2D(160,  100) };
+
+	beam_on = false;
+	beams.clear();
 }
 
 /// <summary>
@@ -187,7 +190,7 @@ void Boss3::Update(float delta_second)
 				float offset_y = static_cast<float>(GetRand(200) - 100);
 				Vector2D random_pos = location + Vector2D(offset_x, offset_y);
 				float scale = 0.3f + (GetRand(200) / 200.0f); // 0.5 ～ 1.5
-				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 5, 5);
+				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 7, 7);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu);
 				int id = EffectManager::GetInstance()->PlayerAnimation(
 					EffectName::eExprotion2,
@@ -220,7 +223,7 @@ void Boss3::Update(float delta_second)
 					false
 				);
 				EffectManager::GetInstance()->SetScale(id, 2.5f);
-				Singleton<ShakeManager>::GetInstance()->StartShake(2.0, 10, 10);
+				Singleton<ShakeManager>::GetInstance()->StartShake(3.5f, 30, 30);
 
 				is_alive = false;
 			}
@@ -297,7 +300,7 @@ void Boss3::Update(float delta_second)
 		{
 			target = location + offsets[i];
 			part_positions[i] += (target - part_positions[i]) * individual_follow_speeds_2[i] * delta_second;
-			angle = 3.14 / 1.0f;
+			angle = 3.14f / 1.0f;
 
 		}
 		else
@@ -331,7 +334,7 @@ void Boss3::Update(float delta_second)
 
 	if (attack_pattrn == 12)
 	{
-		anim_speed = 0.01;
+		anim_speed = 0.01f;
 	}
 	else
 	{
@@ -661,7 +664,7 @@ void Boss3::Movement(float delta_second)
 void Boss3::Shot(float delta_second)
 {
 	// 次の攻撃パターン変更までの時間
-	const int shot_interval = 1.0f;
+	const int shot_interval = 1;
 
 	// 時間経過したら攻撃パターンを変更して弾を発射
 	if (generate2 == true && is_shot == false)
@@ -1973,9 +1976,7 @@ void Boss3::Pattrn11(float offsets_x)
 /// </summary>
 void Boss3::Pattrn12()
 {
-	static bool                         beam_on = false;          // いま発射中か？
-	static std::vector<EnemyBeam*>     beams;                     // 発射中ビーム
-	static const float                  OFFSETS_X[2] = { +100.f, -100.f }; // +100 / -100 の並び
+	static const float OFFSETS_X[2] = { +100.f, -100.f };
 
 	if (!beam_on)
 	{
@@ -1998,9 +1999,8 @@ void Boss3::Pattrn12()
 
 	for (size_t i = 0; i < beams.size(); ++i)
 	{
-		if (beams[i] == nullptr) continue;   // 念のため
+		if (beams[i] == nullptr) continue;
 
-		// それぞれ +100 / -100 のオフセットで追従
 		beams[i]->SetLocation(
 			Vector2D(
 				location.x + OFFSETS_X[i],
@@ -2011,11 +2011,10 @@ void Boss3::Pattrn12()
 	for (auto it = beams.begin(); it != beams.end(); )
 	{
 		EnemyBeam* b = *it;
-
-		if (b != nullptr && b->is_destroy)   // 5 秒後などに true になる想定
+		if (b != nullptr && b->is_destroy)
 		{
-			b->SetDestroy();                 // 必要なら明示削除
-			it = beams.erase(it);            // vector から外す
+			b->SetDestroy();
+			it = beams.erase(it);
 		}
 		else
 		{
@@ -2023,7 +2022,6 @@ void Boss3::Pattrn12()
 		}
 	}
 
-	// 全部消えたら次の攻撃を解禁
 	if (beam_on && beams.empty())
 	{
 		is_shot = false;

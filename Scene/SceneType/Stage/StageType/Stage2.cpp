@@ -377,7 +377,7 @@ void Stage2::UpdateGameStatus(float delta_second)
         }
     }
 
-    if (stage_timer >= 10.0f)
+    if (stage_timer >= 40.0f)
     {
         is_clear = true;
     }

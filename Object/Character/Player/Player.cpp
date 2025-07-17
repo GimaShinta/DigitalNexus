@@ -6,7 +6,7 @@
 #include "../../Bullet/PlayerBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
-Player::Player() : is_shot(false), life(1), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
 {
 }
 
@@ -221,7 +221,8 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 {
 	if (hit_object->GetCollision().object_type == eObjectType::eEnemy ||
 		hit_object->GetCollision().object_type == eObjectType::eEnemyShot ||
-		hit_object->GetCollision().object_type == eObjectType::eEnemyBeam)
+		hit_object->GetCollision().object_type == eObjectType::eEnemyBeam ||
+		hit_object->GetCollision().object_type == eObjectType::eBoss)
 	{
 		if (on_hit == false)
 		{
@@ -229,6 +230,7 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			{
 				life--;
 				is_damage = true;
+				Singleton<ShakeManager>::GetInstance()->StartShake(2.0f, 40, 40);
 			}
 			else
 			{

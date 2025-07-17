@@ -55,25 +55,17 @@ eSceneType RankingScene::Update(float delta_second)
 	//if (input->GetKeyDown(KEY_INPUT_SPACE))
 	//	return eSceneType::eCredit;
 
-    wait_timer += delta_second;
     InputManager* input = Singleton<InputManager>::GetInstance();
 
     if (confirm_reset)
     {
         if (input->GetKeyDown(KEY_INPUT_X) || input->GetButtonDown(XINPUT_BUTTON_A))
         {
-            if (!entries.empty())
-            {
-                entries.erase(entries.begin() + cursor_index);
-
-                // 安全に index を調整
-                if (cursor_index >= entries.size())
-                    cursor_index = Max(0, static_cast<int>(entries.size()) - 1);
-
-                SaveRankingToFile();
-            }
-
+            // ★ すべてのランキングを削除
+            entries.clear();
+            SaveRankingToFile();
             confirm_reset = false;
+            cursor_index = 0;
         }
         if (input->GetButtonDown(XINPUT_BUTTON_B))
         {
@@ -95,7 +87,28 @@ eSceneType RankingScene::Update(float delta_second)
             return eSceneType::eTitle;
 
         if (input->GetKeyDown(KEY_INPUT_X) || input->GetButtonDown(XINPUT_BUTTON_X))
-            confirm_reset = true;
+        {
+            //confirm_reset = true;
+        }
+
+        if (input->GetButton(XINPUT_BUTTON_LEFT_SHOULDER))
+            reset_command[0] = true;
+        if (input->GetButton(XINPUT_BUTTON_RIGHT_SHOULDER))
+            reset_command[1] = true;
+        if (input->GetButton(XINPUT_BUTTON_DPAD_RIGHT))
+            reset_command[2] = true;
+        if (input->GetButton(XINPUT_BUTTON_X))
+            reset_command[3] = true;
+
+        if (reset_command[0] && reset_command[1] && reset_command[2] && reset_command[3])
+        {
+            // ★ すべてのランキングを削除
+            entries.clear();
+            SaveRankingToFile();
+            confirm_reset = false;
+            cursor_index = 0;
+        }
+
     }
 
 	return GetNowSceneType();
@@ -203,7 +216,7 @@ void RankingScene::Draw()
     else
     {
         DrawNeonText(cx - 260, msg_y,
-            "B : Title    X : Reset",
+            "B : Title",
             GetColor(100, 255, 255), GetColor(0, 150, 255), 150);
     }
 

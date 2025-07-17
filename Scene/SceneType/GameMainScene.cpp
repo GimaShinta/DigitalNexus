@@ -745,11 +745,13 @@ void GameMainScene::DrawUI()
     {
         int left_x1 = 0 + (int)offset.x;
         int left_x2 = (D_WIN_MAX_X / 2) - 350 + (int)offset.x;
+        int left_x3 = 0;
+        int left_x4 = (D_WIN_MAX_X / 2) - 350;
         int panel_color = GetColor(10, 10, 30);
         int neon_color = GetColor(0, 255, 255);
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-        DrawBox(left_x1, 0 + (int)offset.y, left_x2, D_WIN_MAX_Y + (int)offset.y, panel_color, TRUE);
+        DrawBox(left_x3, 0, left_x4, D_WIN_MAX_Y, panel_color, TRUE);
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
         DrawLine(left_x1, 0 + (int)offset.y, left_x2, 0 + (int)offset.y, neon_color);
@@ -768,11 +770,13 @@ void GameMainScene::DrawUI()
     {
         int right_x1 = (D_WIN_MAX_X / 2) + 350 + (int)offset.x;
         int right_x2 = D_WIN_MAX_X + (int)offset.x;
+        int right_x3 = (D_WIN_MAX_X / 2) + 350;
+        int right_x4 = D_WIN_MAX_X;
         int panel_color = GetColor(10, 10, 30);
         int neon_color = GetColor(0, 255, 255);
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-        DrawBox(right_x1, 0 + (int)offset.y, right_x2, D_WIN_MAX_Y + (int)offset.y, panel_color, TRUE);
+        DrawBox(right_x3, 0, right_x4, D_WIN_MAX_Y, panel_color, TRUE);
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
         DrawLine(right_x1, 0 + (int)offset.y, right_x2, 0 + (int)offset.y, neon_color);
