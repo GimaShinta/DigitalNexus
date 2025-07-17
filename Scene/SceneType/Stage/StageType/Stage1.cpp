@@ -114,6 +114,36 @@ StageBase* Stage1::GetNextStage(Player* player)
 // 背景スクロールの描画
 void Stage1::DrawScrollBackground() const
 {
+    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
+    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
+    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+
+    Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+
+    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
+
+    // プレイヤーが存在していれば追従（位置を更新）
+    if (player != nullptr)
+    {
+        Vector2D player_pos = player->GetLocation();
+        camera_target_offset = (player_pos - screen_center) * 0.05f;
+        camera_target_offset_prev = camera_target_offset;
+    }
+    else
+    {
+        // 死亡後も offset_prev を変えない → 固定視点
+        camera_target_offset = camera_target_offset_prev;
+    }
+
+    // オフセットをなめらかに反映
+    camera_offset += (camera_target_offset - camera_offset) * 0.1f;
+
+    // レイヤー別オフセット
+    Vector2D layer1_offset = camera_offset * 0.3f; // 奥グリッド
+    Vector2D layer2_offset = camera_offset * 1.5f; // 手前グリッド
+    Vector2D layer3_offset = camera_offset * 0.6f; // 中間
+
+    // ====== 以下は描画処理そのまま ======
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(20, 20, 40), TRUE);
 
     // === 粒子生成 ===
@@ -121,8 +151,8 @@ void Stage1::DrawScrollBackground() const
     {
         StarParticle p;
         p.pos = Vector2D(GetRand(D_WIN_MAX_X), GetRand(D_WIN_MAX_Y));
-        p.velocity = Vector2D(0, 40.0f + GetRand(60)); // やや速め
-        p.alpha = 150.0f + GetRand(100); // より光る
+        p.velocity = Vector2D(0, 40.0f + GetRand(60));
+        p.alpha = 150.0f + GetRand(100);
         p.length = 10.0f + GetRand(10);
         p.life = 2.0f + (GetRand(100) / 50.0f);
         star_particles.push_back(p);
@@ -141,12 +171,11 @@ void Stage1::DrawScrollBackground() const
             if (a > 255) a = 255;
 
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
-
-            // より明るい色
-            DrawLine(static_cast<int>(p.pos.x),
-                static_cast<int>(p.pos.y),
-                static_cast<int>(p.pos.x),
-                static_cast<int>(p.pos.y + p.length),
+            DrawLine(
+                static_cast<int>(p.pos.x - layer3_offset.x),
+                static_cast<int>(p.pos.y - layer3_offset.y),
+                static_cast<int>(p.pos.x - layer3_offset.x),
+                static_cast<int>(p.pos.y + p.length - layer3_offset.y),
                 GetColor(200, 255, 255));
         }
     }
@@ -162,21 +191,21 @@ void Stage1::DrawScrollBackground() const
     const int grid_size_back = 40;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_back)
-        DrawLine(x, 0, x, D_WIN_MAX_Y, GetColor(0, 100, 255));
+        DrawLine(x - (int)layer1_offset.x, 0, x - (int)layer1_offset.x, D_WIN_MAX_Y, GetColor(0, 100, 255));
     for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
     {
         int sy = y - static_cast<int>(bg_scroll_offset_layer1) % grid_size_back;
-        DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(0, 100, 255));
+        DrawLine(0, sy - (int)layer1_offset.y, D_WIN_MAX_X, sy - (int)layer1_offset.y, GetColor(0, 100, 255));
     }
 
     const int grid_size_front = 80;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
-        DrawBox(x - 1, 0, x + 1, D_WIN_MAX_Y, GetColor(180, 0, 255), TRUE);
+        DrawBox(x - 1 - (int)layer2_offset.x, 0, x + 1 - (int)layer2_offset.x, D_WIN_MAX_Y, GetColor(180, 0, 255), TRUE);
     for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
     {
         int sy = y - static_cast<int>(bg_scroll_offset_layer2) % grid_size_front;
-        DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(180, 0, 255), TRUE);
+        DrawBox(0, sy - 1 - (int)layer2_offset.y, D_WIN_MAX_X, sy + 1 - (int)layer2_offset.y, GetColor(180, 0, 255), TRUE);
     }
 
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);

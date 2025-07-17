@@ -394,6 +394,7 @@ void Enemy1::Update(float delta_second)
         am->SetScale(anim_id, 0.5f);
 
         Singleton<ScoreData>::GetInstance()->AddScore(300);
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
         is_destroy = true;
     }
 

@@ -158,8 +158,6 @@ void Boss3::Update(float delta_second)
 			explosion_timer = 0.0f;
 			SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu);
 			SEManager::GetInstance()->PlaySE(SE_NAME::Kill);
-			//PlaySoundMem(se[0], DX_PLAYTYPE_BACK);
-			//PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
 			// ‰‰ñ‚Ì”š”­‚ğ‘¦¶¬
 			float offset_x = static_cast<float>(GetRand(200) - 100);
 			float offset_y = static_cast<float>(GetRand(200) - 100);
@@ -189,7 +187,7 @@ void Boss3::Update(float delta_second)
 				float offset_y = static_cast<float>(GetRand(200) - 100);
 				Vector2D random_pos = location + Vector2D(offset_x, offset_y);
 				float scale = 0.3f + (GetRand(200) / 200.0f); // 0.5 ` 1.5
-				//PlaySoundMem(se[0], DX_PLAYTYPE_BACK);
+				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 5, 5);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu);
 				int id = EffectManager::GetInstance()->PlayerAnimation(
 					EffectName::eExprotion2,
@@ -204,8 +202,6 @@ void Boss3::Update(float delta_second)
 
 			// ‘S”š”­Š®—¹Œã‚É‘å”š”­•íœ
 			if (explosion_index >= max_explosions) {
-				//PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
-				//PlaySoundMem(se[2], DX_PLAYTYPE_BACK);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Kill);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu_End);
 
@@ -224,6 +220,7 @@ void Boss3::Update(float delta_second)
 					false
 				);
 				EffectManager::GetInstance()->SetScale(id, 2.5f);
+				Singleton<ShakeManager>::GetInstance()->StartShake(2.0, 10, 10);
 
 				is_alive = false;
 			}

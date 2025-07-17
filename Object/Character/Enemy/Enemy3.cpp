@@ -275,6 +275,7 @@ void Enemy3::Update(float delta_second)
         manager->SetScale(anim_id, 0.5f);
 
         Singleton<ScoreData>::GetInstance()->AddScore(500);
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
     }
 
     std::vector<int> animation_num;

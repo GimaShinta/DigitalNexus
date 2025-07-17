@@ -182,37 +182,77 @@ StageBase* Stage3::GetNextStage(Player* player)
 // 背景スクロールの描画
 void Stage3::DrawScrollBackground() const
 {
-    // === 奥のグリッド描画 ===
+    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
+    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
+    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+
+    Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+
+    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
+
+    // プレイヤーが存在していれば追従（位置を更新）
+    if (player != nullptr)
+    {
+        Vector2D player_pos = player->GetLocation();
+        camera_target_offset = (player_pos - screen_center) * 0.05f;
+        camera_target_offset_prev = camera_target_offset;
+    }
+    else
+    {
+        // 死亡後も offset_prev を変えない → 固定視点
+        camera_target_offset = camera_target_offset_prev;
+    }
+
+    // オフセットをなめらかに反映
+    camera_offset += (camera_target_offset - camera_offset) * 0.1f;
+
+    // 視差の深度調整（手前ほど大きく動く）
+    Vector2D offset_grid = camera_offset * 0.3f; // グリッド：手前
+    Vector2D offset_stars = camera_offset * 0.6f; // 星粒子：中間
+    Vector2D offset_noise = camera_offset * 0.3f; // ノイズ：奥
+
+    // === グリッド描画（手前に見せる） ===
     const int grid_size_back = 40;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_back)
-        DrawLine(x, 0, x, D_WIN_MAX_Y, GetColor(100, 0, 100));
+    {
+        int draw_x = x - static_cast<int>(offset_grid.x);
+        DrawLine(draw_x, 0, draw_x, D_WIN_MAX_Y, GetColor(100, 0, 100));
+    }
 
-    for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back) {
+    for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
+    {
         int sy = y - static_cast<int>(scroll_back) % grid_size_back;
+        sy -= static_cast<int>(offset_grid.y);
         DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(100, 0, 100));
     }
 
+    // === 粒子描画（中間） ===
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-
-    // === 粒子描画 ===
     for (const auto& p : star_particles)
     {
         int a = static_cast<int>(p.alpha);
         if (a <= 0) continue;
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
 
-        DrawLine(static_cast<int>(p.pos.x), static_cast<int>(p.pos.y),
-            static_cast<int>(p.pos.x), static_cast<int>(p.pos.y + p.length),
-            GetColor(180, 130, 255));
+        int px = static_cast<int>(p.pos.x - offset_stars.x);
+        int py = static_cast<int>(p.pos.y - offset_stars.y);
+
+        DrawLine(px, py, px, py + static_cast<int>(p.length), GetColor(180, 130, 255));
     }
 
-    // === ノイズエフェクト ===
+    // === ノイズエフェクト（奥） ===
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-    for (int i = 0; i < 5; ++i) {
-        if (rand() % 60 == 0) {
+    for (int i = 0; i < 5; ++i)
+    {
+        if (rand() % 60 == 0)
+        {
             int nx = rand() % D_WIN_MAX_X;
             int ny = rand() % D_WIN_MAX_Y;
+
+            nx -= static_cast<int>(offset_noise.x);
+            ny -= static_cast<int>(offset_noise.y);
+
             DrawBox(nx, ny, nx + 3, ny + 3, GetColor(255, 100, 50), TRUE);
         }
     }
@@ -254,15 +294,51 @@ void Stage3::ScrollEffectUpdate(float delta_second)
 
 void Stage3::DrawFrontGrid() const
 {
+    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
+    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
+    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+
+    Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+
+    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
+
+    // プレイヤーが存在していれば追従（位置を更新）
+    if (player != nullptr)
+    {
+        Vector2D player_pos = player->GetLocation();
+        camera_target_offset = (player_pos - screen_center) * 0.05f;
+        camera_target_offset_prev = camera_target_offset;
+    }
+    else
+    {
+        // 死亡後も offset_prev を変えない → 固定視点
+        camera_target_offset = camera_target_offset_prev;
+    }
+
+    // オフセットをなめらかに反映
+    camera_offset += (camera_target_offset - camera_offset) * 0.1f;
+
+    // 前面グリッド用の視差オフセット（手前なので動きを大きく）
+    Vector2D offset_front = camera_offset * 1.5f;
+
     const int grid_size_front = 80;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-    for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
-        DrawBox(x - 1, 0, x + 1, D_WIN_MAX_Y, GetColor(200, 40, 200), TRUE);
 
-    for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front) {
+    // === 縦線 ===
+    for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
+    {
+        int draw_x = x - static_cast<int>(offset_front.x);
+        DrawBox(draw_x - 1, 0, draw_x + 1, D_WIN_MAX_Y, GetColor(200, 40, 200), TRUE);
+    }
+
+    // === 横線（追加！）===
+    for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
+    {
         int sy = y - static_cast<int>(scroll_front) % grid_size_front;
+        sy -= static_cast<int>(offset_front.y);
         DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(200, 40, 200), TRUE);
     }
+
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 

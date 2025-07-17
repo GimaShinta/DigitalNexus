@@ -28,6 +28,7 @@ void Player::Initialize()
 	collision.object_type = eObjectType::ePlayer;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::eEnemy);
+	collision.hit_object_type.push_back(eObjectType::eBoss);
 	collision.hit_object_type.push_back(eObjectType::eExp);
 	collision.hit_object_type.push_back(eObjectType::ePowerUp);
 
@@ -393,6 +394,7 @@ void Player::Shot(float delta_second)
 			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
 			beam->SetPlayer(this);
 			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+			Singleton<ShakeManager>::GetInstance()->StartShake(5.0, 8, 8);
 		}
 	}
 #else

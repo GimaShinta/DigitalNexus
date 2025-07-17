@@ -84,7 +84,7 @@ eSceneType GameMainScene::Update(float delta_second)
 
     if (input->GetKeyDown(KEY_INPUT_2) || input->GetButtonDown(XINPUT_BUTTON_Y))
     {
-        ShakeManager::GetInstance()->StartShake(5, 20, 20);
+        ShakeManager::GetInstance()->StartShake(5, 20, 0);
     }
 
     // ポーズ機能
@@ -734,9 +734,13 @@ void GameMainScene::DrawUI()
 {
     Vector2D offset = ShakeManager::GetInstance()->GetOffset();
     // === 左の黒帯 ===
+#if 0
+    DrawGraph(0 + (int)offset.x, 0 + (int)offset.x, obi_handle, TRUE);
+    DrawTurnGraph(D_WIN_MAX_X - 290 + (int)offset.x, 0 + (int)offset.x, obi_handle, TRUE);
+#else
     DrawGraph(0, 0, obi_handle, TRUE);
     DrawTurnGraph(D_WIN_MAX_X - 290, 0, obi_handle, TRUE);
-
+#endif
     // === 左のサイドパネル（サイバー風） ===
     {
         int left_x1 = 0 + (int)offset.x;

@@ -190,13 +190,17 @@ void Boss4::Update(float delta_second)
 			// 複数爆発（最大数＆間隔）
 			if (explosion_index < max_explosions && explosion_timer >= explosion_interval) {
 				explosion_timer = 0.0f;
+				// 音再生
 				PlaySoundMem(se[0], DX_PLAYTYPE_BACK);
 				PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
+
+				// 生成するランダムな位置を設定
 				float offset_x = static_cast<float>(GetRand(200) - 100);
 				float offset_y = static_cast<float>(GetRand(200) - 100);
 				Vector2D random_pos = location + Vector2D(offset_x, offset_y);
 				float scale = 0.3f + (GetRand(200) / 200.0f); // 0.5 ～ 1.5
 
+				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 2, 2);
 				int id = EffectManager::GetInstance()->PlayerAnimation(
 					EffectName::eExprotion2,
 					random_pos,
@@ -219,6 +223,7 @@ void Boss4::Update(float delta_second)
 					false
 				);
 				EffectManager::GetInstance()->SetScale(id, 6.0f);
+				Singleton<ShakeManager>::GetInstance()->StartShake(2.0, 20, 20);
 
 				is_alive = false;
 			}

@@ -124,23 +124,61 @@ void Stage2::DrawScrollBackground() const
 {
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(20, 20, 40), TRUE);
 
+    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
+    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
+    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+
+    Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+
+    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
+
+    // プレイヤーが存在していれば追従（位置を更新）
+    if (player != nullptr)
+    {
+        Vector2D player_pos = player->GetLocation();
+        camera_target_offset = (player_pos - screen_center) * 0.05f;
+        camera_target_offset_prev = camera_target_offset;
+    }
+    else
+    {
+        // 死亡後も offset_prev を変えない → 固定視点
+        camera_target_offset = camera_target_offset_prev;
+    }
+
+    // オフセットをなめらかに反映
+    camera_offset += (camera_target_offset - camera_offset) * 0.1f;
+
+    // レイヤーごとの視差倍率
+    Vector2D layer1_offset = camera_offset * 0.3f; // 奥（背景グリッド）
+    Vector2D layer2_offset = camera_offset * 1.5f; // 手前（前景ライン）
+
+    // === 背景グリッドレイヤー（奥） ===
     const int grid_size_back = 40;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_back)
-        DrawLine(x, 0, x, D_WIN_MAX_Y, GetColor(0, 100, 255));
+    {
+        int draw_x = x - static_cast<int>(layer1_offset.x);
+        DrawLine(draw_x, 0, draw_x, D_WIN_MAX_Y, GetColor(0, 100, 255));
+    }
     for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
     {
         int sy = y - static_cast<int>(bg_scroll_offset_layer1) % grid_size_back;
+        sy -= static_cast<int>(layer1_offset.y);
         DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(0, 100, 255));
     }
 
+    // === 前景グリッドレイヤー（手前） ===
     const int grid_size_front = 80;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
-        DrawBox(x - 1, 0, x + 1, D_WIN_MAX_Y, GetColor(180, 0, 255), TRUE);
+    {
+        int draw_x = x - static_cast<int>(layer2_offset.x);
+        DrawBox(draw_x - 1, 0, draw_x + 1, D_WIN_MAX_Y, GetColor(180, 0, 255), TRUE);
+    }
     for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
     {
         int sy = y - static_cast<int>(bg_scroll_offset_layer2) % grid_size_front;
+        sy -= static_cast<int>(layer2_offset.y);
         DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(180, 0, 255), TRUE);
     }
 
