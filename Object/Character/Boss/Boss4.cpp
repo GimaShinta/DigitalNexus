@@ -200,7 +200,7 @@ void Boss4::Update(float delta_second)
 				Vector2D random_pos = location + Vector2D(offset_x, offset_y);
 				float scale = 0.3f + (GetRand(200) / 200.0f); // 0.5 Å` 1.5
 
-				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 2, 2);
+				Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 5, 5);
 				int id = EffectManager::GetInstance()->PlayerAnimation(
 					EffectName::eExprotion2,
 					random_pos,
@@ -223,7 +223,7 @@ void Boss4::Update(float delta_second)
 					false
 				);
 				EffectManager::GetInstance()->SetScale(id, 6.0f);
-				Singleton<ShakeManager>::GetInstance()->StartShake(2.0, 20, 20);
+				Singleton<ShakeManager>::GetInstance()->StartShake(5, 40, 40);
 
 				is_alive = false;
 			}
