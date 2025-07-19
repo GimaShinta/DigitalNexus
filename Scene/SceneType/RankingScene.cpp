@@ -66,6 +66,7 @@ eSceneType RankingScene::Update(float delta_second)
             SaveRankingToFile();
             confirm_reset = false;
             cursor_index = 0;
+            Singleton<ScoreData>::GetInstance()->SetResetRanking();
         }
         if (input->GetButtonDown(XINPUT_BUTTON_B))
         {
@@ -107,6 +108,7 @@ eSceneType RankingScene::Update(float delta_second)
             SaveRankingToFile();
             confirm_reset = false;
             cursor_index = 0;
+            Singleton<ScoreData>::GetInstance()->SetResetRanking();
         }
 
     }

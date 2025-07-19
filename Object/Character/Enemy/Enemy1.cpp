@@ -26,7 +26,7 @@ void Enemy1::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
 
     is_mobility = true;

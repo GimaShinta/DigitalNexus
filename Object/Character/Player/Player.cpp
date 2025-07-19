@@ -3,7 +3,8 @@
 #include "../../../Utility/ProjectConfig.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/SEManager.h"
-#include "../../Bullet/PlayerBullet.h"
+#include "../../Bullet/PlayerBullet/PlayerAttackBullet.h"
+#include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
 Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
@@ -36,18 +37,35 @@ void Player::Initialize()
 	is_mobility = true;
 
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-	image = rm->GetImages("Resource/Image/Object/Player/Player_03/player03.png")[0];
-	player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_L01.png", 2, 2, 1, 56, 64);
-	player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_R01.png", 2, 2, 1, 56, 64);
-	player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88);
+	attack = rm->GetImages("Resource/Image/Object/Player/Player_03/player03.png")[0];
+	defence = rm->GetImages("Resource/Image/Object/Player/Player_01/player01.png")[0];
+	image = attack;
+
+	// プレイヤーの傾き画像
+	attack_player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_L01.png", 2, 2, 1, 56, 64);
+	attack_player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_R01.png", 2, 2, 1, 56, 64);
+	defence_player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_01/anime_player01_L01.png", 2, 2, 1, 48, 64);
+	defence_player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_01/anime_player01_R01.png", 2, 2, 1, 48, 64);
+	player_image_left = attack_player_image_left;
+	player_image_right = attack_player_image_right;
+
+	// プレイヤーのジェット部分の画像
+	attack_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88);
+	defence_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect16.png", 6, 6, 1, 8, 88);
+	player_jet = attack_player_jet;
 	jet = player_jet[2];
 
-	engens = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
-	engen = engens[0];
+	// プレイヤーのノズル部分の画像
+	nozzles = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
+	nozzle = nozzles[17];
+	attack_nozzles = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+	defence_nozzles = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+	nozzle_type = attack_nozzles;
 
 	shields2 = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206_480.png", 20, 5, 4, 480, 480);
 	shields = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206h_480.png", 15, 5, 3, 480, 480);
 
+	shot_interval = 0.07f;
 }
 
 /// <summary>
@@ -163,21 +181,20 @@ void Player::Draw(const Vector2D& screen_offset) const
 		{
 			if (powerd <= 1)
 			{
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, engen, TRUE);
+				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
 
 			}
 			else if (powerd == 2)
 			{
-				DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, engen, TRUE);
+				DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
+				DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
 			}
 			else
 			{
-				DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, engen, TRUE);
+				DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
+				DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
 			}
-
 		}
 	}
 
@@ -206,6 +223,13 @@ void Player::Draw(const Vector2D& screen_offset) const
 
 	// ライフ表示などはそのまま
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+#if _DEBUG
+	if (is_attack_type)
+		DrawString(location.x - 30.0f, location.y, "Attack Type", GetColor(255, 255, 255), TRUE);
+	else
+		DrawString(location.x - 35.0f, location.y, "Defence Type", GetColor(255, 255, 255), TRUE);
+#endif
 }
 
 // 終了時処理
@@ -230,7 +254,7 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			{
 				life--;
 				is_damage = true;
-				Singleton<ShakeManager>::GetInstance()->StartShake(2.0f, 40, 40);
+				Singleton<ShakeManager>::GetInstance()->StartShake(3.0f, 30, 20);
 			}
 			else
 			{
@@ -355,6 +379,50 @@ void Player::Shot(float delta_second)
 	// 打つまでの時間を計測
 	shot_timer += delta_second;
 
+	// プレイヤータイプの変更
+	if (input->GetKeyDown(KEY_INPUT_LSHIFT) || 
+		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
+		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER))
+	{
+		if (is_attack_type)
+		{
+			is_attack_type = false;
+			image = defence;
+			player_image_left = defence_player_image_left;
+			player_image_right = defence_player_image_right;
+
+			player_jet = defence_player_jet;
+
+			nozzle_type = defence_nozzles;
+
+			shot_interval = 0.15f;
+
+			EffectManager* em =  Singleton<EffectManager>::GetInstance();
+			effe_id = em->PlayerAnimation(EffectName::eAttackType, location, 0.04f, false);
+			em->SetScale(effe_id, 0.35f);
+		}
+		else
+		{
+			is_attack_type = true;
+			image = attack;
+			player_image_left = attack_player_image_left;
+			player_image_right = attack_player_image_right;
+
+			player_jet = attack_player_jet;
+
+			nozzle_type = attack_nozzles;
+
+			shot_interval = 0.07f;
+
+			EffectManager* em = Singleton<EffectManager>::GetInstance();
+			effe_id = em->PlayerAnimation(EffectName::eDefenceType, location, 0.04f, false);
+			em->SetScale(effe_id, 0.35f);
+		}
+	}
+
+	EffectManager* em = Singleton<EffectManager>::GetInstance();
+	em->SetPosition(effe_id, location);
+
 	// スペースを長押ししたら一定間隔で発射
 	if (input->GetKey(KEY_INPUT_SPACE) ||
 		input->GetButton(XINPUT_BUTTON_A))
@@ -363,7 +431,7 @@ void Player::Shot(float delta_second)
 		if (stop == false)
 		{
 			// 発射インターバルを超えたら発射
-			if (shot_timer >= SHOT_INTERVAL)
+			if (shot_timer >= shot_interval)
 			{
 				is_shot_anim = true;
 				is_shot = true;
@@ -378,7 +446,7 @@ void Player::Shot(float delta_second)
 	{
 		is_shot_anim = false;
 		// 押してない間は、即撃てるようにする
-		shot_timer = SHOT_INTERVAL;
+		shot_timer = shot_interval;
 	}
 
 #if _DEBUG
@@ -510,24 +578,24 @@ void Player::BuhinAnim(float delta_second)
 		jet = player_jet[animation_num[animation_count]];
 	}
 
-	std::vector<int> engen_num = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+	std::vector<int> nozzle_num = nozzle_type;
 	//フレームレートで時間を計測
-	engen_time += delta_second;
+	nozzle_time += delta_second;
 	//8秒経ったら画像を切り替える
-	if (engen_time >= 0.0125f)
+	if (nozzle_time >= 0.0125f)
 	{
 		//計測時間の初期化
-		engen_time = 0.0f;
+		nozzle_time = 0.0f;
 		//時間経過カウントの増加
-		engen_count++;
+		nozzle_count++;
 		//カウントがアニメーション画像の要素数以上になったら
-		if (engen_count >= engen_num.size())
+		if (nozzle_count >= nozzle_num.size())
 		{
 			//カウントの初期化
-			engen_count = 0;
+			nozzle_count = 0;
 		}
 		// アニメーションが順番に代入される
-		engen = engens[engen_num[engen_count]];
+		nozzle = nozzles[nozzle_num[nozzle_count]];
 	}
 
 	if (is_shield == true)
@@ -605,38 +673,57 @@ void Player::GenarateBullet()
 	{
 		is_shot = false;
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-		// 上下反転していなかったら下方向に生成
-		if (powerd <= 1)
+
+		if (is_attack_type == true)
 		{
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-		}
-		else if (powerd == 2)
-		{
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
+			// 上方向に生成
+			if (powerd <= 1)
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+			}
+			else if (powerd == 2)
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 30, location.y));
+			}
+			else
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+			}
 		}
 		else
 		{
-#if 1
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
-#else
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 70, location.y + (D_OBJECT_SIZE * 2)));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 70, location.y + (D_OBJECT_SIZE * 2)));
-#endif
+			// 上方向に生成
+			if (powerd <= 1)
+			{
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+			}
+			else if (powerd == 2)
+			{
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 30, location.y));
+			}
+			else
+			{
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 30, location.y));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+			}
+
 		}
 	}
 }

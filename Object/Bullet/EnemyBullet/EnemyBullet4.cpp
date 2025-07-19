@@ -1,6 +1,6 @@
 #include "EnemyBullet4.h"
-#include "../GameObjectManager.h"
-#include "../../Utility/ProjectConfig.h"
+#include "../../GameObjectManager.h"
+#include "../../../Utility/ProjectConfig.h"
 
 EnemyBullet4::EnemyBullet4()
 {
@@ -22,6 +22,7 @@ void EnemyBullet4::Initialize()
 	collision.object_type = eObjectType::eEnemyShot;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::ePlayer);
+	collision.hit_object_type.push_back(eObjectType::eDefenceShot);
 
 	// 動くかどうか（trueなら動く、falseなら止まる）
 	is_mobility = true;
@@ -140,6 +141,15 @@ void EnemyBullet4::Draw(const Vector2D& screen_offset) const
 // 終了時処理
 void EnemyBullet4::Finalize()
 {
+}
+
+void EnemyBullet4::OnHitCollision(GameObjectBase* hit_object)
+{
+	if (hit_object->GetCollision().object_type == eObjectType::ePlayer ||
+		hit_object->GetCollision().object_type == eObjectType::eDefenceShot)
+	{
+		is_destroy = true;
+	}
 }
 
 void EnemyBullet4::SetSuckCenter(const Vector2D& center)

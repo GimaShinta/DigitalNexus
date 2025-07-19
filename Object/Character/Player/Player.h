@@ -66,8 +66,8 @@ private:
 	const float charge_max = 100.0f;
 	bool charge_ready = false;
 
-	float engen_time = 0.0f;
-	int engen_count = 0;
+	float nozzle_time = 0.0f;
+	int nozzle_count = 0;
 
 	bool is_shot_anim = false;
 	int se_shot = NULL;
@@ -82,19 +82,34 @@ private:
 	// ‰æ‘œŒn
 	std::vector<int> player_image_right;
 	std::vector<int> player_image_left;
+	std::vector<int> attack_player_image_right;
+	std::vector<int> attack_player_image_left;
+	std::vector<int> defence_player_image_right;
+	std::vector<int> defence_player_image_left;
+	std::vector<int> attack_player_jet;
+	std::vector<int> defence_player_jet;
 	std::vector<int> player_jet;
-	std::vector<int> engens;
+	std::vector<int> attack_nozzles;
+	std::vector<int> defence_nozzles;
+	std::vector<int> nozzles;
+	std::vector<int> nozzle_type;
 	std::vector<int> shields;
 	std::vector<int> shields2;
-	int engen = NULL;
+	int nozzle = NULL;
 	int jet = NULL;
 	int shield = NULL;
+	int attack = NULL;
+	int defence = NULL;
 
 	float last_explosion_time = -999.0f; // ÅŒã‚É”š”­‚ğÄ¶‚µ‚½ŠÔ
 	float invincible_time = 0.0f;
 
 	bool game_over_player = false;
 
+	bool is_attack_type = true;
+	float shot_interval = 0.0f;
+
+	int effe_id = 0;
 public:
 	Player();
 	~Player();

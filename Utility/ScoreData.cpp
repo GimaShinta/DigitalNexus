@@ -70,6 +70,11 @@ void ScoreData::SaveRankingToFile()
     file.close();
 }
 
+void ScoreData::SetResetRanking()
+{
+    entries.clear();
+}
+
 std::vector<ScoreEntry> ScoreData::GetEntries() const
 {
     return entries;

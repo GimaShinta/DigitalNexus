@@ -8,7 +8,8 @@ enum eObjectType
 {
     eNone,
     ePlayer,
-    eShot,
+    eAttackShot,
+    eDefenceShot,
     eBeam,
     eEnemyBeam,
     eEnemyShot,

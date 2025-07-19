@@ -29,7 +29,7 @@ void Boss4::Initialize()
 	// 自分のオブジェクトタイプ
 	collision.object_type = eObjectType::eBoss;
 	// 当たる相手のオブジェクトタイプ
-	collision.hit_object_type.push_back(eObjectType::eShot);
+	collision.hit_object_type.push_back(eObjectType::eAttackShot);
 	collision.hit_object_type.push_back(eObjectType::eBeam);
 
 	// 動くかどうか（trueなら動く、falseなら止まる）
@@ -385,7 +385,7 @@ void Boss4::Finalize()
 
 void Boss4::OnHitCollision(GameObjectBase* hit_object)
 {
-	if (hit_object->GetCollision().object_type == eObjectType::eShot)
+	if (hit_object->GetCollision().object_type == eObjectType::eAttackShot)
 	{
 		if (generate2 == true)
 		{

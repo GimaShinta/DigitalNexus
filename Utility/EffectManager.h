@@ -13,6 +13,8 @@ enum EffectName
 	eExprotion2,
 	eChenge,
 	eExprotion3,
+	eAttackType,
+	eDefenceType
 };
 
 // EffectID ‚ð intŒ^‚Æ“¯“™‚É‚·‚é

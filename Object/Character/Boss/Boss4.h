@@ -1,7 +1,7 @@
 #pragma once
 #include "../Enemy/EnemyBase.h"
-#include "../../Bullet/EnemyBullet3.h"
-#include "../../Bullet/EnemyBullet4.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet3.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet4.h"
 #include "../../Beam/EnemyBeam.h"
 
 class Boss4 : public EnemyBase

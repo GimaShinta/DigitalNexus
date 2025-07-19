@@ -51,7 +51,7 @@ void EnemyBase::Finalize()
 /// <param name="hit_object">“–‚½‚Á‚½‘ŠŽè</param>
 void EnemyBase::OnHitCollision(GameObjectBase* hit_object)
 {
-	if (hit_object->GetCollision().object_type == eObjectType::eShot)
+	if (hit_object->GetCollision().object_type == eObjectType::eAttackShot)
 	{
 		if (on_hit == false)
 		{

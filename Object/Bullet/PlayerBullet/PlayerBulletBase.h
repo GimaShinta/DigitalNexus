@@ -1,15 +1,12 @@
 #pragma once
-#include "../GameObjectBase.h"
-class EnemyBullet1 :
+#include "../../GameObjectBase.h"
+#include "../../../Utility/ScoreData.h"
+class PlayerBulletBase :
     public GameObjectBase
 {
-private:
-	int se = NULL;
-	float move_time = 0.0f;
-
 public:
-	EnemyBullet1();
-	~EnemyBullet1();
+	PlayerBulletBase();
+	~PlayerBulletBase();
 
 public:
 	// 初期化処理
@@ -30,11 +27,11 @@ public:
 	// 終了時処理
 	virtual void Finalize() override;
 
+public:
 	/// <summary>
-	/// ヒットしたときの処理
+	/// ヒット時処理
 	/// </summary>
-	/// <param name="hit_object">プレイヤーだとしたら、ここは敵とかブロックと当たったことになる</param>
-	void OnHitCollision(GameObjectBase* hit_object) override;
-
+	/// <param name="hit_object">当たった相手</param>
+	virtual void OnHitCollision(GameObjectBase* hit_object) override;
 };
 

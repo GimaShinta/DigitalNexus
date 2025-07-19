@@ -1,7 +1,7 @@
 #include "Enemy2.h"
 #include "../../../Object/GameObjectManager.h"
-#include "../../../Object/Bullet/EnemyBullet2.h"
-#include "../../../Object/Bullet/EnemyBullet3.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet2.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet3.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/ScoreData.h"
 #include <cmath>
@@ -30,7 +30,7 @@ void Enemy2::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
     is_mobility = true;
 

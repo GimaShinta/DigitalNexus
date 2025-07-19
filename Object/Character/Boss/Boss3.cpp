@@ -4,8 +4,8 @@
 #include "../../../Utility/ScoreData.h"
 #include "../../../Utility/SEManager.h"
 #include "../Player/Player.h"
-#include "../../Bullet/EnemyBullet3.h"
-#include "../../Bullet/EnemyBullet4.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet3.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet4.h"
 #include "../../Beam/EnemyBeam.h"
 
 // üŒ`•âŠÔ
@@ -460,7 +460,7 @@ void Boss3::Finalize()
 
 void Boss3::OnHitCollision(GameObjectBase* hit_object)
 {
-	if (hit_object->GetCollision().object_type == eObjectType::eShot)
+	if (hit_object->GetCollision().object_type == eObjectType::eAttackShot)
 	{
 		if (generate2 == true)
 		{
@@ -591,7 +591,7 @@ void Boss3::Movement(float delta_second)
 			}
 
 			collision.object_type = eObjectType::eBoss;
-			collision.hit_object_type = { eObjectType::eShot, eObjectType::eBeam };
+			collision.hit_object_type = { eObjectType::eAttackShot, eObjectType::eBeam };
 
 			//box_size = Vector2D(190, 80);
 			image_size = 2.0f;

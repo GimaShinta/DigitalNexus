@@ -1,6 +1,6 @@
 #include "EnemyBullet2.h"
-#include "../GameObjectManager.h"
-#include "../../Utility/ProjectConfig.h"
+#include "../../GameObjectManager.h"
+#include "../../../Utility/ProjectConfig.h"
 
 EnemyBullet2::EnemyBullet2()
 {
@@ -22,6 +22,7 @@ void EnemyBullet2::Initialize()
 	collision.object_type = eObjectType::eEnemyShot;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::ePlayer);
+	collision.hit_object_type.push_back(eObjectType::eDefenceShot);
 
 	// 動くかどうか（trueなら動く、falseなら止まる）
 	is_mobility = true;
@@ -144,7 +145,8 @@ void EnemyBullet2::Finalize()
 
 void EnemyBullet2::OnHitCollision(GameObjectBase* hit_object)
 {
-	if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
+	if (hit_object->GetCollision().object_type == eObjectType::ePlayer ||
+		hit_object->GetCollision().object_type == eObjectType::eDefenceShot)
 	{
 		is_destroy = true;
 	}
