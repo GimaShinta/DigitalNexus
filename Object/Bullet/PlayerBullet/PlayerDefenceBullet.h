@@ -3,6 +3,8 @@
 class PlayerDefenceBullet :
     public PlayerBulletBase
 {
+private:
+	bool is_collected = false;
 public:
 	PlayerDefenceBullet();
 	~PlayerDefenceBullet();

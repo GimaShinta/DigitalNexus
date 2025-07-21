@@ -35,12 +35,17 @@ void PlayerDefenceBullet::Finalize()
 
 void PlayerDefenceBullet::OnHitCollision(GameObjectBase* hit_object)
 {
+	// Ç∑Ç≈Ç…ãzé˚çœÇ›Ç»ÇÁñ≥éã
+	if (is_collected) return;
+
 	EffectManager* am = Singleton<EffectManager>::GetInstance();
 	SEManager* sm = Singleton<SEManager>::GetInstance();
 	int anim_id = 0;
 	// ìñÇΩÇ¡ÇΩëäéËÇ™íeÇæÇ¡ÇΩÇÁ
 	if (hit_object->GetCollision().object_type == eObjectType::eEnemyShot)
 	{
+		is_collected = true;
+
 		float random_x = static_cast<float>(GetRand(20));
 		if (GetRand(2) == 1)
 		{

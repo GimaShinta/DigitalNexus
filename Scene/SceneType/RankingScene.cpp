@@ -94,12 +94,20 @@ eSceneType RankingScene::Update(float delta_second)
 
         if (input->GetButton(XINPUT_BUTTON_LEFT_SHOULDER))
             reset_command[0] = true;
+        else
+            reset_command[0] = false;
         if (input->GetButton(XINPUT_BUTTON_RIGHT_SHOULDER))
             reset_command[1] = true;
+        else
+            reset_command[1] = false;
         if (input->GetButton(XINPUT_BUTTON_DPAD_RIGHT))
             reset_command[2] = true;
+        else
+            reset_command[2] = false;
         if (input->GetButton(XINPUT_BUTTON_X))
             reset_command[3] = true;
+        else
+            reset_command[3] = false;
 
         if (reset_command[0] && reset_command[1] && reset_command[2] && reset_command[3])
         {

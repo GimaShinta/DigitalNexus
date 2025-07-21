@@ -103,6 +103,7 @@ private:
 	int gameover_text_alpha = 0; // 赤フィルター＆文字のアルファ
 
 	float scene_timer = 0.0f;
+	bool retry = false;
 public:
 	GameMainScene();
 	virtual ~GameMainScene();
@@ -140,9 +141,19 @@ public:
 
 	void DrawGameOverEffect();
 
+	eSceneType UpdateGameplay(float delta);
+	eSceneType ProceedToNextStage(float delta);
+	eSceneType UpdateGameOverState(float delta);
+
+	eSceneType UpdatePauseMenu(float delta);
+
 	template <typename T>
 	T Clamp(T value, T min, T max) {
 		return (value < min) ? min : (value > max) ? max : value;
+	}
+	float Min(float a, float b)
+	{
+		return (a < b) ? a : b;
 	}
 
 };

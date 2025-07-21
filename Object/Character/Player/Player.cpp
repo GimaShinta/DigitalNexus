@@ -7,7 +7,7 @@
 #include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
-Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(1), on_hit(false), is_damage(false)
 {
 }
 
@@ -37,15 +37,15 @@ void Player::Initialize()
 	is_mobility = true;
 
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-	attack = rm->GetImages("Resource/Image/Object/Player/Player_03/player03.png")[0];
-	defence = rm->GetImages("Resource/Image/Object/Player/Player_01/player01.png")[0];
+	attack = rm->GetImages("Resource/Image/Object/Player/color04/player03.png")[0];
+	defence = rm->GetImages("Resource/Image/Object/Player/color02/player03.png")[0];
 	image = attack;
 
 	// プレイヤーの傾き画像
-	attack_player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_L01.png", 2, 2, 1, 56, 64);
-	attack_player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_R01.png", 2, 2, 1, 56, 64);
-	defence_player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_01/anime_player01_L01.png", 2, 2, 1, 48, 64);
-	defence_player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_01/anime_player01_R01.png", 2, 2, 1, 48, 64);
+	attack_player_image_left = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_L01.png", 2, 2, 1, 56, 64);
+	attack_player_image_right = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_R01.png", 2, 2, 1, 56, 64);
+	defence_player_image_left = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_L01.png", 2, 2, 1, 56, 64);
+	defence_player_image_right = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_R01.png", 2, 2, 1, 56, 64);
 	player_image_left = attack_player_image_left;
 	player_image_right = attack_player_image_right;
 
@@ -398,7 +398,7 @@ void Player::Shot(float delta_second)
 			shot_interval = 0.15f;
 
 			EffectManager* em =  Singleton<EffectManager>::GetInstance();
-			effe_id = em->PlayerAnimation(EffectName::eAttackType, location, 0.04f, false);
+			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 0.35f);
 		}
 		else
@@ -415,13 +415,13 @@ void Player::Shot(float delta_second)
 			shot_interval = 0.07f;
 
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
-			effe_id = em->PlayerAnimation(EffectName::eDefenceType, location, 0.04f, false);
+			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 0.35f);
 		}
 	}
 
 	EffectManager* em = Singleton<EffectManager>::GetInstance();
-	em->SetPosition(effe_id, location);
+	em->SetPosition(effe_id, Vector2D(location.x, location.y + 10.0f));
 
 	// スペースを長押ししたら一定間隔で発射
 	if (input->GetKey(KEY_INPUT_SPACE) ||

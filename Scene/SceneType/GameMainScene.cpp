@@ -74,252 +74,26 @@ void GameMainScene::Initialize()
 /// <returns></returns>
 eSceneType GameMainScene::Update(float delta_second)
 {
-	//InputManager* input = Singleton<InputManager>::GetInstance();
-
-	//if (input->GetKeyDown(KEY_INPUT_SPACE))
-	//	return eSceneType::eRanking;
-
     // 入力インスタンスの取得
     InputManager* input = Singleton<InputManager>::GetInstance();
 
-    if (input->GetKeyDown(KEY_INPUT_2) || input->GetButtonDown(XINPUT_BUTTON_Y))
-    {
-        ShakeManager::GetInstance()->StartShake(5, 20, 0);
-    }
-
     // ポーズ機能
     if (input->GetButtonDown(XINPUT_BUTTON_START) ||
-        input->GetKeyDown(KEY_INPUT_P)) {
+        input->GetKeyDown(KEY_INPUT_P)) 
+    {
         isPaused = !isPaused;
         m_selectedIndex = 0;
     }
 
-    // ポーズ状態ではないときの処理（メイン）
-    if (!isPaused)
-    {
-        black_in_timer += delta_second;
-        line_effect_timer += delta_second;
-        transparent = 0;
-        // ポーズ中は何も更新しない（またはポーズ画面の更新のみ）
-        if (current_stage)
-        {
-            // エフェクトの更新処理
-            EffectManager* effe = Singleton<EffectManager>::GetInstance();
-            effe->Update(delta_second);
-
-            // 進行中のステージの更新処理
-            current_stage->Update(delta_second);
-
-            // 画面揺れクラスの更新処理
-            ShakeManager* sk = Singleton<ShakeManager>::GetInstance();
-            sk->Update(delta_second);
-
-            // 進行中のステージがステージ４になったら警告演出をする
-            if (current_stage->GetStageID() == StageID::Stage4)
-            {
-                // 毎フレーム加算（delta_second を使うならそのまま代入）
-                red_alpha_timer += delta_second * 1.0f * DX_PI; // 数値を上げれば速く、下げればゆっくり
-
-                WarningUpdate(delta_second);
-            }
-
-            // ステージの切り替えOKなら切り替える
-            if (current_stage->IsFinished() || input->GetKeyDown(KEY_INPUT_1))
-            {
-                if (current_stage->IsClear() == true || input->GetKeyDown(KEY_INPUT_1))
-                {
-                    if (current_stage->GetStageID() == StageID::Stage3)
-                    {
-                        black_fade_timer += delta_second;
-                        if (alpha >= 255)
-                        {
-                            StopSoundMem(stage_bgm3); // ← ステージ3のBGMを明示的に停止
-
-                            StageBase* next_stage = current_stage->GetNextStage(player);
-
-                            current_stage->Finalize();
-                            delete current_stage;
-                            current_stage = nullptr;
-
-                            if (next_stage != nullptr)
-                            {
-                                current_stage = next_stage;
-                                current_stage->Initialize();
-
-                                // ステージ4用のBGMを再生（必要なら stage_bgm4 を定義）
-                                current_bgm_handle = stage_bgm4;  // または stage_bgm4
-                                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
-                            }
-                            else
-                            {
-                                return eSceneType::eTitle;
-                            }
-                        }
-                    }
-                    else if (current_stage->GetStageID() == StageID::Stage4)
-                    {
-                        end_sequence_started = true; // 終了演出を開始
-
-                        if (player)
-                            player->SetShotStop(true);
-
-                        if (end_sequence_started)
-                        {
-                            end_sequence_timer += delta_second;
-
-                            const float fade_duration = 2.0f; // 2秒フェード
-
-                            // 徐々に暗くする（非依存）
-                            if (end_sequence_timer >= 1.0f && end_sequence_timer < 1.0f + fade_duration)
-                            {
-                                float t = (end_sequence_timer - 1.0f) / fade_duration;
-                                if (t > 1.0f) t = 1.0f;
-                                end_fade_alpha = static_cast<int>(255 * t);
-                            }
-                            else if (end_sequence_timer >= 1.0f + fade_duration)
-                            {
-                                end_fade_alpha = 255;
-                            }
-
-                            // 4秒後にタイトルへ遷移
-                            if (end_sequence_timer >= 8.0f)
-                            {
-                                current_stage->Finalize();
-                                delete current_stage;
-                                current_stage = nullptr;
-                                return eSceneType::eTitle;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        StageBase* next_stage = current_stage->GetNextStage(player);
-
-                        current_stage->Finalize();
-                        delete current_stage;
-                        current_stage = nullptr;
-
-                        if (next_stage != nullptr)
-                        {
-                            // === ステージの切替とBGM処理 ===
-                            current_stage = next_stage;
-                            current_stage->Initialize();
-
-                            // ステージ3に到達した場合のみBGM切替
-                            if (current_stage->GetStageID() == StageID::Stage3)
-                            {
-                                StopSoundMem(current_bgm_handle); // 現在のBGMを停止
-                                current_bgm_handle = stage_bgm3;  // ステージ3用BGMに切り替え
-                                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
-                                PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
-                            }
-                        }
-                        else
-                        {
-                            return eSceneType::eTitle;
-                        }
-                    }
-                }
-                else if (current_stage->IsOver() == true)
-                {
-                    // ==== ゲームオーバー演出処理 ====
-                    gameover_timer += delta_second;
-                    // ゲームオーバーテキストのアルファフェード（0→255）
-                    //if (gameover_text_alpha < 255)
-                    //{
-                    //    gameover_text_alpha += static_cast<int>(delta_second * 100.0f);
-                    //    if (gameover_text_alpha > 255) gameover_text_alpha = 255;
-                    //}
-
-                    scene_timer += delta_second;
-                    // 10秒後にタイトルへ遷移
-                    if (scene_timer >= 10.0f)
-                    {
-                        current_stage->Finalize();
-                        delete current_stage;
-                        current_stage = nullptr;
-                        return eSceneType::eTitle;
-                    }
-
-                    return eSceneType::eGameMain;
-                }
-            }
-        }
+    if (!isPaused) {
+        eSceneType type =  UpdateGameplay(delta_second);
+        return type;
     }
-    else
-    {
-        // ポーズのとき画面を不透明にする
-        pause_timer += delta_second;
-        if (pause_timer >= 0.01f)
-        {
-            transparent++;
-            pause_timer = 0.0f;
-        }
-        if (transparent >= 100)
-        {
-            transparent = 100;
-        }
-
-        InputManager* input = Singleton<InputManager>::GetInstance();
-
-        // 上下キー or コントローラ十字で選択
-        bool movedUp = input->GetKeyDown(KEY_INPUT_UP) || input->GetKeyDown(KEY_INPUT_W) ||
-            input->GetButtonDown(XINPUT_BUTTON_DPAD_UP);
-        bool movedDown = input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_S) ||
-            input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN);
-
-        // スティックY軸の入力を反映（上下で判定、クールダウン制御付き）
-        static float stickCooldown = 0.0f;
-        stickCooldown -= delta_second;
-
-        Vector2D stick = input->GetLeftStick(); // 左スティックY軸：上→正、下→負
-        const float STICK_THRESHOLD = 0.5f;     // 感度調整
-        const float COOLDOWN_TIME = 0.2f;       // 連続入力防止
-
-        // スティックでのカーソル操作
-        if (stickCooldown <= 0.0f)
-        {
-            if (stick.y > STICK_THRESHOLD)
-            {
-                movedUp = true;
-                stickCooldown = COOLDOWN_TIME;
-            }
-            else if (stick.y < -STICK_THRESHOLD)
-            {
-                movedDown = true;
-                stickCooldown = COOLDOWN_TIME;
-            }
-        }
-
-        // カーソルの上限を超えたら下限に移動（その逆も）
-        if (movedUp)
-        {
-            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-            m_selectedIndex = (m_selectedIndex + 1) % 2;
-        }
-        if (movedDown)
-        {
-            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-            m_selectedIndex = (m_selectedIndex + 1) % 2;
-        }
-
-        // 決定（スペース or Aボタン）
-        if (!m_startTransitioning && (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)))
-        {
-            if (m_selectedIndex == 0) 
-            {
-                isPaused = false;
-            }
-            else if (m_selectedIndex == 1) 
-            {
-                // オブジェクト管理クラスのインスタンスを取得
-                GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-                objm->Finalize();
-
-                return eSceneType::eTitle;
-            }
-        }
+    else {
+        eSceneType type = UpdatePauseMenu(delta_second);
+        return type;
     }
+
 
     // ======= スコアログのスライド演出更新 =======
     for (auto& log : score_logs)
@@ -650,21 +424,86 @@ void GameMainScene::Draw()
         if (player && player->GetGameOver())
         {
             DrawGameOverEffect();
+
+            // GameOverメニューが出せるタイミング（例：3.5秒後）
+            if (gameover_timer >= 10.0f)
+            {
+                retry = true;
+
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
+                DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+                const char* menuItems[] = {
+                    "RETRY GAME",
+                    "BACK TITLE",
+                };
+
+                for (int i = 0; i < 2; ++i)
+                {
+                    int y = 300 + i * 50;
+                    int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
+                    int x = (D_WIN_MAX_X - textWidth) / 2;
+
+                    if (i == m_selectedIndex)
+                    {
+                        // =========================
+                        // 背景ハイライトバー（画面端まで）
+                        // =========================
+                        int barHeight = 40;
+                        int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50); // パルス
+                        SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
+                        DrawBox(
+                            0, y - 5,
+                            D_WIN_MAX_X, y + barHeight,
+                            GetColor(0, 200, 255), TRUE
+                        );
+
+                        // =========================
+                        // 両端のエッジエフェクト（流れる光）
+                        // =========================
+                        int edgeWidth = 80;
+                        int edgeHeight = 4;
+                        int scrollSpeed = 2;
+                        int edgeOffset = (GetNowCount() * scrollSpeed) % (D_WIN_MAX_X + edgeWidth * 2);
+
+                        // 左から右へ流れる（2個表示してループ感を出す）
+                        for (int j = 0; j < 2; ++j)
+                        {
+                            int edgeX = edgeOffset - edgeWidth * j;
+                            SetDrawBlendMode(DX_BLENDMODE_ADD, 50);
+                            DrawBox(
+                                edgeX, y + 10,
+                                edgeX + edgeWidth, y + 10 + edgeHeight,
+                                GetColor(200, 255, 255), TRUE
+                            );
+                            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+                        }
+
+                        // =========================
+                        // テキスト（アウトライン＋グロー）
+                        // =========================
+                        int offsetX = (rand() % 3) - 1;
+                        int offsetY = (rand() % 3) - 1;
+
+                        DrawStringToHandle(x + offsetX - 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                        DrawStringToHandle(x + offsetX + 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                        DrawStringToHandle(x + offsetX, y + offsetY - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                        DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+
+                        int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
+                        DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
+                    }
+                    else
+                    {
+                        DrawStringToHandle(x, y, menuItems[i], GetColor(180, 180, 180), m_menuFontHandle);
+                    }
+                }
+            }
+
             return;
         }
     }
-
-
-    //ShakeManager* sk = Singleton<ShakeManager>::GetInstance();
-    //Vector2D offset = sk->GetOffset();
-    //static bool a = false;
-    //if (a == false)
-    //{
-    //    sk->StartShake(2, 2, 2);
-    //    a = true;
-    //}
-
-    //DrawString(0 + offset.x, 0 + offset.y, "aaaaaaaaaaaaaaaaa", GetColor(255, 255, 255), TRUE);
 
 #if _DEBUG
     if(current_stage)
@@ -1267,4 +1106,272 @@ void GameMainScene::DrawGameOverEffect() {
         DrawString(D_WIN_MAX_X / 2 - 200, D_WIN_MAX_Y / 2 - 32, "GAME OVER", GetColor(255, 255, 255));
         SetFontSize(16);
     }
+}
+
+
+eSceneType GameMainScene::UpdateGameplay(float delta)
+{
+    // タイマー更新（黒フェードやUI用）
+    black_in_timer += delta;
+    line_effect_timer += delta;
+    eSceneType scene_type = GetNowSceneType();
+
+    // エフェクト更新
+    if (auto* effectMgr = Singleton<EffectManager>::GetInstance()) {
+        effectMgr->Update(delta);
+    }
+
+    // ステージ更新
+    if (current_stage) {
+        current_stage->Update(delta);
+    }
+
+    // 画面シェイク更新
+    if (auto* shakeMgr = Singleton<ShakeManager>::GetInstance()) {
+        shakeMgr->Update(delta);
+    }
+
+    // === ステージ4 警告演出 ===
+    if (current_stage && current_stage->GetStageID() == StageID::Stage4) {
+        red_alpha_timer += delta * DX_PI;  // 点滅速度
+        WarningUpdate(delta);              // 警告アニメ進行
+    }
+
+    // === ステージクリア・遷移処理 ===
+    if (current_stage && current_stage->IsFinished()) {
+        if (current_stage->IsClear()) {
+            scene_type = ProceedToNextStage(delta);
+        }
+        else if (current_stage->IsOver()) {
+            scene_type = UpdateGameOverState(delta);
+        }
+    }
+
+    return scene_type;
+}
+
+eSceneType GameMainScene::ProceedToNextStage(float delta)
+{
+    StageID id = current_stage->GetStageID();
+
+    // ステージ3 → ステージ4 専用フェード演出
+    if (id == StageID::Stage3)
+    {
+        black_fade_timer += delta;
+        if (alpha >= 255)
+        {
+            StopSoundMem(stage_bgm3);
+            StageBase* next_stage = current_stage->GetNextStage(player);
+
+            current_stage->Finalize();
+            delete current_stage;
+            current_stage = nullptr;
+
+            if (next_stage)
+            {
+                current_stage = next_stage;
+                current_stage->Initialize();
+                current_bgm_handle = stage_bgm4;
+                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
+            }
+            else
+            {
+                return eSceneType::eTitle;
+            }
+        }
+    }
+    else if (id == StageID::Stage4)
+    {
+        end_sequence_started = true;
+        if (player) player->SetShotStop(true);
+
+        end_sequence_timer += delta;
+        const float fade_duration = 2.0f;
+        if (end_sequence_timer >= 1.0f && end_sequence_timer < 1.0f + fade_duration)
+        {
+            float t = (end_sequence_timer - 1.0f) / fade_duration;
+            end_fade_alpha = static_cast<int>(255 * Min(t, 1.0f));
+        }
+        else if (end_sequence_timer >= 8.0f)
+        {
+            current_stage->Finalize();
+            delete current_stage;
+            current_stage = nullptr;
+            return eSceneType::eTitle;
+        }
+    }
+    else
+    {
+        StageBase* next_stage = current_stage->GetNextStage(player);
+
+        current_stage->Finalize();
+        delete current_stage;
+        current_stage = nullptr;
+
+        if (next_stage)
+        {
+            current_stage = next_stage;
+            current_stage->Initialize();
+
+            if (current_stage->GetStageID() == StageID::Stage3)
+            {
+                StopSoundMem(current_bgm_handle);
+                current_bgm_handle = stage_bgm3;
+                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
+            }
+        }
+        else
+        {
+            return eSceneType::eTitle;
+        }
+    }
+    return GetNowSceneType();
+}
+
+eSceneType GameMainScene::UpdateGameOverState(float delta)
+{
+    gameover_timer += delta;
+
+    if (gameover_timer > 5.0f)
+    {
+
+        retry = true;
+        InputManager* input = Singleton<InputManager>::GetInstance();
+
+        if (input->GetKeyDown(KEY_INPUT_UP) || input->GetKeyDown(KEY_INPUT_W) ||
+            input->GetButtonDown(XINPUT_BUTTON_DPAD_UP)) {
+            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+            m_selectedIndex = (m_selectedIndex + 1) % 2;
+        }
+
+        if (input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_S) ||
+            input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN)) {
+            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+            m_selectedIndex = (m_selectedIndex + 1) % 2;
+        }
+
+        if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)) {
+            if (m_selectedIndex == 0) {
+                // === RETRY ===
+                GameObjectManager::GetInstance()->Finalize();
+                ScoreData::GetInstance()->Reset();
+
+                if (current_stage) {
+                    StageID id = current_stage->GetStageID();
+                    current_stage->Finalize();
+                    delete current_stage;
+                    current_stage = nullptr;
+
+                    player = GameObjectManager::GetInstance()->CreateObject<Player>(
+                        Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) + 220.0f)
+                    );
+
+                    switch (id) {
+                    case StageID::Stage1: current_stage = new Stage1(player); break;
+                    case StageID::Stage2: current_stage = new Stage2(player); break;
+                    case StageID::Stage3: current_stage = new Stage3(player); break;
+                    case StageID::Stage4: current_stage = new Stage4(player); break;
+                    }
+
+                    if (current_stage) current_stage->Initialize();
+                    gameover_timer = 0.0f;
+                    retry = false;
+                    m_selectedIndex = 0;
+                }
+            }
+            else if (m_selectedIndex == 1) {
+                // === BACK TITLE ===
+                GameObjectManager::GetInstance()->Finalize();
+                return eSceneType::eTitle;
+            }
+        }
+    }
+
+    return GetNowSceneType();
+}
+
+eSceneType GameMainScene::UpdatePauseMenu(float delta)
+{
+    InputManager* input = Singleton<InputManager>::GetInstance();
+
+    // ==========================
+    // 透明度フェード（暗転）
+    // ==========================
+    pause_timer += delta;
+    if (pause_timer >= 0.01f)
+    {
+        transparent++;
+        pause_timer = 0.0f;
+    }
+    if (transparent >= 100)
+        transparent = 100;
+
+    // ==========================
+    // カーソル移動（上下）
+    // ==========================
+    bool movedUp = input->GetKeyDown(KEY_INPUT_UP) ||
+        input->GetKeyDown(KEY_INPUT_W) ||
+        input->GetButtonDown(XINPUT_BUTTON_DPAD_UP);
+
+    bool movedDown = input->GetKeyDown(KEY_INPUT_DOWN) ||
+        input->GetKeyDown(KEY_INPUT_S) ||
+        input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN);
+
+    // スティック入力（上下） + クールダウン
+    static float stickCooldown = 0.0f;
+    stickCooldown -= delta;
+
+    Vector2D stick = input->GetLeftStick();
+    const float STICK_THRESHOLD = 0.5f;
+    const float COOLDOWN_TIME = 0.2f;
+
+    if (stickCooldown <= 0.0f)
+    {
+        if (stick.y > STICK_THRESHOLD)
+        {
+            movedUp = true;
+            stickCooldown = COOLDOWN_TIME;
+        }
+        else if (stick.y < -STICK_THRESHOLD)
+        {
+            movedDown = true;
+            stickCooldown = COOLDOWN_TIME;
+        }
+    }
+
+    if (movedUp)
+    {
+        PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+        m_selectedIndex = (m_selectedIndex + 1) % 2;
+    }
+
+    if (movedDown)
+    {
+        PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+        m_selectedIndex = (m_selectedIndex + 1) % 2;
+    }
+
+    // ==========================
+    // 決定処理（スペース or Aボタン）
+    // ==========================
+    if (!m_startTransitioning &&
+        (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)))
+    {
+        if (m_selectedIndex == 0)
+        {
+            // === ゲーム再開 ===
+            isPaused = false;
+        }
+        else if (m_selectedIndex == 1)
+        {
+            // === タイトルへ戻る ===
+            auto* objm = Singleton<GameObjectManager>::GetInstance();
+            if (objm) objm->Finalize();
+
+            return eSceneType::eTitle;
+        }
+    }
+    return GetNowSceneType();
 }
