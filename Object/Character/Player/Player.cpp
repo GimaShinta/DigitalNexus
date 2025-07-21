@@ -85,14 +85,18 @@ void Player::Update(float delta_second)
 
 		if (dead_animation_timer >= dead_animation_duration)
 		{
-			EffectManager* fm = Singleton<EffectManager>::GetInstance();
-			int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
+			if (is_alive)
+			{
+				EffectManager* fm = Singleton<EffectManager>::GetInstance();
+				int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
 
-			is_alive = false;
+				is_alive = false;
+			}
 		}
 		else
 		{
 			game_over_player = true;
+			shot_stop = true;
 
 			//// 爆発演出を定期的に再生
 			//if (dead_animation_timer - last_explosion_time > 0.2f)  // 0.2秒ごとに
@@ -173,63 +177,66 @@ void Player::Draw(const Vector2D& screen_offset) const
 {
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, brend);
 
-	if (is_shot_anim == true)
+	if (is_alive)
 	{
-		float position = location.x - 3.0f;
-
-		if (stop == false)
+		if (is_shot_anim == true)
 		{
-			if (powerd <= 1)
-			{
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
+			float position = location.x - 3.0f;
 
-			}
-			else if (powerd == 2)
+			if (stop == false)
 			{
-				DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
-				DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
-			}
-			else
-			{
-				DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
-				DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+				if (powerd <= 1)
+				{
+					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
+
+				}
+				else if (powerd == 2)
+				{
+					DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
+				}
+				else
+				{
+					DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+				}
 			}
 		}
-	}
 
-	DrawRotaGraph(location.x - 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
-	DrawRotaGraph(location.x + 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
+		DrawRotaGraph(location.x - 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
+		DrawRotaGraph(location.x + 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
 
-	switch (anim_state)
-	{
-	case PlayerAnimState::Neutral:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
-		break;
-	case PlayerAnimState::TiltLeft:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_left[anim_index], TRUE);
-		break;
-	case PlayerAnimState::TiltRight:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_right[anim_index], TRUE);
-		break;
-	}
+		switch (anim_state)
+		{
+		case PlayerAnimState::Neutral:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
+			break;
+		case PlayerAnimState::TiltLeft:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_left[anim_index], TRUE);
+			break;
+		case PlayerAnimState::TiltRight:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_right[anim_index], TRUE);
+			break;
+		}
 
-	if (is_shield == true)
-	{
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
-		DrawRotaGraph(location.x, location.y, 0.35f, 0.0f, shield, TRUE);
+		if (is_shield == true)
+		{
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
+			DrawRotaGraph(location.x, location.y, 0.35f, 0.0f, shield, TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+		}
+
+		// ライフ表示などはそのまま
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+	#if _DEBUG
+		if (is_attack_type)
+			DrawString(location.x - 30.0f, location.y, "Attack Type", GetColor(255, 255, 255), TRUE);
+		else
+			DrawString(location.x - 35.0f, location.y, "Defence Type", GetColor(255, 255, 255), TRUE);
+	#endif
 	}
-
-	// ライフ表示などはそのまま
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-
-#if _DEBUG
-	if (is_attack_type)
-		DrawString(location.x - 30.0f, location.y, "Attack Type", GetColor(255, 255, 255), TRUE);
-	else
-		DrawString(location.x - 35.0f, location.y, "Defence Type", GetColor(255, 255, 255), TRUE);
-#endif
 }
 
 // 終了時処理

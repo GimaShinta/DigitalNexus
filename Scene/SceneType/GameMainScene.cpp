@@ -65,6 +65,9 @@ void GameMainScene::Initialize()
 
     effe->LoadAllEffects(); // ★ここで明示的に画像を先読みさせる！
     se->LoadSE();
+
+    previous_score_count = 0.0f;
+    score_logs.clear(); // 念のためリセット
 }
 
 /// <summary>
@@ -84,16 +87,6 @@ eSceneType GameMainScene::Update(float delta_second)
         isPaused = !isPaused;
         m_selectedIndex = 0;
     }
-
-    if (!isPaused) {
-        eSceneType type =  UpdateGameplay(delta_second);
-        return type;
-    }
-    else {
-        eSceneType type = UpdatePauseMenu(delta_second);
-        return type;
-    }
-
 
     // ======= スコアログのスライド演出更新 =======
     for (auto& log : score_logs)
@@ -171,6 +164,15 @@ eSceneType GameMainScene::Update(float delta_second)
     effect_timer += delta_second;
     if (effect_timer > effect_duration) {
         effect_shield_on = effect_shield_off = effect_powerup = false;
+    }
+
+    if (!isPaused) {
+        eSceneType type = UpdateGameplay(delta_second);
+        return type;
+    }
+    else {
+        eSceneType type = UpdatePauseMenu(delta_second);
+        return type;
     }
 
 	return GetNowSceneType();
@@ -1049,7 +1051,7 @@ void GameMainScene::DrawGameOverEffect() {
     }
     else if (gameover_timer < 3.5f)
     {
-        gameover_alpha = 110;
+        gameover_alpha = 90;
 
 #if D
         // 両端に赤いフィルターを描画
@@ -1128,7 +1130,9 @@ eSceneType GameMainScene::UpdateGameplay(float delta)
 
     // 画面シェイク更新
     if (auto* shakeMgr = Singleton<ShakeManager>::GetInstance()) {
-        shakeMgr->Update(delta);
+        if (player && player->GetIsAlive()) {
+            shakeMgr->Update(delta);
+        }
     }
 
     // === ステージ4 警告演出 ===
@@ -1279,6 +1283,8 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
                     gameover_timer = 0.0f;
                     retry = false;
                     m_selectedIndex = 0;
+
+                    return GetNowSceneType();
                 }
             }
             else if (m_selectedIndex == 1) {

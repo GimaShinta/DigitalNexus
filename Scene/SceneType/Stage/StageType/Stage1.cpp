@@ -133,6 +133,7 @@ void Stage1::DrawScrollBackground() const
     {
         // 死亡後も offset_prev を変えない → 固定視点
         camera_target_offset = camera_target_offset_prev;
+
     }
 
     // オフセットをなめらかに反映
@@ -368,12 +369,10 @@ void Stage1::UpdateGameStatus(float delta_second)
     }
 
     // プレイヤーが倒れたらゲームオーバー
-    if (player != nullptr && player->GetIsAlive() == false && is_clear == false)
+    if (player != nullptr && player->GetGameOver() && is_clear == false)
     {
-        //// オブジェクト管理クラスのインスタンスを取得
-        //GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-        //objm->Finalize();
-        player->SetDestroy();
+        is_over = true;
+        is_finished = true;
     }
 
     // ステージ終了時の動き
@@ -386,24 +385,6 @@ void Stage1::UpdateGameStatus(float delta_second)
         {
             is_finished = true;
         }
-    }
-    else if (player && player->GetGameOver())
-    {
-        //// 少し待機したら終了
-        //scene_timer += delta_second;
-        //trans_timer += delta_second;
-
-        //if (trans_timer >= 0.02f)
-        //    trans_timer = 0.0f;
-        //if (transparent < 255)
-        //    transparent++;
-
-        //if (scene_timer >= 7.0f)
-        //{
-        //    is_finished = true;
-        //}
-        is_over = true;
-        is_finished = true;
     }
 }
 
