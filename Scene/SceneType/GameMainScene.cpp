@@ -1141,9 +1141,11 @@ eSceneType GameMainScene::UpdateGameplay(float delta)
         WarningUpdate(delta);              // 警告アニメ進行
     }
 
+    InputManager* input = Singleton<InputManager>::GetInstance();
+
     // === ステージクリア・遷移処理 ===
-    if (current_stage && current_stage->IsFinished()) {
-        if (current_stage->IsClear()) {
+    if (current_stage && current_stage->IsFinished() || input->GetKeyDown(KEY_INPUT_1)) {
+        if (current_stage->IsClear() || input->GetKeyDown(KEY_INPUT_1)) {
             scene_type = ProceedToNextStage(delta);
         }
         else if (current_stage->IsOver()) {
@@ -1176,8 +1178,6 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
                 current_stage = next_stage;
                 current_stage->Initialize();
                 current_bgm_handle = stage_bgm4;
-                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
-                PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
             }
             else
             {
@@ -1231,6 +1231,7 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
             return eSceneType::eTitle;
         }
     }
+
     return GetNowSceneType();
 }
 
@@ -1283,6 +1284,22 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
                     gameover_timer = 0.0f;
                     retry = false;
                     m_selectedIndex = 0;
+
+                    if (current_stage->GetStageID() == StageID::Stage3)
+                    {
+                        StopSoundMem(current_bgm_handle);
+                        current_bgm_handle = stage_bgm3;
+                        ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                        PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
+                    }
+
+                    if (current_stage->GetStageID() == StageID::Stage4)
+                    {
+                        StopSoundMem(current_bgm_handle);
+                        current_bgm_handle = stage_bgm4;
+                        ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                        PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
+                    }
 
                     return GetNowSceneType();
                 }

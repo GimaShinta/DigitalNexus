@@ -50,7 +50,7 @@ private:
 	bool is_shield_damage = false;
 	// 追加：シールドの切り替え直後1フレームスキップ用フラグ
 	bool just_switched_to_second = false;
-	int powerd = 1;
+	int powerd = 2;
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;
@@ -110,6 +110,8 @@ private:
 	float shot_interval = 0.0f;
 
 	int effe_id = 0;
+
+	class PlayerDefenceBullet* defence_bullet = nullptr;
 public:
 	Player();
 	~Player();
@@ -180,6 +182,11 @@ public:
 private:
 	bool force_neutral_anim = false;
 
+
+	float Min(float a, float b)
+	{
+		return (a < b) ? a : b;
+	}
 
 };
 

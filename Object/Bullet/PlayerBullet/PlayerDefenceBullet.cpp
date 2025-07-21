@@ -33,6 +33,20 @@ void PlayerDefenceBullet::Finalize()
 {
 }
 
+void PlayerDefenceBullet::SetDirection(float degree)
+{
+	angle_deg = degree;
+	const float speed = 1500.0f;
+	float rad = degree * DX_PI / 180.0f;
+	velocity.x = speed * std::sin(rad);
+	velocity.y = -speed * std::cos(rad);
+}
+
+void PlayerDefenceBullet::Draw(const Vector2D& screen_offset) const
+{
+	DrawRotaGraphF(location.x, location.y, 1.0f, angle_deg * DX_PI / 180.0f, image, TRUE);
+}
+
 void PlayerDefenceBullet::OnHitCollision(GameObjectBase* hit_object)
 {
 	// Ç∑Ç≈Ç…ãzé˚çœÇ›Ç»ÇÁñ≥éã

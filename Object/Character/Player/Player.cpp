@@ -97,20 +97,6 @@ void Player::Update(float delta_second)
 		{
 			game_over_player = true;
 			shot_stop = true;
-
-			//// 爆発演出を定期的に再生
-			//if (dead_animation_timer - last_explosion_time > 0.2f)  // 0.2秒ごとに
-			//{
-			//	last_explosion_time = dead_animation_timer;
-
-			//	Vector2D effect_pos = location;
-			//	effect_pos.x += GetRand(30);
-			//	effect_pos.y += GetRand(30);
-
-			//	EffectManager* fm = Singleton<EffectManager>::GetInstance();
-			//	int id = fm->PlayerAnimation(EffectName::eExprotion2, effect_pos, 0.05f, false); // スケール2倍
-			//	fm->SetScale(id, 1.0f);
-			//}
 		}
 	}
 	else
@@ -232,9 +218,9 @@ void Player::Draw(const Vector2D& screen_offset) const
 
 	#if _DEBUG
 		if (is_attack_type)
-			DrawString(location.x - 30.0f, location.y, "Attack Type", GetColor(255, 255, 255), TRUE);
+			DrawString(location.x - 50.0f, location.y, "Alpha Code", GetColor(255, 255, 255), TRUE);
 		else
-			DrawString(location.x - 35.0f, location.y, "Defence Type", GetColor(255, 255, 255), TRUE);
+			DrawString(location.x - 50.0f, location.y, "Omega Code", GetColor(255, 255, 255), TRUE);
 	#endif
 	}
 }
@@ -708,29 +694,42 @@ void Player::GenarateBullet()
 		}
 		else
 		{
-			// 上方向に生成
-			if (powerd <= 1)
+			struct BulletAngleInfo {
+				float angle_deg;
+				std::vector<float> offset_x_list;
+			};
+
+			std::vector<BulletAngleInfo> angle_infos;
+
+			// 中央（0°）
+			if (powerd == 1)
 			{
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 2発
 			}
 			else if (powerd == 2)
 			{
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 30, location.y));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 30, location.y));
+				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 中央2発
+				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } }); // 左30°
+				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } }); // 右30°
 			}
-			else
+			else // powerd >= 3
 			{
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 30, location.y));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x - 30, location.y));
-				objm->CreateObject<PlayerDefenceBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+				angle_infos.push_back({ 0.0f, { -15.0f, 0.0f, +15.0f } });  // 中央3発
+				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } });      // 左30°
+				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } });      // 右30°
+				angle_infos.push_back({ -30.0f, { 0.0f } });                // 左60° 1発
+				angle_infos.push_back({ 30.0f, { 0.0f } });                // 右60° 1発
 			}
 
+			for (const auto& info : angle_infos)
+			{
+				for (float offset_x : info.offset_x_list)
+				{
+					Vector2D pos = location + Vector2D(offset_x, -D_OBJECT_SIZE);
+					auto* bullet = objm->CreateObject<PlayerDefenceBullet>(pos);
+					bullet->SetDirection(info.angle_deg);
+				}
+			}
 		}
 	}
 }

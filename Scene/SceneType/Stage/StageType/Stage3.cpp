@@ -577,13 +577,10 @@ void Stage3::UpdateGameStatus(float delta_second)
     }
 
     // プレイヤーが倒れたらゲームオーバー
-    if (player != nullptr && player->GetIsAlive() == false && is_clear == false)
+    if (player != nullptr && player->GetGameOver() && is_clear == false)
     {
-        //// オブジェクト管理クラスのインスタンスを取得
-        //GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-        //objm->Finalize();
-        //is_over = true;
-        player->SetDestroy();
+        is_over = true;
+        is_finished = true;
     }
 
     // ステージ終了時の動き
