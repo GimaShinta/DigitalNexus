@@ -165,6 +165,16 @@ eSceneType GameMainScene::Update(float delta_second)
     if (effect_timer > effect_duration) {
         effect_shield_on = effect_shield_off = effect_powerup = false;
     }
+    
+    if (player)
+        if (player->GetNowType() == PlayerType::AlphaCode)
+            StartUITransition(PlayerType::AlphaCode);
+        else
+            StartUITransition(PlayerType::OmegaCode);
+
+    if(player)
+        UpdateUITransition(delta_second);
+
 
     if (!isPaused) {
         eSceneType type = UpdateGameplay(delta_second);
@@ -582,14 +592,17 @@ void GameMainScene::DrawUI()
     DrawGraph(0, 0, obi_handle, TRUE);
     DrawTurnGraph(D_WIN_MAX_X - 290, 0, obi_handle, TRUE);
 #endif
-    // === 左のサイドパネル（サイバー風） ===
+    // === 左のサイドパネル（サイバー風 / タイプ演出対応） ===
     {
-        int left_x1 = 0 + (int)offset.x;
-        int left_x2 = (D_WIN_MAX_X / 2) - 350 + (int)offset.x;
-        int left_x3 = 0;
-        int left_x4 = (D_WIN_MAX_X / 2) - 350;
-        int panel_color = GetColor(10, 10, 30);
-        int neon_color = GetColor(0, 255, 255);
+        int type_offset_x = GetUIXOffsetLeft();
+
+        int left_x1 = 0 + (int)offset.x + type_offset_x;
+        int left_x2 = (D_WIN_MAX_X / 2) - 350 + (int)offset.x + type_offset_x;
+        int left_x3 = 0 + type_offset_x;
+        int left_x4 = (D_WIN_MAX_X / 2) - 350 + type_offset_x;
+
+        int panel_color = GetTypeColor(10, 10, 30, 30, 10, 10); // 背景補間
+        int neon_color = GetTypeColor(0, 255, 255, 255, 80, 80); // 線補間
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
         DrawBox(left_x3, 0, left_x4, D_WIN_MAX_Y, panel_color, TRUE);
@@ -601,20 +614,26 @@ void GameMainScene::DrawUI()
         if (current_stage)
         {
             float scanline_speed = (current_stage->GetStageID() == StageID::Stage4) ? 600.0f : 60.0f;
-            int color = (current_stage->GetStageID() == StageID::Stage4) ? GetColor(255, 0, 0) : GetColor(0, 150, 255);
+
+            // スキャンラインの色もタイプ補間
+            int color = GetTypeColor(0, 150, 255, 255, 80, 80);
+
             int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
             DrawLine(left_x1, scan_y + (int)offset.y, left_x2, scan_y + (int)offset.y, color);
         }
     }
 
-    // === 右のサイドパネル（サイバー風） ===
+    // === 右のサイドパネル（サイバー風 / タイプ演出対応） ===
     {
-        int right_x1 = (D_WIN_MAX_X / 2) + 350 + (int)offset.x;
-        int right_x2 = D_WIN_MAX_X + (int)offset.x;
-        int right_x3 = (D_WIN_MAX_X / 2) + 350;
-        int right_x4 = D_WIN_MAX_X;
-        int panel_color = GetColor(10, 10, 30);
-        int neon_color = GetColor(0, 255, 255);
+        int type_offset_x = GetUIXOffsetRight();
+
+        int right_x1 = (D_WIN_MAX_X / 2) + 350 + (int)offset.x + type_offset_x;
+        int right_x2 = D_WIN_MAX_X + (int)offset.x + type_offset_x;
+        int right_x3 = (D_WIN_MAX_X / 2) + 350 + type_offset_x;
+        int right_x4 = D_WIN_MAX_X + type_offset_x;
+
+        int panel_color = GetTypeColor(10, 10, 30, 30, 10, 10); // 背景補間
+        int neon_color = GetTypeColor(0, 255, 255, 255, 80, 80); // 線補間
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
         DrawBox(right_x3, 0, right_x4, D_WIN_MAX_Y, panel_color, TRUE);
@@ -626,90 +645,122 @@ void GameMainScene::DrawUI()
         if (current_stage)
         {
             float scanline_speed = (current_stage->GetStageID() == StageID::Stage4) ? 600.0f : 60.0f;
-            int color = (current_stage->GetStageID() == StageID::Stage4) ? GetColor(255, 0, 0) : GetColor(0, 150, 255);
+
+            int color = GetTypeColor(0, 150, 255, 255, 80, 80); // スキャンライン色補間
             int scan_y = static_cast<int>(line_effect_timer * scanline_speed) % D_WIN_MAX_Y;
             DrawLine(right_x1, scan_y + (int)offset.y, right_x2, scan_y + (int)offset.y, color);
         }
     }
 
-    // ==== スコアログ（左下） ====
-    int log_base_x = 30 + (int)offset.x;
-    int log_base_y = D_WIN_MAX_Y - 400 + (int)offset.y;
-    int line_height = 40;
-
-    int count = static_cast<int>(score_logs.size());
-    for (int i = 0; i < count; ++i)
+    // ==== スコアログ（左下 / タイプ演出対応） ====
     {
-        const auto& log = score_logs[count - 1 - i];
-        int draw_y = log_base_y + static_cast<int>(i * line_height + log.y_offset);
+        int type_offset_x = GetUIXOffsetLeft();
 
-        DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 210, draw_y - 2, GetColor(0, 255, 255));
+        int log_base_x = 30 + (int)offset.x + type_offset_x;
+        int log_base_y = D_WIN_MAX_Y - 400 + (int)offset.y;
+        int line_height = 40;
 
-        std::string label = "Score ";
-        std::string value;
+        int count = static_cast<int>(score_logs.size());
+        for (int i = 0; i < count; ++i)
+        {
+            const auto& log = score_logs[count - 1 - i];
+            int draw_y = log_base_y + static_cast<int>(i * line_height + log.y_offset);
 
-        const char* plus_pos = strchr(log.text.c_str(), '+');
-        value = plus_pos ? plus_pos : "";
+            int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
+            int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
 
-        int value_width = GetDrawStringWidthToHandle(value.c_str(), (int)value.size(), font_orbitron);
-        int value_x = log_base_x + 200 - value_width;
+            DrawLine(log_base_x - 10, draw_y - 2, log_base_x + 210, draw_y - 2, line_color);
 
-        DrawStringToHandle(log_base_x, draw_y, label.c_str(), GetColor(0, 255, 255), font_orbitron);
-        DrawStringToHandle(value_x, draw_y, value.c_str(), GetColor(0, 255, 255), font_orbitron);
+            std::string label = "Score ";
+            std::string value;
+
+            const char* plus_pos = strchr(log.text.c_str(), '+');
+            value = plus_pos ? plus_pos : "";
+
+            int value_width = GetDrawStringWidthToHandle(value.c_str(), (int)value.size(), font_orbitron);
+            int value_x = log_base_x + 200 - value_width;
+
+            DrawStringToHandle(log_base_x, draw_y, label.c_str(), text_color, font_orbitron);
+            DrawStringToHandle(value_x, draw_y, value.c_str(), text_color, font_orbitron);
+        }
     }
-    // ==== LIFE - STOCK（右上） ====
+
+    // ==== LIFE - STOCK（右上 / タイプ演出対応） ====
     if (player)
     {
-        int x = D_WIN_MAX_X - 230 + (int)offset.x;
+        int type_offset_x = GetUIXOffsetRight();
+
+        int x = D_WIN_MAX_X - 230 + (int)offset.x + type_offset_x;
         int y = 80 + (int)offset.y;
 
-        DrawStringToHandle(x + 10, y + 4, "LIFE - STOCK", GetColor(0, 255, 255), font_orbitron);
+        int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
+        int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
+        int icon_color = GetTypeColor(255, 100, 100, 0, 255, 255);
+
+        DrawStringToHandle(x + 10, y + 4, "LIFE - STOCK", text_color, font_orbitron);
 
         for (int i = 0; i < player->GetLife(); ++i)
         {
             int px = x + 20 + i * 20;
             int py = y + 32;
             int sz = 14;
-            DrawTriangle(px, py + sz, px + sz / 2, py, px + sz, py + sz, GetColor(255, 100, 100), TRUE);
+            DrawTriangle(px, py + sz, px + sz / 2, py, px + sz, py + sz, icon_color, TRUE);
         }
 
-        DrawLine(x, y + 64, x + 200, y + 64, GetColor(0, 255, 255));
+        DrawLine(x, y + 64, x + 200, y + 64, line_color);
     }
 
-    // ==== CHARGE ゲージ ====
+    // ==== CHARGE ゲージ（タイプ演出対応） ====
     if (player)
     {
-        int x = D_WIN_MAX_X - 230 + (int)offset.x;
+        int type_offset_x = GetUIXOffsetRight();
+
+        int x = D_WIN_MAX_X - 230 + (int)offset.x + type_offset_x;
         int y = 150 + (int)offset.y;
 
-        DrawStringToHandle(x + 10, y + 2, "CHARGE", GetColor(0, 255, 255), font_orbitron);
+        int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
+        int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
+        int base_bar_color = GetTypeColor(30, 30, 30, 40, 10, 10);
+        int flash = (GetNowCount() % 100 > 50) ? 255 : 100;
+
+        DrawStringToHandle(x + 10, y + 2, "CHARGE", text_color, font_orbitron);
 
         float rate = Clamp(player->GetChargeRate(), 0.0f, 1.0f);
         int bar_x = x + 10, bar_y = y + 25;
         int bar_w = 180, bar_h = 12;
 
-        int fill = player->CanUseSpecial() ? GetColor(0, (GetNowCount() % 100 > 50) ? 255 : 100, 255) : GetColor(0, 255, 255);
-        DrawBox(bar_x, bar_y, bar_x + bar_w, bar_y + bar_h, GetColor(30, 30, 30), TRUE);
-        DrawBox(bar_x, bar_y, bar_x + static_cast<int>(bar_w * rate), bar_y + bar_h, fill, TRUE);
+        int fill_color = player->CanUseSpecial()
+            ? GetTypeColor(0, flash, 255, flash, 80, 80)
+            : GetTypeColor(0, 255, 255, 255, 160, 160);
+
+        DrawBox(bar_x, bar_y, bar_x + bar_w, bar_y + bar_h, base_bar_color, TRUE);
+        DrawBox(bar_x, bar_y, bar_x + static_cast<int>(bar_w * rate), bar_y + bar_h, fill_color, TRUE);
 
         if (player->CanUseSpecial() && !player->GetGameOver())
         {
             int text_x = x + 140;
             int text_y = y + 30;
             int pulse = (GetNowCount() % 100 > 50) ? 255 : 100;
-            DrawStringToHandle(text_x - 25, text_y + 5, "Press B!!", GetColor(255, pulse, pulse), font_orbitron);
+            int pulse_color = GetTypeColor(255, pulse, pulse, pulse, 80, 80);
+
+            DrawStringToHandle(text_x - 25, text_y + 5, "Press B!!", pulse_color, font_orbitron);
         }
 
-        DrawLine(x, y + 60, x + 200, y + 60, GetColor(0, 255, 255));
+        DrawLine(x, y + 60, x + 200, y + 60, line_color);
     }
 
-    // ==== POWER（ゲージ型） ====
+    // ==== POWER（ゲージ型 / タイプ演出対応） ====
     if (player)
     {
-        int x = D_WIN_MAX_X - 230 + (int)offset.x;
+        int type_offset_x = GetUIXOffsetRight();
+
+        int x = D_WIN_MAX_X - 230 + (int)offset.x + type_offset_x;
         int y = 220 + (int)offset.y;
 
-        DrawStringToHandle(x + 10, y + 2, "POWER", GetColor(0, 255, 255), font_orbitron);
+        int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
+        int line_color = GetTypeColor(255, 255, 255, 255, 100, 100);
+
+        DrawStringToHandle(x + 10, y + 2, "POWER", text_color, font_orbitron);
 
         int level = player->GetPowerd();
         const int max_level = 3;
@@ -718,9 +769,18 @@ void GameMainScene::DrawUI()
         {
             int px = x + 20 + i * 20;
             int py = y + 25;
-            int color = (i < level)
-                ? (level == max_level ? GetColor(100, 255, 100) : GetColor(255, 255, 100))
-                : GetColor(50, 50, 50);
+
+            int color;
+            if (i < level)
+            {
+                color = (level == max_level)
+                    ? GetTypeColor(100, 255, 100, 255, 120, 120)
+                    : GetTypeColor(255, 255, 100, 255, 180, 120);
+            }
+            else
+            {
+                color = GetTypeColor(50, 50, 50, 80, 20, 20);
+            }
 
             DrawBox(px, py, px + 14, py + 14, color, TRUE);
         }
@@ -728,31 +788,41 @@ void GameMainScene::DrawUI()
         int bar_start = x + 20;
         int bar_end = x + 20 + (max_level - 1) * 20 + 14;
         int bar_y = y + 42;
-        DrawLine(bar_start, bar_y, bar_end, bar_y, GetColor(255, 255, 255));
 
-        DrawStringToHandle(bar_start - 10, bar_y + 5, "E", GetColor(255, 255, 255), font_orbitron);
-        DrawStringToHandle(bar_end + 5, bar_y + 5, "F", GetColor(255, 255, 255), font_orbitron);
+        DrawLine(bar_start, bar_y, bar_end, bar_y, line_color);
+
+        DrawStringToHandle(bar_start - 10, bar_y + 5, "E", line_color, font_orbitron);
+        DrawStringToHandle(bar_end + 5, bar_y + 5, "F", line_color, font_orbitron);
     }
 
-    // ==== SHIELD ====
+    // ==== SHIELD（タイプ演出対応） ====
     if (player)
     {
-        int x = D_WIN_MAX_X - 230 + (int)offset.x;
+        int type_offset_x = GetUIXOffsetRight();
+
+        int x = D_WIN_MAX_X - 230 + (int)offset.x + type_offset_x;
         int y = 290 + (int)offset.y;
 
-        DrawStringToHandle(x + 10, y + 2, "SHIELD", GetColor(0, 255, 255), font_orbitron);
+        int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
+        int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
+
+        DrawStringToHandle(x + 10, y + 2, "SHIELD", text_color, font_orbitron);
 
         const char* shield_text = player->GetShieldOn() ? "ON" : "OFF";
-        int color = player->GetShieldOn() ? GetColor(0, 255, 100) : GetColor(255, 100, 100);
-        DrawStringToHandle(x + 20, y + 25, shield_text, color, font_digital);
+        int status_color = player->GetShieldOn()
+            ? GetTypeColor(0, 255, 100, 100, 255, 200)
+            : GetTypeColor(255, 100, 100, 255, 60, 60);
+
+        DrawStringToHandle(x + 20, y + 25, shield_text, status_color, font_digital);
 
         if (player->GetShieldOn())
         {
             float r = sinf(GetNowCount() / 30.0f) * 5 + 15;
-            DrawCircle(x + 150, y + 35, static_cast<int>(r), GetColor(0, 255, 180), FALSE);
+            int circle_color = GetTypeColor(0, 255, 180, 180, 80, 80);
+            DrawCircle(x + 150, y + 35, static_cast<int>(r), circle_color, FALSE);
         }
 
-        DrawLine(x, y + 70, x + 200, y + 70, GetColor(0, 255, 255));
+        DrawLine(x, y + 70, x + 200, y + 70, line_color);
     }
 
     // ==== SPECIAL READY UI（プレイヤー下に真ん中表示） ====
@@ -775,6 +845,8 @@ void GameMainScene::DrawUI()
 
         int offset = static_cast<int>(line_effect_timer * flow_speed) % gap;
 
+        int color = GetTypeColor(0, 255, 255, 255, 100, 100);
+
         // Stage4判定
         bool is_stage4 = (current_stage && current_stage->GetStageID() == StageID::Stage4);
 
@@ -795,17 +867,17 @@ void GameMainScene::DrawUI()
             int y0 = y + offset;
 
             // 左ライン
-            DrawBox(left_x, y0, left_x + line_width, y0 + 20, line_color, TRUE);
+            DrawBox(left_x, y0, left_x + line_width, y0 + 20, color, TRUE);
             if (is_stage4)
             {
-                DrawCircle(left_x + line_width / 2, y0 + 10, 3, flare_color, TRUE); // フレア追加
+                DrawCircle(left_x + line_width / 2, y0 + 10, 3, color, TRUE); // フレア追加
             }
 
             // 右ライン
-            DrawBox(right_x, y0, right_x + line_width, y0 + 20, line_color, TRUE);
+            DrawBox(right_x, y0, right_x + line_width, y0 + 20, color, TRUE);
             if (is_stage4)
             {
-                DrawCircle(right_x + line_width / 2, y0 + 10, 3, flare_color, TRUE);
+                DrawCircle(right_x + line_width / 2, y0 + 10, 3, color, TRUE);
             }
         }
     }
@@ -815,14 +887,17 @@ void GameMainScene::DrawUI()
         ScoreData* score = Singleton<ScoreData>::GetInstance();
         float total_score = score->GetTotalScore();
 
-        int x = 30 + (int)offset.x;
+        int x = 30 + (int)offset.x + GetUIXOffsetLeft(); // ← 修正済
         int y = 80 + (int)offset.y;
         int w = 240, h = 80;
+        int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
+        int text_color = GetTypeColor(0, 255, 255, 255, 80, 80);
 
-        DrawLine(x, y, x + w, y, GetColor(0, 255, 255));         // 上
-        DrawLine(x, y + h, x + w, y + h, GetColor(0, 255, 255)); // 下
 
-        DrawStringToHandle(x + 10, y + 8, "TOTAL SCORE", GetColor(0, 255, 255), font_orbitron);
+        DrawLine(x, y, x + w, y, line_color);
+        DrawLine(x, y + h, x + w, y + h, line_color);
+
+        DrawStringToHandle(x + 10, y + 8, "TOTAL SCORE", text_color, font_orbitron);
 
         char score_str[64];
         sprintf_s(score_str, sizeof(score_str), "%.0f", total_score);
@@ -835,9 +910,11 @@ void GameMainScene::DrawUI()
 
     // ==== 操作UI（右下） ====
     {
-        const int base_x = D_WIN_MAX_X - 250 + (int)offset.x;
+        const int base_x = D_WIN_MAX_X - 250 + (int)offset.x + GetUIXOffsetRight(); // ← 修正済
         const int base_y = D_WIN_MAX_Y - 240 + (int)offset.y;
         const int line_height = 42;
+
+        int text_color = GetTypeColor(0, 255, 255, 255, 80, 80);
 
         const char* inputs[] = {
             "MOVE    : LeftStick",
@@ -852,7 +929,7 @@ void GameMainScene::DrawUI()
         for (int i = 0; i < 4; ++i)
         {
             int y = base_y + i * line_height;
-            DrawStringToHandle(base_x, y, inputs[i], op_color, font_orbitron);
+            DrawStringToHandle(base_x, y, inputs[i], text_color, font_orbitron);
         }
     }
 
@@ -1397,4 +1474,34 @@ eSceneType GameMainScene::UpdatePauseMenu(float delta)
         }
     }
     return GetNowSceneType();
+}
+
+void GameMainScene::StartUITransition(PlayerType new_type)
+{
+    // すでに切り替え中なら無視する
+    if (ui_transitioning) return;
+
+    // 同じタイプなら無視
+    if (new_type != ui_current_type)
+    {
+        ui_target_type = new_type;
+        ui_transition_timer = 0.0f;
+        ui_transitioning = true;
+    }
+}
+
+void GameMainScene::UpdateUITransition(float delta)
+{
+    // UI演出中は切り替え不可にする
+    player->SetCanChangeType(!ui_transitioning);
+
+    if (!ui_transitioning) return;
+
+    ui_transition_timer += delta;
+    if (ui_transition_timer >= UI_TRANSITION_DURATION)
+    {
+        ui_transitioning = false;
+        ui_current_type = ui_target_type; // 状態を確定
+        ui_transition_timer = 0.0f;       // 念のため
+    }
 }

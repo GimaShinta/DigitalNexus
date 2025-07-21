@@ -277,8 +277,8 @@ void Boss1::Update(float delta_second)
 
         if (random_move_timer >= 1.0f)
         {
-            float vx = (GetRand(200) - 100);
-            float vy = (GetRand(120) - 60);
+            float vx = static_cast<float>(GetRand(200) - 100);
+            float vy = static_cast<float>(GetRand(120) - 60);
             current_velocity = { vx, vy };
             random_move_timer = 0.0f;
         }

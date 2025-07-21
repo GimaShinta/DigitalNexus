@@ -590,27 +590,10 @@ void Stage3::UpdateGameStatus(float delta_second)
         clear_wait_timer += delta_second;
         if (clear_wait_timer >= 5.0f)
         {
+            draw_animation_first = false;
             result_started = true;
             result_timer = 0.0f; // スコア演出タイマーリセット
         }
-    }
-    else if (player && player->GetGameOver())
-    {
-        //// 少し待機したら終了
-        //scene_timer += delta_second;
-        //trans_timer += delta_second;
-
-        //if (trans_timer >= 0.02f)
-        //    trans_timer = 0.0f;
-        //if (transparent < 255)
-        //    transparent++;
-
-        //if (scene_timer >= 7.0f)
-        //{
-        //    is_finished = true;
-        //}
-        is_over = true;
-        is_finished = true;
     }
 }
 

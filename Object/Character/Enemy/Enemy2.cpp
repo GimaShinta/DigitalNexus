@@ -258,7 +258,7 @@ void Enemy2::Pattern6(float delta)
         for (int i = 0; i < bullet_num; ++i)
         {
             float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = angle * DX_PI / 180.0f;
+            float rad = static_cast<float>(angle * DX_PI / 180.0f);
             Vector2D vel(cos(rad) * speed, sin(rad) * speed);
 
             auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet3>(location);
@@ -284,7 +284,7 @@ void Enemy2::Pattern7(float delta)
         for (int i = 0; i < bullet_num; ++i)
         {
             float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = angle * DX_PI / 180.0f;
+            float rad = static_cast<float>(angle * DX_PI / 180.0f);
             Vector2D vel(cos(rad) * speed, sin(rad) * speed);
 
             auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);

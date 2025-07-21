@@ -104,6 +104,14 @@ private:
 
 	float scene_timer = 0.0f;
 	bool retry = false;
+
+	PlayerType ui_current_type = PlayerType::AlphaCode;
+	PlayerType ui_target_type = PlayerType::AlphaCode;
+
+	float ui_transition_timer = 0.0f;
+	bool ui_transitioning = false;
+	const float UI_TRANSITION_DURATION = 0.5f; // 秒数
+
 public:
 	GameMainScene();
 	virtual ~GameMainScene();
@@ -147,14 +155,93 @@ public:
 
 	eSceneType UpdatePauseMenu(float delta);
 
+	void StartUITransition(PlayerType new_type);
+	void UpdateUITransition(float delta);
+
+
 	template <typename T>
 	T Clamp(T value, T min, T max) {
 		return (value < min) ? min : (value > max) ? max : value;
 	}
+
 	float Min(float a, float b)
 	{
 		return (a < b) ? a : b;
 	}
 
-};
+	float Lerp(float a, float b, float t) { return a + (b - a) * t; }
 
+	int GetTypeColor(int r_alpha, int g_alpha, int b_alpha, int r_omega, int g_omega, int b_omega)
+	{
+		float t = (ui_transitioning ? ui_transition_timer / UI_TRANSITION_DURATION : 1.0f);
+		if (ui_current_type == PlayerType::AlphaCode && ui_target_type == PlayerType::OmegaCode)
+		{
+			return GetColor(
+				(int)Lerp(r_alpha, r_omega, t),
+				(int)Lerp(g_alpha, g_omega, t),
+				(int)Lerp(b_alpha, b_omega, t)
+			);
+		}
+		else if (ui_current_type == PlayerType::OmegaCode && ui_target_type == PlayerType::AlphaCode)
+		{
+			return GetColor(
+				(int)Lerp(r_omega, r_alpha, t),
+				(int)Lerp(g_omega, g_alpha, t),
+				(int)Lerp(b_omega, b_alpha, t)
+			);
+		}
+		else if (ui_current_type == PlayerType::OmegaCode)
+		{
+			return GetColor(r_omega, g_omega, b_omega);
+		}
+		else
+		{
+			return GetColor(r_alpha, g_alpha, b_alpha);
+		}
+	}
+
+	int GetUIXOffset()
+	{
+		if (!ui_transitioning) return 0;
+
+		float t = ui_transition_timer / UI_TRANSITION_DURATION;
+		if (t < 0.5f)
+			return static_cast<int>(Lerp(0, -D_WIN_MAX_X, t * 2)); // 左へ退避
+		else
+			return static_cast<int>(Lerp(D_WIN_MAX_X, 0, (t - 0.5f) * 2)); // 右から戻る
+	}
+
+	int GetUIXOffsetLeft()
+	{
+		if (!ui_transitioning) return 0;
+
+		float t = ui_transition_timer / UI_TRANSITION_DURATION;
+		if (t < 0.5f)
+		{
+			// 左へ退避
+			return static_cast<int>(Lerp(0, -D_WIN_MAX_X, t * 2));
+		}
+		else
+		{
+			// 元の位置へ（右から戻る）
+			return static_cast<int>(-Lerp(D_WIN_MAX_X, 0, (t - 0.5f) * 2));
+		}
+	}
+
+	int GetUIXOffsetRight()
+	{
+		if (!ui_transitioning) return 0;
+
+		float t = ui_transition_timer / UI_TRANSITION_DURATION;
+		if (t < 0.5f)
+		{
+			// 右へ退避
+			return static_cast<int>(Lerp(0, D_WIN_MAX_X, t * 2));
+		}
+		else
+		{
+			// 元の位置へ（左から戻る）
+			return static_cast<int>(-Lerp(-D_WIN_MAX_X, 0, (t - 0.5f) * 2));
+		}
+	}
+};

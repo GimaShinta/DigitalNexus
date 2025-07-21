@@ -126,6 +126,9 @@ void Boss3::Update(float delta_second)
 
 
 	if (is_crashing) {
+		if (player)
+			player->SetCanChangeType(false);
+
 		// 衝突処理は無効化
 		collision.object_type = eObjectType::eNone;
 		collision.hit_object_type.clear();
@@ -135,7 +138,7 @@ void Boss3::Update(float delta_second)
 
 		const float crash_duration = 10.0f;
 		float t = Clamp(crash_timer / crash_duration, 0.0f, 1.0f);
-		float eased_t = 1.0f - pow(1.0f - t, 3);
+		float eased_t = static_cast<float>(1.0f - pow(1.0f - t, 3));
 		image_size = Lerp(2.0f, 1.0f, eased_t); // スケール縮小
 
 		// ===== 放物線的な移動 =====
@@ -1045,7 +1048,7 @@ void Boss3::Pattrn4(int bullet_num, float speed, float spiral_interval, float sp
 		for (int i = 0; i < bullet_num; i++)
 		{
 			float angle = (360.0f / bullet_num) * i;
-			float rad = angle * DX_PI / 180.0f;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 
 			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
 
@@ -1083,7 +1086,7 @@ void Boss3::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float 
 		for (int i = 0; i < bullet_num; i++)
 		{
 			float angle = (360.0f / bullet_num) * i;
-			float rad = angle * DX_PI / 180.0f;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 
 			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
 
@@ -1158,7 +1161,7 @@ void Boss3::Pattrn5(float spiral_interval, float spiral_duration_limit, float sp
 		float base_angle = 90.0f; // 上方向
 		float current_angle = base_angle + spiral_angle;
 
-		float rad = current_angle * DX_PI / 180.0f;
+		float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
 		Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
 
 		EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(generate_location);
@@ -1231,7 +1234,7 @@ void Boss3::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 			// マイナスにしたら回転が反転する
 			float current_angle = base_angle + spiral_angle;
 
-			float rad = current_angle * DX_PI / 180.0f;
+			float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
 			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
 
 			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
@@ -1301,7 +1304,7 @@ void Boss3::Pattrn6(float fan_angle_range, float bullet_speed, float fan_interva
 		float base_angle = 90.0f; // 下方向中心
 		float random_angle = base_angle - fan_angle_range / 2.0f + (rand() % (int)fan_angle_range);
 
-		float rad = random_angle * DX_PI / 180.0f;
+		float rad = static_cast<float>(random_angle * DX_PI / 180.0f);
 		Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
 		e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
@@ -1435,7 +1438,7 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 			float angle = base_angle - fan_angle_range / 2.0f +
 				(fan_angle_range / (bullet_count - 1)) * i;
 
-			float rad = angle * DX_PI / 180.0f;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
 			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y - 10.0f));
@@ -1450,7 +1453,7 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 			float angle = base_angle - fan_angle_range / 2.0f +
 				(fan_angle_range / (bullet_count - 1)) * i;
 
-			float rad = angle * DX_PI / 180.0f;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
 			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y - 10.0f));
@@ -1584,7 +1587,7 @@ void Boss3::Pattrn9(int shot_count, float radius, float angular_speed, float bul
 		angles[i] += angular_speed * delta_second; // 角度更新
 		if (angles[i] >= 360.0f) angles[i] -= 360.0f; // 角度を0?360度に調整
 
-		float rad = angles[i] * DX_PI / 180.0f;  // ラジアンに変換
+		float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);  // ラジアンに変換
 
 		// ボスを中心に半径 `radius` の円軌道を描く
 		Vector2D new_pos = generate_location + Vector2D(cos(rad) * radius, sin(rad) * radius);
@@ -1680,7 +1683,7 @@ void Boss3::Pattrn9_2(int shot_count, float radius, float angular_speed, float b
 		angles_left[i] += angular_speed * delta_second;
 		if (angles_left[i] >= 360.0f) angles_left[i] -= 360.0f;
 
-		float rad = angles_left[i] * DX_PI / 180.0f;
+		float rad = static_cast<float>(angles_left[i] * DX_PI / 180.0f);
 		Vector2D new_pos = left_center + Vector2D(cos(rad) * radius, sin(rad) * radius);
 
 		if (i < shots_left.size() && shots_left[i])
@@ -1788,7 +1791,7 @@ void Boss3::Pattrn10(int shot_count, float radius, float angular_speed, float ce
 			angles[i] += angular_speed * delta_second;
 			if (angles[i] >= 360.0f) angles[i] -= 360.0f;
 
-			float rad = angles[i] * DX_PI / 180.0f;
+			float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);
 			Vector2D offset(cos(rad) * radius, sin(rad) * radius);
 
 			if (rotating_shots[i])
@@ -1837,7 +1840,7 @@ void Boss3::Pattrn10_2(int shot_count, float radius, float angular_speed, float 
 			for (int i = 0; i < shot_count; ++i)
 			{
 				float angle = 360.0f / shot_count * i;
-				float rad = angle * DX_PI / 180.0f;
+				float rad = static_cast<float>(angle * DX_PI / 180.0f);
 				Vector2D offset(cos(rad) * radius, sin(rad) * radius);
 
 				// 左側の弾
@@ -1902,7 +1905,7 @@ void Boss3::Pattrn10_2(int shot_count, float radius, float angular_speed, float 
 						data.angle_deg += angular_speed * delta_second;
 						if (data.angle_deg >= 360.0f) data.angle_deg -= 360.0f;
 
-						float rad = data.angle_deg * DX_PI / 180.0f;
+						float rad = static_cast<float>(data.angle_deg * DX_PI / 180.0f);
 						Vector2D offset(cos(rad) * radius, sin(rad) * radius);
 						data.shot->SetLocation(center_pos + offset);
 						break;

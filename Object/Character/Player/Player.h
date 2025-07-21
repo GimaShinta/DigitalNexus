@@ -17,6 +17,12 @@ enum
 	LEVEL3
 };
 
+enum class PlayerType
+{
+	AlphaCode,
+	OmegaCode
+};
+
 class Player : public CharacterBase
 {
 private:
@@ -26,6 +32,9 @@ private:
 		TiltLeft,  // 左傾き
 		TiltRight  // 右傾き
 	};
+
+
+	PlayerType now_type = PlayerType::AlphaCode;
 
 	PlayerAnimState anim_state = PlayerAnimState::Neutral;
 	float anim_timer = 0.0f;
@@ -106,12 +115,14 @@ private:
 
 	bool game_over_player = false;
 
-	bool is_attack_type = true;
 	float shot_interval = 0.0f;
 
 	int effe_id = 0;
 
 	class PlayerDefenceBullet* defence_bullet = nullptr;
+
+	bool can_change_type = true;
+
 public:
 	Player();
 	~Player();
@@ -173,12 +184,16 @@ public:
 	int GetLife() const;
 	void SetShotStop(bool stoping);
 	bool GetGameOver() const;
+	PlayerType GetNowType() const;
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }
 	void SetMobility(bool enable) { is_mobility = enable; }
 
 	void ForceNeutralAnim(bool enable); // 強制ニュートラル用
+
+	void SetCanChangeType(bool enable);
+
 private:
 	bool force_neutral_anim = false;
 

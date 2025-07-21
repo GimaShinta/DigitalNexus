@@ -332,7 +332,7 @@ void Enemy1::Update(float delta_second)
             const float base_angle = pattern_timer * 2.0f;
             for (int i = 0; i < 8; ++i)
             {
-                float angle = base_angle + i * DX_PI / 4.0f;
+                float angle = static_cast<float>(base_angle + i * DX_PI / 4.0f);
                 Vector2D dir(cosf(angle), sinf(angle));
                 auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
                 shot->SetVelocity(dir * 220.0f);

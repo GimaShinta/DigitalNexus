@@ -217,7 +217,7 @@ void Player::Draw(const Vector2D& screen_offset) const
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
 	#if _DEBUG
-		if (is_attack_type)
+		if (now_type == PlayerType::AlphaCode)
 			DrawString(location.x - 50.0f, location.y, "Alpha Code", GetColor(255, 255, 255), TRUE);
 		else
 			DrawString(location.x - 50.0f, location.y, "Omega Code", GetColor(255, 255, 255), TRUE);
@@ -373,13 +373,14 @@ void Player::Shot(float delta_second)
 	shot_timer += delta_second;
 
 	// プレイヤータイプの変更
-	if (input->GetKeyDown(KEY_INPUT_LSHIFT) || 
+	if (can_change_type &&
+		(input->GetKeyDown(KEY_INPUT_LSHIFT) || 
 		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
-		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER))
+		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER)))
 	{
-		if (is_attack_type)
+		if (now_type == PlayerType::AlphaCode)
 		{
-			is_attack_type = false;
+			now_type = PlayerType::OmegaCode;
 			image = defence;
 			player_image_left = defence_player_image_left;
 			player_image_right = defence_player_image_right;
@@ -396,7 +397,7 @@ void Player::Shot(float delta_second)
 		}
 		else
 		{
-			is_attack_type = true;
+			now_type = PlayerType::AlphaCode;
 			image = attack;
 			player_image_left = attack_player_image_left;
 			player_image_right = attack_player_image_right;
@@ -667,7 +668,7 @@ void Player::GenarateBullet()
 		is_shot = false;
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
 
-		if (is_attack_type == true)
+		if (now_type == PlayerType::AlphaCode)
 		{
 			// 上方向に生成
 			if (powerd <= 1)
@@ -806,7 +807,16 @@ bool Player::GetGameOver() const
 {
 	return game_over_player;
 }
+PlayerType Player::GetNowType() const
+{
+	return now_type;
+}
 void Player::ForceNeutralAnim(bool enable)
 {
 	force_neutral_anim = enable;
+}
+
+void Player::SetCanChangeType(bool enable)
+{
+	can_change_type = enable;
 }
