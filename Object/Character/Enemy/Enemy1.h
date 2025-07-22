@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EnemyBase.h"
-#include "../../../Object/Bullet/EnemyBullet1.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"
 
 // ザコ敵の行動パターン定義
 enum class Enemy1Pattern

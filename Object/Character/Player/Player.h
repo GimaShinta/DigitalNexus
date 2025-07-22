@@ -17,6 +17,12 @@ enum
 	LEVEL3
 };
 
+enum class PlayerType
+{
+	AlphaCode,
+	OmegaCode
+};
+
 class Player : public CharacterBase
 {
 private:
@@ -26,6 +32,9 @@ private:
 		TiltLeft,  // 左傾き
 		TiltRight  // 右傾き
 	};
+
+
+	PlayerType now_type = PlayerType::AlphaCode;
 
 	PlayerAnimState anim_state = PlayerAnimState::Neutral;
 	float anim_timer = 0.0f;
@@ -50,7 +59,7 @@ private:
 	bool is_shield_damage = false;
 	// 追加：シールドの切り替え直後1フレームスキップ用フラグ
 	bool just_switched_to_second = false;
-	int powerd = 1;
+	int powerd = 2;
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;
@@ -66,8 +75,8 @@ private:
 	const float charge_max = 100.0f;
 	bool charge_ready = false;
 
-	float engen_time = 0.0f;
-	int engen_count = 0;
+	float nozzle_time = 0.0f;
+	int nozzle_count = 0;
 
 	bool is_shot_anim = false;
 	int se_shot = NULL;
@@ -82,18 +91,37 @@ private:
 	// 画像系
 	std::vector<int> player_image_right;
 	std::vector<int> player_image_left;
+	std::vector<int> attack_player_image_right;
+	std::vector<int> attack_player_image_left;
+	std::vector<int> defence_player_image_right;
+	std::vector<int> defence_player_image_left;
+	std::vector<int> attack_player_jet;
+	std::vector<int> defence_player_jet;
 	std::vector<int> player_jet;
-	std::vector<int> engens;
+	std::vector<int> attack_nozzles;
+	std::vector<int> defence_nozzles;
+	std::vector<int> nozzles;
+	std::vector<int> nozzle_type;
 	std::vector<int> shields;
 	std::vector<int> shields2;
-	int engen = NULL;
+	int nozzle = NULL;
 	int jet = NULL;
 	int shield = NULL;
+	int attack = NULL;
+	int defence = NULL;
 
 	float last_explosion_time = -999.0f; // 最後に爆発を再生した時間
 	float invincible_time = 0.0f;
 
 	bool game_over_player = false;
+
+	float shot_interval = 0.0f;
+
+	int effe_id = 0;
+
+	class PlayerDefenceBullet* defence_bullet = nullptr;
+
+	bool can_change_type = true;
 
 public:
 	Player();
@@ -156,15 +184,24 @@ public:
 	int GetLife() const;
 	void SetShotStop(bool stoping);
 	bool GetGameOver() const;
+	PlayerType GetNowType() const;
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }
 	void SetMobility(bool enable) { is_mobility = enable; }
 
 	void ForceNeutralAnim(bool enable); // 強制ニュートラル用
+
+	void SetCanChangeType(bool enable);
+
 private:
 	bool force_neutral_anim = false;
 
+
+	float Min(float a, float b)
+	{
+		return (a < b) ? a : b;
+	}
 
 };
 

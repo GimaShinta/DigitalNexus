@@ -1,14 +1,14 @@
-#include "PlayerBullet.h"
+#include "PlayerAttackBullet.h"
 
-PlayerBullet::PlayerBullet()
+PlayerAttackBullet::PlayerAttackBullet()
 {
 }
 
-PlayerBullet::~PlayerBullet()
+PlayerAttackBullet::~PlayerAttackBullet()
 {
 }
 
-void PlayerBullet::Initialize()
+void PlayerAttackBullet::Initialize()
 {
 	z_layer = 3;
 	velocity.y = -2500.0f;
@@ -17,7 +17,7 @@ void PlayerBullet::Initialize()
 	// 当たり判定のオブジェクト設定
 	collision.is_blocking = true;
 	// 自分のオブジェクトタイプ
-	collision.object_type = eObjectType::eShot;
+	collision.object_type = eObjectType::eAttackShot;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::eEnemy);
 
@@ -29,28 +29,11 @@ void PlayerBullet::Initialize()
 
 }
 
-void PlayerBullet::Update(float delta_second)
-{
-	// 弾が画面外に出たら削除（移動方向によって判定を変える）
-	if ((velocity.y < 0 && location.y < -300.0f) || // 上方向
-		(velocity.y > 0 && location.y > D_WIN_MAX_Y + 300.0f)) // 下方向
-	{
-		is_destroy = true;
-	}
-
-	location += velocity * delta_second;
-}
-
-void PlayerBullet::Draw(const Vector2D& screen_offset) const
-{
-	DrawRotaGraph(location.x, location.y, 1.1f, 0.0f, image, TRUE);
-}
-
-void PlayerBullet::Finalize()
+void PlayerAttackBullet::Finalize()
 {
 }
 
-void PlayerBullet::OnHitCollision(GameObjectBase* hit_object)
+void PlayerAttackBullet::OnHitCollision(GameObjectBase* hit_object)
 {
 	EffectManager* am = Singleton<EffectManager>::GetInstance();
 	SEManager* sm = Singleton<SEManager>::GetInstance();

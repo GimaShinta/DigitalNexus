@@ -1,11 +1,14 @@
 #pragma once
-#include "../GameObjectBase.h"
-class EnemyBullet4 :
+#include "../../GameObjectBase.h"
+class EnemyBullet2 :
 	public GameObjectBase
 {
 private:
-	Vector2D suck_center;
+	int se = NULL;
 	float move_time = 0.0f;
+
+private:
+	Vector2D suck_center;
 
 public:
 	bool is_wave_reflected = false; // 波の向きが反転しているか
@@ -25,8 +28,8 @@ private:
 	float wave_frequency;       // 波の周波数
 
 public:
-	EnemyBullet4();
-	~EnemyBullet4();
+	EnemyBullet2();
+	~EnemyBullet2();
 
 public:
 	// 初期化処理
@@ -46,6 +49,12 @@ public:
 
 	// 終了時処理
 	virtual void Finalize() override;
+
+	/// <summary>
+	/// ヒットしたときの処理
+	/// </summary>
+	/// <param name="hit_object">プレイヤーだとしたら、ここは敵とかブロックと当たったことになる</param>
+	void OnHitCollision(GameObjectBase* hit_object) override;
 
 public:
 	void SetSuckCenter(const Vector2D& center);

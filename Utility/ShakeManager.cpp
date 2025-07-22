@@ -1,6 +1,7 @@
 #include "ShakeManager.h"
-#include <cstdlib> // rand()
+#include <cstdlib> 
 
+// 揺らしを開始させる
 void ShakeManager::StartShake(float durationSec, float powerX, float powerY)
 {
     duration = durationSec;
@@ -9,6 +10,7 @@ void ShakeManager::StartShake(float durationSec, float powerX, float powerY)
     power_y = powerY;
 }
 
+// 更新処理
 void ShakeManager::Update(float deltaTime)
 {
     if (timer > 0.0f)
@@ -31,6 +33,7 @@ void ShakeManager::Update(float deltaTime)
     }
 }
 
+// 揺れオフセットの取得
 Vector2D ShakeManager::GetOffset() const
 {
     return offset;

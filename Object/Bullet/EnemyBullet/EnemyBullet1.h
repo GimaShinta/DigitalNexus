@@ -1,23 +1,15 @@
 #pragma once
-#include "../GameObjectBase.h"
-class EnemyBullet3 :
+#include "../../GameObjectBase.h"
+class EnemyBullet1 :
     public GameObjectBase
 {
 private:
-	int attack_pattrn = 0;
-	int input_count = 0;
+	int se = NULL;
 	float move_time = 0.0f;
 
-	std::vector<int> bullet;
-	std::vector<int> bullet_1;
-	std::vector<int> bullet_2;
-	std::vector<int> bullet_3;
-
-	std::vector<std::vector<int>> bullets;
-
 public:
-	EnemyBullet3();
-	~EnemyBullet3();
+	EnemyBullet1();
+	~EnemyBullet1();
 
 public:
 	// 初期化処理
@@ -44,6 +36,5 @@ public:
 	/// <param name="hit_object">プレイヤーだとしたら、ここは敵とかブロックと当たったことになる</param>
 	void OnHitCollision(GameObjectBase* hit_object) override;
 
-	void SetAttackPattrn(int pattrn);
 };
 

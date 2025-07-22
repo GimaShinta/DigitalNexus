@@ -120,6 +120,7 @@ void EnemyBeam::Update(float delta_second)
         else
         {
             collision.hit_object_type.clear();
+            Singleton<ShakeManager>::GetInstance()->StartShake(1.5, 3, 3);
         }
         break;
 
@@ -138,6 +139,7 @@ void EnemyBeam::Update(float delta_second)
             // ê¨í∑Ç™èIÇÌÇ¡ÇΩÇÁ Holding Ç…
             state = BeamState::Holding;
             state_timer = 0.0f;
+            Singleton<ShakeManager>::GetInstance()->StartShake(5.0, 5, 5);
         }
 
         location += velocity * delta_second;

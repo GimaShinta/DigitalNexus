@@ -6,6 +6,7 @@
 #include "../Utility/ProjectConfig.h"
 #include "../Utility/EffectManager.h"
 #include "../Utility/SEManager.h"
+#include "../Utility/ShakeManager.h"
 #include "DxLib.h"
 
 #define D_OBJECT_SIZE	(24.0f)			// オブジェクトサイズ（共通）

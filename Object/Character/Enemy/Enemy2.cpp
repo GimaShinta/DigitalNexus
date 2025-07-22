@@ -1,7 +1,7 @@
 #include "Enemy2.h"
 #include "../../../Object/GameObjectManager.h"
-#include "../../../Object/Bullet/EnemyBullet2.h"
-#include "../../../Object/Bullet/EnemyBullet3.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet2.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet3.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/ScoreData.h"
 #include <cmath>
@@ -30,7 +30,7 @@ void Enemy2::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
     is_mobility = true;
 
@@ -196,7 +196,8 @@ void Enemy2::Update(float delta)
             auto* manager = Singleton<EffectManager>::GetInstance();
             int anim_id = manager->PlayerAnimation(EffectName::eExprotion2, location, 0.03f, false);
             manager->SetScale(anim_id, 1.5f);
-            Singleton<ScoreData>::GetInstance()->AddScore(GetRand(1000) + 1500);
+            Singleton<ScoreData>::GetInstance()->AddScore(1500);
+            Singleton<ShakeManager>::GetInstance()->StartShake(1.0, 5, 5);
         }
         break;
     }
@@ -257,7 +258,7 @@ void Enemy2::Pattern6(float delta)
         for (int i = 0; i < bullet_num; ++i)
         {
             float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = angle * DX_PI / 180.0f;
+            float rad = static_cast<float>(angle * DX_PI / 180.0f);
             Vector2D vel(cos(rad) * speed, sin(rad) * speed);
 
             auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet3>(location);
@@ -283,7 +284,7 @@ void Enemy2::Pattern7(float delta)
         for (int i = 0; i < bullet_num; ++i)
         {
             float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = angle * DX_PI / 180.0f;
+            float rad = static_cast<float>(angle * DX_PI / 180.0f);
             Vector2D vel(cos(rad) * speed, sin(rad) * speed);
 
             auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);

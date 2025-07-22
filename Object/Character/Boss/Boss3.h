@@ -108,6 +108,9 @@ private:
 	float beam_damage_timer = 0.0f;
 	bool on_hit = false;
 
+	bool beam_on = false;
+	std::vector<EnemyBeam*> beams;
+
 public:
 	Boss3();
 	~Boss3();

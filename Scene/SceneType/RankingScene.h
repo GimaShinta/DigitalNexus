@@ -12,6 +12,8 @@ private:
 	bool confirm_reset = false;
 	int cursor_index = 0;  // カーソル位置の追加
 
+	bool reset_command[4] = { false };
+
 public:
 	RankingScene();
 	virtual ~RankingScene();

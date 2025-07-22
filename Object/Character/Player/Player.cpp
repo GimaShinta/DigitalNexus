@@ -3,7 +3,8 @@
 #include "../../../Utility/ProjectConfig.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/SEManager.h"
-#include "../../Bullet/PlayerBullet.h"
+#include "../../Bullet/PlayerBullet/PlayerAttackBullet.h"
+#include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
 Player::Player() : is_shot(false), life(1), on_hit(false), is_damage(false)
@@ -28,6 +29,7 @@ void Player::Initialize()
 	collision.object_type = eObjectType::ePlayer;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::eEnemy);
+	collision.hit_object_type.push_back(eObjectType::eBoss);
 	collision.hit_object_type.push_back(eObjectType::eExp);
 	collision.hit_object_type.push_back(eObjectType::ePowerUp);
 
@@ -35,18 +37,35 @@ void Player::Initialize()
 	is_mobility = true;
 
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-	image = rm->GetImages("Resource/Image/Object/Player/Player_03/player03.png")[0];
-	player_image_left = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_L01.png", 2, 2, 1, 56, 64);
-	player_image_right = rm->GetImages("Resource/Image/Object/Player/Player_03/anime_player03_R01.png", 2, 2, 1, 56, 64);
-	player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88);
+	attack = rm->GetImages("Resource/Image/Object/Player/color04/player03.png")[0];
+	defence = rm->GetImages("Resource/Image/Object/Player/color02/player03.png")[0];
+	image = attack;
+
+	// プレイヤーの傾き画像
+	attack_player_image_left = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_L01.png", 2, 2, 1, 56, 64);
+	attack_player_image_right = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_R01.png", 2, 2, 1, 56, 64);
+	defence_player_image_left = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_L01.png", 2, 2, 1, 56, 64);
+	defence_player_image_right = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_R01.png", 2, 2, 1, 56, 64);
+	player_image_left = attack_player_image_left;
+	player_image_right = attack_player_image_right;
+
+	// プレイヤーのジェット部分の画像
+	attack_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88);
+	defence_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect16.png", 6, 6, 1, 8, 88);
+	player_jet = attack_player_jet;
 	jet = player_jet[2];
 
-	engens = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
-	engen = engens[0];
+	// プレイヤーのノズル部分の画像
+	nozzles = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
+	nozzle = nozzles[17];
+	attack_nozzles = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+	defence_nozzles = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+	nozzle_type = attack_nozzles;
 
 	shields2 = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206_480.png", 20, 5, 4, 480, 480);
 	shields = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206h_480.png", 15, 5, 3, 480, 480);
 
+	shot_interval = 0.07f;
 }
 
 /// <summary>
@@ -66,28 +85,18 @@ void Player::Update(float delta_second)
 
 		if (dead_animation_timer >= dead_animation_duration)
 		{
-			EffectManager* fm = Singleton<EffectManager>::GetInstance();
-			int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
+			if (is_alive)
+			{
+				EffectManager* fm = Singleton<EffectManager>::GetInstance();
+				int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
 
-			is_alive = false;
+				is_alive = false;
+			}
 		}
 		else
 		{
 			game_over_player = true;
-
-			//// 爆発演出を定期的に再生
-			//if (dead_animation_timer - last_explosion_time > 0.2f)  // 0.2秒ごとに
-			//{
-			//	last_explosion_time = dead_animation_timer;
-
-			//	Vector2D effect_pos = location;
-			//	effect_pos.x += GetRand(30);
-			//	effect_pos.y += GetRand(30);
-
-			//	EffectManager* fm = Singleton<EffectManager>::GetInstance();
-			//	int id = fm->PlayerAnimation(EffectName::eExprotion2, effect_pos, 0.05f, false); // スケール2倍
-			//	fm->SetScale(id, 1.0f);
-			//}
+			shot_stop = true;
 		}
 	}
 	else
@@ -154,57 +163,66 @@ void Player::Draw(const Vector2D& screen_offset) const
 {
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, brend);
 
-	if (is_shot_anim == true)
+	if (is_alive)
 	{
-		float position = location.x - 3.0f;
-
-		if (stop == false)
+		if (is_shot_anim == true)
 		{
-			if (powerd <= 1)
-			{
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, engen, TRUE);
+			float position = location.x - 3.0f;
 
-			}
-			else if (powerd == 2)
+			if (stop == false)
 			{
-				DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, engen, TRUE);
-			}
-			else
-			{
-				DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, engen, TRUE);
-				DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, engen, TRUE);
-			}
+				if (powerd <= 1)
+				{
+					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
 
+				}
+				else if (powerd == 2)
+				{
+					DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
+				}
+				else
+				{
+					DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
+					DrawRotaGraph(position + 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
+				}
+			}
 		}
-	}
 
-	DrawRotaGraph(location.x - 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
-	DrawRotaGraph(location.x + 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
+		DrawRotaGraph(location.x - 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
+		DrawRotaGraph(location.x + 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
 
-	switch (anim_state)
-	{
-	case PlayerAnimState::Neutral:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
-		break;
-	case PlayerAnimState::TiltLeft:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_left[anim_index], TRUE);
-		break;
-	case PlayerAnimState::TiltRight:
-		DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_right[anim_index], TRUE);
-		break;
-	}
+		switch (anim_state)
+		{
+		case PlayerAnimState::Neutral:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
+			break;
+		case PlayerAnimState::TiltLeft:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_left[anim_index], TRUE);
+			break;
+		case PlayerAnimState::TiltRight:
+			DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, player_image_right[anim_index], TRUE);
+			break;
+		}
 
-	if (is_shield == true)
-	{
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
-		DrawRotaGraph(location.x, location.y, 0.35f, 0.0f, shield, TRUE);
+		if (is_shield == true)
+		{
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
+			DrawRotaGraph(location.x, location.y, 0.35f, 0.0f, shield, TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+		}
+
+		// ライフ表示などはそのまま
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-	}
 
-	// ライフ表示などはそのまま
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+	#if _DEBUG
+		if (now_type == PlayerType::AlphaCode)
+			DrawString(location.x - 50.0f, location.y, "Alpha Code", GetColor(255, 255, 255), TRUE);
+		else
+			DrawString(location.x - 50.0f, location.y, "Omega Code", GetColor(255, 255, 255), TRUE);
+	#endif
+	}
 }
 
 // 終了時処理
@@ -220,7 +238,8 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 {
 	if (hit_object->GetCollision().object_type == eObjectType::eEnemy ||
 		hit_object->GetCollision().object_type == eObjectType::eEnemyShot ||
-		hit_object->GetCollision().object_type == eObjectType::eEnemyBeam)
+		hit_object->GetCollision().object_type == eObjectType::eEnemyBeam ||
+		hit_object->GetCollision().object_type == eObjectType::eBoss)
 	{
 		if (on_hit == false)
 		{
@@ -228,6 +247,7 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			{
 				life--;
 				is_damage = true;
+				Singleton<ShakeManager>::GetInstance()->StartShake(3.0f, 30, 20);
 			}
 			else
 			{
@@ -352,6 +372,51 @@ void Player::Shot(float delta_second)
 	// 打つまでの時間を計測
 	shot_timer += delta_second;
 
+	// プレイヤータイプの変更
+	if (can_change_type &&
+		(input->GetKeyDown(KEY_INPUT_LSHIFT) || 
+		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
+		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER)))
+	{
+		if (now_type == PlayerType::AlphaCode)
+		{
+			now_type = PlayerType::OmegaCode;
+			image = defence;
+			player_image_left = defence_player_image_left;
+			player_image_right = defence_player_image_right;
+
+			player_jet = defence_player_jet;
+
+			nozzle_type = defence_nozzles;
+
+			shot_interval = 0.15f;
+
+			EffectManager* em =  Singleton<EffectManager>::GetInstance();
+			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			em->SetScale(effe_id, 0.35f);
+		}
+		else
+		{
+			now_type = PlayerType::AlphaCode;
+			image = attack;
+			player_image_left = attack_player_image_left;
+			player_image_right = attack_player_image_right;
+
+			player_jet = attack_player_jet;
+
+			nozzle_type = attack_nozzles;
+
+			shot_interval = 0.07f;
+
+			EffectManager* em = Singleton<EffectManager>::GetInstance();
+			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			em->SetScale(effe_id, 0.35f);
+		}
+	}
+
+	EffectManager* em = Singleton<EffectManager>::GetInstance();
+	em->SetPosition(effe_id, Vector2D(location.x, location.y + 10.0f));
+
 	// スペースを長押ししたら一定間隔で発射
 	if (input->GetKey(KEY_INPUT_SPACE) ||
 		input->GetButton(XINPUT_BUTTON_A))
@@ -360,7 +425,7 @@ void Player::Shot(float delta_second)
 		if (stop == false)
 		{
 			// 発射インターバルを超えたら発射
-			if (shot_timer >= SHOT_INTERVAL)
+			if (shot_timer >= shot_interval)
 			{
 				is_shot_anim = true;
 				is_shot = true;
@@ -375,7 +440,7 @@ void Player::Shot(float delta_second)
 	{
 		is_shot_anim = false;
 		// 押してない間は、即撃てるようにする
-		shot_timer = SHOT_INTERVAL;
+		shot_timer = shot_interval;
 	}
 
 #if _DEBUG
@@ -393,6 +458,7 @@ void Player::Shot(float delta_second)
 			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
 			beam->SetPlayer(this);
 			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+			Singleton<ShakeManager>::GetInstance()->StartShake(5.0, 8, 8);
 		}
 	}
 #else
@@ -506,24 +572,24 @@ void Player::BuhinAnim(float delta_second)
 		jet = player_jet[animation_num[animation_count]];
 	}
 
-	std::vector<int> engen_num = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+	std::vector<int> nozzle_num = nozzle_type;
 	//フレームレートで時間を計測
-	engen_time += delta_second;
+	nozzle_time += delta_second;
 	//8秒経ったら画像を切り替える
-	if (engen_time >= 0.0125f)
+	if (nozzle_time >= 0.0125f)
 	{
 		//計測時間の初期化
-		engen_time = 0.0f;
+		nozzle_time = 0.0f;
 		//時間経過カウントの増加
-		engen_count++;
+		nozzle_count++;
 		//カウントがアニメーション画像の要素数以上になったら
-		if (engen_count >= engen_num.size())
+		if (nozzle_count >= nozzle_num.size())
 		{
 			//カウントの初期化
-			engen_count = 0;
+			nozzle_count = 0;
 		}
 		// アニメーションが順番に代入される
-		engen = engens[engen_num[engen_count]];
+		nozzle = nozzles[nozzle_num[nozzle_count]];
 	}
 
 	if (is_shield == true)
@@ -601,38 +667,70 @@ void Player::GenarateBullet()
 	{
 		is_shot = false;
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-		// 上下反転していなかったら下方向に生成
-		if (powerd <= 1)
+
+		if (now_type == PlayerType::AlphaCode)
 		{
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-		}
-		else if (powerd == 2)
-		{
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
+			// 上方向に生成
+			if (powerd <= 1)
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+			}
+			else if (powerd == 2)
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 30, location.y));
+			}
+			else
+			{
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 30, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
+			}
 		}
 		else
 		{
-#if 1
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
-#else
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 70, location.y + (D_OBJECT_SIZE * 2)));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 10, location.y - D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x - 30, location.y));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 50, location.y + D_OBJECT_SIZE));
-			objm->CreateObject<PlayerBullet>(Vector2D(location.x + 70, location.y + (D_OBJECT_SIZE * 2)));
-#endif
+			struct BulletAngleInfo {
+				float angle_deg;
+				std::vector<float> offset_x_list;
+			};
+
+			std::vector<BulletAngleInfo> angle_infos;
+
+			// 中央（0°）
+			if (powerd == 1)
+			{
+				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 2発
+			}
+			else if (powerd == 2)
+			{
+				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 中央2発
+				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } }); // 左30°
+				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } }); // 右30°
+			}
+			else // powerd >= 3
+			{
+				angle_infos.push_back({ 0.0f, { -15.0f, 0.0f, +15.0f } });  // 中央3発
+				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } });      // 左30°
+				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } });      // 右30°
+				angle_infos.push_back({ -30.0f, { 0.0f } });                // 左60° 1発
+				angle_infos.push_back({ 30.0f, { 0.0f } });                // 右60° 1発
+			}
+
+			for (const auto& info : angle_infos)
+			{
+				for (float offset_x : info.offset_x_list)
+				{
+					Vector2D pos = location + Vector2D(offset_x, -D_OBJECT_SIZE);
+					auto* bullet = objm->CreateObject<PlayerDefenceBullet>(pos);
+					bullet->SetDirection(info.angle_deg);
+				}
+			}
 		}
 	}
 }
@@ -709,7 +807,16 @@ bool Player::GetGameOver() const
 {
 	return game_over_player;
 }
+PlayerType Player::GetNowType() const
+{
+	return now_type;
+}
 void Player::ForceNeutralAnim(bool enable)
 {
 	force_neutral_anim = enable;
+}
+
+void Player::SetCanChangeType(bool enable)
+{
+	can_change_type = enable;
 }

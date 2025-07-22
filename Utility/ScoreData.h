@@ -33,6 +33,7 @@ public:
 	void ScoreEntrie(float total_score);
 	std::string GetTodayString();
 	void SaveRankingToFile();
+	void SetResetRanking();
 	std::vector<ScoreEntry> GetEntries() const;
 };
 

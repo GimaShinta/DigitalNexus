@@ -155,39 +155,80 @@ void Stage4::DrawScrollBackground() const
     static float time = 0.0f;
     time += scroll_timer;
 
-    // 背景色：やや赤みがかったグレー
+    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
+    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
+    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+
+    Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+
+    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
+
+    // プレイヤーが存在していれば追従（位置を更新）
+    if (player != nullptr)
+    {
+        Vector2D player_pos = player->GetLocation();
+        camera_target_offset = (player_pos - screen_center) * 0.05f;
+        camera_target_offset_prev = camera_target_offset;
+    }
+    else
+    {
+        // 死亡後も offset_prev を変えない → 固定視点
+        camera_target_offset = camera_target_offset_prev;
+    }
+
+    // オフセットをなめらかに反映
+    camera_offset += (camera_target_offset - camera_offset) * 0.1f;
+
+    // 視差オフセット（手前ほど大きく動く）
+    Vector2D offset_back = camera_offset * 0.3f; // 背面グリッド（奥）
+    Vector2D offset_front = camera_offset * 1.5f; // 前面グリッド（手前）
+    Vector2D offset_noise = camera_offset * 1.2f; // ノイズ（最前面）
+
+    // === 背景色（赤みグレー） ===
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(30, 10, 10), TRUE);
 
     // === 背面レイヤー（奥・細かく・暗め） ===
     const int grid_size_back = 40;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_back)
-        DrawLine(x, 0, x, D_WIN_MAX_Y, GetColor(100, 0, 0));
-
-    for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back) {
+    {
+        int draw_x = x - static_cast<int>(offset_back.x);
+        DrawLine(draw_x, 0, draw_x, D_WIN_MAX_Y, GetColor(100, 0, 0));
+    }
+    for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
+    {
         int sy = y - static_cast<int>(bg_scroll_offset_layer1) % grid_size_back;
+        sy -= static_cast<int>(offset_back.y);
         DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(100, 0, 0));
     }
 
-    // === 前面レイヤー（太く・明るく・警告感） ===
+    // === 前面レイヤー（手前・太く・警告色） ===
     const int grid_size_front = 80;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-
     for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
-        DrawBox(x - 1, 0, x + 1, D_WIN_MAX_Y, GetColor(255, 40, 40), TRUE);
-
-    for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front) {
+    {
+        int draw_x = x - static_cast<int>(offset_front.x);
+        DrawBox(draw_x - 1, 0, draw_x + 1, D_WIN_MAX_Y, GetColor(255, 40, 40), TRUE);
+    }
+    for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
+    {
         int sy = y - static_cast<int>(bg_scroll_offset_layer2) % grid_size_front;
+        sy -= static_cast<int>(offset_front.y);
         DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(255, 40, 40), TRUE);
     }
 
-    // === ノイズ演出（崩壊感） ===
-    for (int i = 0; i < 5; ++i) {
-        if (rand() % 70 == 0) {
+    // === ノイズ演出（最前面・揺れ感） ===
+    for (int i = 0; i < 5; ++i)
+    {
+        if (rand() % 70 == 0)
+        {
             int nx = rand() % D_WIN_MAX_X;
             int ny = rand() % D_WIN_MAX_Y;
-            DrawBox(nx, ny, nx + 3, ny + 3, GetColor(255, 100, 50), TRUE); // オレンジ警告ドット
+
+            nx -= static_cast<int>(offset_noise.x);
+            ny -= static_cast<int>(offset_noise.y);
+
+            DrawBox(nx, ny, nx + 3, ny + 3, GetColor(255, 100, 50), TRUE);
         }
     }
 
@@ -233,13 +274,10 @@ void Stage4::UpdateGameStatus(float delta_second)
     }
 
     // プレイヤーが倒れたらゲームオーバー
-    if (player != nullptr && player->GetIsAlive() == false && is_clear == false)
+    if (player != nullptr && player->GetGameOver() && is_clear == false)
     {
-        //// オブジェクト管理クラスのインスタンスを取得
-        //GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-        //objm->Finalize();
-        //is_over = true;
-        player->SetDestroy();
+        is_over = true;
+        is_finished = true;
     }
 
     // クリアしたらリザルトを描画
@@ -251,24 +289,6 @@ void Stage4::UpdateGameStatus(float delta_second)
             result_started = true;
             result_timer = 0.0f; // スコア演出タイマーリセット
         }
-    }
-    else if (player && player->GetGameOver())
-    {
-        //// 少し待機したら終了
-        //scene_timer += delta_second;
-        //trans_timer += delta_second;
-
-        //if (trans_timer >= 0.02f)
-        //    trans_timer = 0.0f;
-        //if (transparent < 255)
-        //    transparent++;
-
-        //if (scene_timer >= 7.0f)
-        //{
-        //    is_finished = true;
-        //}
-        is_over = true;
-        is_finished = true;
     }
 }
 

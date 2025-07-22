@@ -1,30 +1,29 @@
 #pragma once
-#include "../GameObjectBase.h"
-class PlayerBullet :
-    public GameObjectBase
+#include "PlayerBulletBase.h"
+class PlayerDefenceBullet :
+    public PlayerBulletBase
 {
+private:
+	bool is_collected = false;
+	float angle_deg = 0.0f; // 弾の回転角度（見た目用）
 public:
-	PlayerBullet();
-	~PlayerBullet();
+	PlayerDefenceBullet();
+	~PlayerDefenceBullet();
 
 public:
 	// 初期化処理
 	virtual void Initialize() override;
 
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	/// <param name="delata_second">１フレーム当たりの時間</param>
-	virtual void Update(float delta_second) override;
+	// 終了時処理
+	virtual void Finalize() override;
 
+	void SetDirection(float degree);
+	float GetAngle() const { return angle_deg; }
 	/// <summary>
 	/// 描画処理
 	/// </summary>
 	/// <param name="screen_offset"></param>
 	virtual void Draw(const Vector2D& screen_offset)const override;
-
-	// 終了時処理
-	virtual void Finalize() override;
 
 public:
 	/// <summary>

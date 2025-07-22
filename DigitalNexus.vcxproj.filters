@@ -84,7 +84,7 @@
     <ClCompile Include="Object\GameObjectBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Bullet\PlayerBullet.cpp">
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Object\Beam\PlayerBeam.cpp">
@@ -93,7 +93,7 @@
     <ClCompile Include="Utility\ScoreData.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet1.cpp">
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet1.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Object\Character\Enemy\Enemy1.cpp">
@@ -105,10 +105,10 @@
     <ClCompile Include="Object\Character\Enemy\Enemy2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet2.cpp">
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet3.cpp">
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet3.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Object\Character\Enemy\EnemyBase.cpp">
@@ -120,7 +120,7 @@
     <ClCompile Include="Object\Character\Boss\Boss3.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet4.cpp">
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet4.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Object\Beam\EnemyBeam.cpp">
@@ -147,10 +147,11 @@
     <ClCompile Include="Utility\ShakeManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss2.cpp">
+
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerBulletBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp">
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -233,7 +234,7 @@
     <ClInclude Include="Object\GameObjectBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Bullet\PlayerBullet.h">
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Object\Beam\PlayerBeam.h">
@@ -242,7 +243,7 @@
     <ClInclude Include="Utility\ScoreData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet1.h">
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet1.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Object\Character\Enemy\Enemy1.h">
@@ -254,10 +255,10 @@
     <ClInclude Include="Object\Character\Enemy\Enemy2.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet2.h">
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet2.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet3.h">
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet3.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Object\Character\Enemy\EnemyBase.h">
@@ -269,7 +270,7 @@
     <ClInclude Include="Object\Character\Boss\Boss3.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet4.h">
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet4.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Object\Beam\EnemyBeam.h">
@@ -296,10 +297,12 @@
     <ClInclude Include="Utility\ShakeManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss2.h">
+
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h">
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h">
+
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,7 @@
 // 修正済み Boss1.cpp（ワープや移動のX/Y範囲を調整済み）
 #include "Boss1.h"
 #include "../Player/Player.h"
-#include "../../Bullet/EnemyBullet1.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet1.h"
 #include "../../Item/PowerUp/PowerUp.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/ScoreData.h"
@@ -27,7 +27,7 @@ void Boss1::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
 
     is_mobility = true;
@@ -277,8 +277,8 @@ void Boss1::Update(float delta_second)
 
         if (random_move_timer >= 1.0f)
         {
-            float vx = (GetRand(200) - 100);
-            float vy = (GetRand(120) - 60);
+            float vx = static_cast<float>(GetRand(200) - 100);
+            float vy = static_cast<float>(GetRand(120) - 60);
             current_velocity = { vx, vy };
             random_move_timer = 0.0f;
         }

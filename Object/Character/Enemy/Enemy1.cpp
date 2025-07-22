@@ -26,7 +26,7 @@ void Enemy1::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
 
     is_mobility = true;
@@ -332,7 +332,7 @@ void Enemy1::Update(float delta_second)
             const float base_angle = pattern_timer * 2.0f;
             for (int i = 0; i < 8; ++i)
             {
-                float angle = base_angle + i * DX_PI / 4.0f;
+                float angle = static_cast<float>(base_angle + i * DX_PI / 4.0f);
                 Vector2D dir(cosf(angle), sinf(angle));
                 auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
                 shot->SetVelocity(dir * 220.0f);
@@ -394,6 +394,7 @@ void Enemy1::Update(float delta_second)
         am->SetScale(anim_id, 0.5f);
 
         Singleton<ScoreData>::GetInstance()->AddScore(300);
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
         is_destroy = true;
     }
 

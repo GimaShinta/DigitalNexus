@@ -1,35 +1,23 @@
 #pragma once
-#include "../GameObjectBase.h"
-class EnemyBullet2 :
-	public GameObjectBase
+#include "../../GameObjectBase.h"
+class EnemyBullet3 :
+    public GameObjectBase
 {
 private:
-	int se = NULL;
+	int attack_pattrn = 0;
+	int input_count = 0;
 	float move_time = 0.0f;
 
-private:
-	Vector2D suck_center;
+	std::vector<int> bullet;
+	std::vector<int> bullet_1;
+	std::vector<int> bullet_2;
+	std::vector<int> bullet_3;
+
+	std::vector<std::vector<int>> bullets;
 
 public:
-	bool is_wave_reflected = false; // ”g‚ÌŒü‚«‚ª”½“]‚µ‚Ä‚¢‚é‚©
-
-private:
-	enum class ShotState
-	{
-		SpreadOut,
-		PullIn,
-		Explode
-	};
-	ShotState shot_state = ShotState::SpreadOut;
-
-private:
-	Vector2D base_velocity;     // ‘Oi•ûŒü‚Ì‘¬“x
-	float wave_amplitude;       // ”g‚ÌU‚ê•
-	float wave_frequency;       // ”g‚Ìü”g”
-
-public:
-	EnemyBullet2();
-	~EnemyBullet2();
+	EnemyBullet3();
+	~EnemyBullet3();
 
 public:
 	// ‰Šú‰»ˆ—
@@ -56,9 +44,6 @@ public:
 	/// <param name="hit_object">ƒvƒŒƒCƒ„[‚¾‚Æ‚µ‚½‚çA‚±‚±‚Í“G‚Æ‚©ƒuƒƒbƒN‚Æ“–‚½‚Á‚½‚±‚Æ‚É‚È‚é</param>
 	void OnHitCollision(GameObjectBase* hit_object) override;
 
-public:
-	void SetSuckCenter(const Vector2D& center);
-	void SetWaveParameters(float amplitude, float frequency);
-	void SetWaveReflected(bool reflected); // İ’èŠÖ”
+	void SetAttackPattrn(int pattrn);
 };
 

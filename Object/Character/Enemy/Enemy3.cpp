@@ -3,7 +3,7 @@
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/SEManager.h"
 #include "../../../Utility/ScoreData.h"
-#include "../../../Object/Bullet/EnemyBullet1.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"
 
 #include <cmath>
 
@@ -254,7 +254,7 @@ void Enemy3::Update(float delta_second)
     {
         collision.is_blocking = true;
         collision.object_type = eObjectType::eEnemy;
-        collision.hit_object_type = { eObjectType::eShot, eObjectType::eBeam };
+        collision.hit_object_type = { eObjectType::eAttackShot, eObjectType::eBeam };
     }
     else
     {
@@ -275,6 +275,7 @@ void Enemy3::Update(float delta_second)
         manager->SetScale(anim_id, 0.5f);
 
         Singleton<ScoreData>::GetInstance()->AddScore(500);
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
     }
 
     std::vector<int> animation_num;
