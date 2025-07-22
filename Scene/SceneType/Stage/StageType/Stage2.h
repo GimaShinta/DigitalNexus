@@ -8,6 +8,8 @@ private:
 	class Zako* zako = nullptr;             // 雑魚敵その1
 	class Boss1* boss = nullptr;
 	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
+	class Boss2* boss2 = nullptr;
+	bool stage2boss2_spawned = false;
 
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	bool zako_spawned = false;         // Zakoがすでに出現したかどうか
