@@ -110,7 +110,7 @@ private:
 
 	float ui_transition_timer = 0.0f;
 	bool ui_transitioning = false;
-	const float UI_TRANSITION_DURATION = 0.5f; // ïbêî
+	const float UI_TRANSITION_DURATION = 0.3f; // ïbêî
 
 public:
 	GameMainScene();

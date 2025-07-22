@@ -1500,6 +1500,7 @@ void GameMainScene::UpdateUITransition(float delta)
     ui_transition_timer += delta;
     if (ui_transition_timer >= UI_TRANSITION_DURATION)
     {
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 10, 10);
         ui_transitioning = false;
         ui_current_type = ui_target_type; // ó‘Ô‚ğŠm’è
         ui_transition_timer = 0.0f;       // ”O‚Ì‚½‚ß

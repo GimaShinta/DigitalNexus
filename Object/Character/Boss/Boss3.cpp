@@ -449,8 +449,9 @@ void Boss3::Draw(const Vector2D& screen_offset) const
 	float notch_x = x + current_bar_width / 3;
 	DrawBox(notch_x - 1, y - 2, notch_x + 1, y + bar_height + 2, GetColor(255, 255, 0), TRUE);
 
-	// HP数値
-	//DrawFormatString(x + current_bar_width + 10, y - 2, GetColor(255, 255, 255), "HP: %.0f", hp);
+	// ボスからプレイヤーまでの直線
+	if(player)
+		DrawLine(location.x, location.y, player->GetLocation().x, player->GetLocation().y, GetColor(255, 255, 255), TRUE);
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
