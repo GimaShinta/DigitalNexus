@@ -12,7 +12,7 @@ void Boss2RotatingPart::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemyPart;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     image = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_a.png", 6, 6, 1, 40, 40)[0];

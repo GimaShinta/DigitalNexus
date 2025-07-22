@@ -1,7 +1,7 @@
 #include "Boss2.h"
 #include "Boss2RotatingPart.h"
 #include "../Player/Player.h"
-#include "../../Bullet/EnemyBullet1.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet1.h"
 #include "../../../Utility/EffectManager.h"
 #include "../../../Utility/ScoreData.h"
 #include "../../../Utility/ResourceManager.h"
@@ -21,7 +21,7 @@ void Boss2::Initialize()
 
     collision.is_blocking = true;
     collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eShot);
+    collision.hit_object_type.push_back(eObjectType::eAttackShot);
     collision.hit_object_type.push_back(eObjectType::eBeam);
 
     location = { 640.0f, 240.0f };
