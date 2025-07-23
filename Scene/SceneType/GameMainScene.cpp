@@ -204,6 +204,11 @@ void GameMainScene::Draw()
         current_stage->Draw();
         DrawUI();
 
+        if (ui_transitioning)  // UI切り替え中のみ描画
+        {
+            DrawLineNoiseEffectForSideUI(0.7f); // ← 好みで強度調整
+        }
+
         if (current_stage->GetStageID() == StageID::Stage3)
         {
             if (current_stage->IsClear())
@@ -605,7 +610,7 @@ void GameMainScene::DrawUI()
         int neon_color = GetTypeColor(0, 255, 255, 255, 80, 80); // 線補間
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-        DrawBox(left_x3, 0, left_x4, D_WIN_MAX_Y, panel_color, TRUE);
+        DrawBox(left_x3, 0, left_x4, D_WIN_MAX_Y, GetColor(10, 10, 30), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
         DrawLine(left_x1, 0 + (int)offset.y, left_x2, 0 + (int)offset.y, neon_color);
@@ -636,7 +641,7 @@ void GameMainScene::DrawUI()
         int neon_color = GetTypeColor(0, 255, 255, 255, 80, 80); // 線補間
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-        DrawBox(right_x3, 0, right_x4, D_WIN_MAX_Y, panel_color, TRUE);
+        DrawBox(right_x3, 0, right_x4, D_WIN_MAX_Y, GetColor(10, 10, 30), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
         DrawLine(right_x1, 0 + (int)offset.y, right_x2, 0 + (int)offset.y, neon_color);
@@ -1090,6 +1095,8 @@ void GameMainScene::WarningUpdate(float delta_second)
         }
         // ステージ4のBGM再生
         PlaySoundMem(stage_bgm4, DX_PLAYTYPE_LOOP);
+        ChangeVolumeSoundMem(255 * 50 / 100, stage_bgm4);
+
         if (player)
             player->SetShotStop(false);
 
@@ -1362,7 +1369,7 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
                     retry = false;
                     m_selectedIndex = 0;
 
-                    if (current_stage->GetStageID() == StageID::Stage3)
+                    if (current_stage && current_stage->GetStageID() == StageID::Stage3)
                     {
                         StopSoundMem(current_bgm_handle);
                         current_bgm_handle = stage_bgm3;
@@ -1370,11 +1377,11 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
                         PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
                     }
 
-                    if (current_stage->GetStageID() == StageID::Stage4)
+                    if (current_stage && current_stage->GetStageID() == StageID::Stage4)
                     {
                         StopSoundMem(current_bgm_handle);
                         current_bgm_handle = stage_bgm4;
-                        ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                        ChangeVolumeSoundMem(255 * 50 / 100, current_bgm_handle);
                         PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
                     }
 
@@ -1492,6 +1499,28 @@ void GameMainScene::StartUITransition(PlayerType new_type)
 
 void GameMainScene::UpdateUITransition(float delta)
 {
+#if UI_CHANGE
+    player->SetCanChangeType(!ui_transitioning);
+
+    if (!ui_transitioning) return;
+
+    ui_transition_timer += delta;
+
+    // ノイズ揺れの演出（中間で最も大きく）
+    float t = ui_transition_timer / UI_TRANSITION_DURATION;
+    float noise_strength = (1.0f - fabs(1.0f - t * 2)) * 10.0f;
+    Singleton<ShakeManager>::GetInstance()->StartShake(0.05f, noise_strength, noise_strength);
+
+    if (ui_transition_timer >= UI_TRANSITION_DURATION)
+    {
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5f, 10, 0); // 決定時の演出
+        ui_transitioning = false;
+        ui_current_type = ui_target_type;
+        ui_transition_timer = 0.0f;
+    }
+
+#else
+
     // UI演出中は切り替え不可にする
     player->SetCanChangeType(!ui_transitioning);
 
@@ -1500,9 +1529,11 @@ void GameMainScene::UpdateUITransition(float delta)
     ui_transition_timer += delta;
     if (ui_transition_timer >= UI_TRANSITION_DURATION)
     {
-        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 10, 10);
+        Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 10, 0);
         ui_transitioning = false;
         ui_current_type = ui_target_type; // 状態を確定
         ui_transition_timer = 0.0f;       // 念のため
     }
+#endif
+
 }

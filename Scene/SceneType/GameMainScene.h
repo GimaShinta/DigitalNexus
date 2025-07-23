@@ -1,6 +1,9 @@
 #pragma once
 #include "../SceneBase.h"
 #include "Stage/StageBase.h"
+#include <random>
+
+#define UI_CHANGE 0
 
 class GameMainScene : public SceneBase
 {
@@ -171,6 +174,7 @@ public:
 
 	float Lerp(float a, float b, float t) { return a + (b - a) * t; }
 
+#if UI_CHANGE
 	int GetTypeColor(int r_alpha, int g_alpha, int b_alpha, int r_omega, int g_omega, int b_omega)
 	{
 		float t = (ui_transitioning ? ui_transition_timer / UI_TRANSITION_DURATION : 1.0f);
@@ -242,6 +246,114 @@ public:
 		{
 			// 元の位置へ（左から戻る）
 			return static_cast<int>(-Lerp(-D_WIN_MAX_X, 0, (t - 0.5f) * 2));
+		}
+	}
+
+#else
+
+	int GetNoiseOffset(float strength)
+	{
+		static std::mt19937 rng(std::random_device{}());
+		std::uniform_real_distribution<float> dist(-strength, strength);
+		return static_cast<int>(dist(rng));
+		return 0;
+	}
+
+	int GetUIXOffsetLeft()
+	{
+		if (!ui_transitioning) return 0;
+
+		float t = ui_transition_timer / UI_TRANSITION_DURATION;
+		float strength = (1.0f - fabs(1.0f - t * 2)) * 6.0f; // 中間で最もジリジリ
+		return 0;
+	}
+
+	int GetUIXOffsetRight()
+	{
+		if (!ui_transitioning) return 0;
+
+		float t = ui_transition_timer / UI_TRANSITION_DURATION;
+		float strength = (1.0f - fabs(1.0f - t * 2)) * 6.0f;
+		return 0;
+	}
+
+	int GetTypeColor(int r_alpha, int g_alpha, int b_alpha, int r_omega, int g_omega, int b_omega)
+	{
+		float t = (ui_transitioning ? ui_transition_timer / UI_TRANSITION_DURATION : 1.0f);
+
+		if (ui_transitioning)
+		{
+			// 暗めで不安定な色にフラッシュ（低彩度・くすみ色）
+			int flash_state = static_cast<int>(t * 20.0f) % 4;
+			switch (flash_state)
+			{
+			case 0: return GetColor(60, 60, 60);     // 暗グレー
+			case 1: return GetColor(80, 40, 40);     // 暗赤
+			case 2: return GetColor(40, 80, 40);     // 暗緑
+			case 3: return GetColor(40, 40, 80);     // 暗青
+			}
+		}
+
+		// 通常の補間色
+		if (ui_current_type == PlayerType::AlphaCode && ui_target_type == PlayerType::OmegaCode)
+		{
+			return GetColor(
+				(int)Lerp(r_alpha, r_omega, t),
+				(int)Lerp(g_alpha, g_omega, t),
+				(int)Lerp(b_alpha, b_omega, t)
+			);
+		}
+		else if (ui_current_type == PlayerType::OmegaCode && ui_target_type == PlayerType::AlphaCode)
+		{
+			return GetColor(
+				(int)Lerp(r_omega, r_alpha, t),
+				(int)Lerp(g_omega, g_alpha, t),
+				(int)Lerp(b_omega, b_alpha, t)
+			);
+		}
+		else if (ui_current_type == PlayerType::OmegaCode)
+		{
+			return GetColor(r_omega, g_omega, b_omega);
+		}
+		else
+		{
+			return GetColor(r_alpha, g_alpha, b_alpha);
+		}
+	}
+#endif
+
+	void DrawLineNoiseEffectForSideUI(float intensity = 1.0f)
+	{
+		const int lineCount = static_cast<int>(50 * intensity);
+		const int uiWidth = 290;
+		const int screenWidth = D_WIN_MAX_X;
+		const int noiseOverflow = 50; // UIからはみ出す量
+
+		for (int i = 0; i < lineCount; ++i)
+		{
+			int y = GetRand(D_WIN_MAX_Y);
+			int height = GetRand(2) + 5;
+			int width = GetRand(100) + 50;
+			int brightness = 30 + GetRand(60);
+
+			bool isLeft = (GetRand(1) == 0);
+
+			int x;
+			if (isLeft)
+			{
+				// 左UI: x = -20 ～ 290
+				x = -noiseOverflow + GetRand(uiWidth + noiseOverflow);
+				if (x + width > uiWidth + noiseOverflow) width = (uiWidth + noiseOverflow) - x;
+			}
+			else
+			{
+				// 右UI: x = 990 - 20 ～ 1280
+				const int rightStart = screenWidth - uiWidth;
+				x = rightStart - noiseOverflow + GetRand(uiWidth + noiseOverflow);
+				if (x + width > screenWidth) width = screenWidth - x;
+			}
+
+			DrawBox(x, y, x + width, y + height, GetColor(brightness, brightness, brightness), TRUE);
 		}
 	}
 };
