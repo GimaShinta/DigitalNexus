@@ -137,6 +137,8 @@
   <ItemGroup>
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="AppMain.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss2.cpp" />
     <ClCompile Include="Object\Item\Exp\Exp.cpp" />
     <ClCompile Include="Object\Item\MaxCharge\MaxCharge.cpp" />
     <ClCompile Include="Object\Item\ItemBase.cpp" />
@@ -184,6 +186,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Application.h" />
+    <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h" />
+    <ClInclude Include="Object\Character\Boss\Boss2.h" />
     <ClInclude Include="Object\Item\Exp\Exp.h" />
     <ClInclude Include="Object\Item\MaxCharge\MaxCharge.h" />
     <ClInclude Include="Object\Item\ItemBase.h" />

@@ -3,6 +3,7 @@
 #include "../../../../Object/Character/Enemy/Enemy1.h"
 #include "../../../../Object/Character/Enemy/Enemy2.h"
 #include "../../../../Object/Character/Boss/Boss1.h"
+#include "../../../../Object/Character/Boss/Boss2.h"
 
 Stage2::Stage2(Player* player)
     : StageBase(player)
@@ -192,176 +193,167 @@ void Stage2::EnemyAppearance(float delta_second)
     const float spawn_interval = 1.0f;
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
 
-    // --- 0～10秒：お山フォーメーション（3レーン、重複抑制） ---
-    if (stage_timer < 20.0f)
-    {
-        static int previous_lane = -1;  // 前回のレーン記録用
-
-        if (enemy_spawn_timer >= spawn_interval)
-        {
-            enemy_spawn_timer = 0.0f;
-
-            // 前回と違うレーンを選ぶ
-            int lane;
-            do
-            {
-                lane = std::rand() % 3;  // 0:左, 1:中央, 2:右
-            } while (lane == previous_lane);
-            previous_lane = lane;
-
-            float base_x;
-            if (lane == 0)      base_x = 400.0f;
-            else if (lane == 1) base_x = 640.0f;
-            else                base_x = 900.0f;
-
-            float base_y = 0.0f;
-            float offset_x = 50.0f;
-            float offset_y = 30.0f;
-
-            Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
-            zako_top->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_top->SetPlayer(player);
-
-            Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y - 70));
-            zako_left->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_left->SetPlayer(player);
-
-            Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y - 70));
-            zako_right->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_right->SetPlayer(player);
-        }
-    }
-
-    // --- 10?15秒：右下がり ＼ の階段状に3体を順番に出現（1回限り） ---
-    if (stage_timer >= 10.0f && stage_timer < 15.0f && !spawned_stair_done)
-    {
-        stair_timer += delta_second;
-
-        const float stair_spawn_interval = 0.6f;  // 出現間隔（秒）
-
-        if (stair_index < 3 && stair_timer >= stair_spawn_interval)
-        {
-            stair_timer = 0.0f;
-
-            float base_x = 1000.0f;
-            float base_y = 40.0f;
-            float offset_x = 30.0f;
-            float offset_y = 60.0f;
-
-            float x = base_x + stair_index * offset_x;
-            float y = base_y + stair_index * offset_y;
-
-            Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
-            if (zako != nullptr)
-            {
-                zako->SetPattern(Enemy1Pattern::LeftMove);
-                zako->SetPlayer(player);
-            }
-
-            stair_index++;
-        }
-
-        if (stair_index >= 3)
-        {
-            spawned_stair_done = true;
-        }
-    }
-
-    // --- 15?20秒：右上がり ／ の階段状に3体を順番に出現（1回限り） ---
-
-
-    if (stage_timer >= 15.0f && stage_timer < 20.0f && !spawned_slash_done)
-    {
-        slash_timer += delta_second;
-
-        const float slash_spawn_interval = 0.6f;  // 出現間隔（秒）
-
-        if (slash_index < 3 && slash_timer >= slash_spawn_interval)
-        {
-            slash_timer = 0.0f;
-
-            float base_x = 270.0f;
-            float base_y = 200.0f;
-            float offset_x = 40.0f;
-            float offset_y = -50.0f;
-
-            float x = base_x + slash_index * offset_x;
-            float y = base_y + slash_index * offset_y;
-
-            Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
-            zako->SetPattern(Enemy1Pattern::RightMove);
-            zako->SetPlayer(player);
-
-            slash_index++;
-        }
-
-        if (slash_index >= 3)
-        {
-            spawned_slash_done = true;
-        }
-    }
-
-    // --- 20～40秒：Zako5を2体だけ1回出現 ---
-    if (stage_timer >= 20.0f && stage_timer < 40.0f && !enemy2_spawned)
-    {
-        enemy_spawn_timer = 0.0f;
-        enemy2_spawned = true;
-
-        Enemy2* left = objm->CreateObject<Enemy2>(Vector2D(360.0f, 300.0f));
-        left->EnableRectangularLoopMove(false);
-        left->SetPlayer(player);
-
-        Enemy2* right = objm->CreateObject<Enemy2>(Vector2D(920.0f, 300.0f));
-        right->EnableRectangularLoopMove(false);
-        right->SetPlayer(player);
-    }
-
-    // --- 40～60秒：お山フォーメーション（ランダム位置） ---
-    if (stage_timer >= 42.0f && stage_timer < 55.0f)
-    {
-        if (enemy_spawn_timer >= spawn_interval)
-        {
-            enemy_spawn_timer = 0.0f;
-
-            float base_x = 320.0f + std::rand() % 640;
-            float base_y = 0.0f;
-            float offset_x = 40.0f;
-            float offset_y = 30.0f;
-
-            Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
-            zako_top->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_top->SetPlayer(player);
-
-            Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y));
-            zako_left->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_left->SetPlayer(player);
-
-            Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y));
-            zako_right->SetPattern(Enemy1Pattern::MoveStraight);
-            zako_right->SetPlayer(player);
-        }
-    }
-
-    // --- 60～110秒：ボス出現（1回のみ） ---
-
-    //if (!stage2boss_spawned && stage_timer >= 60.0f)
+    //// --- 0～10秒：お山フォーメーション（3レーン、重複抑制） ---
+    //if (stage_timer < 20.0f)
     //{
-    //    stage2boss_spawned = true;
+    //    static int previous_lane = -1;  // 前回のレーン記録用
 
-    //    boss = objm->CreateObject<Stage2Boss>(Vector2D(640.0f, -200.0f)); // 高所
-    //    boss->Initialize();
-    //    boss->SetPlayer(player);
-    //    enemy_list.push_back(boss);
-
-    //    // 回転パーツも GameObjectBase* として破棄対象に登録
-    //    for (auto& part : boss->GetRotatingParts())
+    //    if (enemy_spawn_timer >= spawn_interval)
     //    {
-    //        extra_destroy_list.push_back(part);
+    //        enemy_spawn_timer = 0.0f;
+
+    //        // 前回と違うレーンを選ぶ
+    //        int lane;
+    //        do
+    //        {
+    //            lane = std::rand() % 3;  // 0:左, 1:中央, 2:右
+    //        } while (lane == previous_lane);
+    //        previous_lane = lane;
+
+    //        float base_x;
+    //        if (lane == 0)      base_x = 400.0f;
+    //        else if (lane == 1) base_x = 640.0f;
+    //        else                base_x = 900.0f;
+
+    //        float base_y = 0.0f;
+    //        float offset_x = 50.0f;
+    //        float offset_y = 30.0f;
+
+    //        Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
+    //        zako_top->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_top->SetPlayer(player);
+
+    //        Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y - 70));
+    //        zako_left->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_left->SetPlayer(player);
+
+    //        Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y - 70));
+    //        zako_right->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_right->SetPlayer(player);
+    //    }
+    //}
+
+    //// --- 10?15秒：右下がり ＼ の階段状に3体を順番に出現（1回限り） ---
+    //if (stage_timer >= 10.0f && stage_timer < 15.0f && !spawned_stair_done)
+    //{
+    //    stair_timer += delta_second;
+
+    //    const float stair_spawn_interval = 0.6f;  // 出現間隔（秒）
+
+    //    if (stair_index < 3 && stair_timer >= stair_spawn_interval)
+    //    {
+    //        stair_timer = 0.0f;
+
+    //        float base_x = 1000.0f;
+    //        float base_y = 40.0f;
+    //        float offset_x = 30.0f;
+    //        float offset_y = 60.0f;
+
+    //        float x = base_x + stair_index * offset_x;
+    //        float y = base_y + stair_index * offset_y;
+
+    //        Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
+    //        if (zako != nullptr)
+    //        {
+    //            zako->SetPattern(Enemy1Pattern::LeftMove);
+    //            zako->SetPlayer(player);
+    //        }
+
+    //        stair_index++;
     //    }
 
-    //    phase = Stage2Phase::BossDescending;
-    //    is_warning = false;
+    //    if (stair_index >= 3)
+    //    {
+    //        spawned_stair_done = true;
+    //    }
     //}
+
+    //// --- 15?20秒：右上がり ／ の階段状に3体を順番に出現（1回限り） ---
+
+
+    //if (stage_timer >= 15.0f && stage_timer < 20.0f && !spawned_slash_done)
+    //{
+    //    slash_timer += delta_second;
+
+    //    const float slash_spawn_interval = 0.6f;  // 出現間隔（秒）
+
+    //    if (slash_index < 3 && slash_timer >= slash_spawn_interval)
+    //    {
+    //        slash_timer = 0.0f;
+
+    //        float base_x = 270.0f;
+    //        float base_y = 200.0f;
+    //        float offset_x = 40.0f;
+    //        float offset_y = -50.0f;
+
+    //        float x = base_x + slash_index * offset_x;
+    //        float y = base_y + slash_index * offset_y;
+
+    //        Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
+    //        zako->SetPattern(Enemy1Pattern::RightMove);
+    //        zako->SetPlayer(player);
+
+    //        slash_index++;
+    //    }
+
+    //    if (slash_index >= 3)
+    //    {
+    //        spawned_slash_done = true;
+    //    }
+    //}
+
+    //// --- 20～40秒：Zako5を2体だけ1回出現 ---
+    //if (stage_timer >= 20.0f && stage_timer < 40.0f && !enemy2_spawned)
+    //{
+    //    enemy_spawn_timer = 0.0f;
+    //    enemy2_spawned = true;
+
+    //    Enemy2* left = objm->CreateObject<Enemy2>(Vector2D(360.0f, 300.0f));
+    //    left->EnableRectangularLoopMove(false);
+    //    left->SetPlayer(player);
+
+    //    Enemy2* right = objm->CreateObject<Enemy2>(Vector2D(920.0f, 300.0f));
+    //    right->EnableRectangularLoopMove(false);
+    //    right->SetPlayer(player);
+    //}
+
+    //// --- 40～60秒：お山フォーメーション（ランダム位置） ---
+    //if (stage_timer >= 42.0f && stage_timer < 55.0f)
+    //{
+    //    if (enemy_spawn_timer >= spawn_interval)
+    //    {
+    //        enemy_spawn_timer = 0.0f;
+
+    //        float base_x = 320.0f + std::rand() % 640;
+    //        float base_y = 0.0f;
+    //        float offset_x = 40.0f;
+    //        float offset_y = 30.0f;
+
+    //        Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
+    //        zako_top->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_top->SetPlayer(player);
+
+    //        Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y));
+    //        zako_left->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_left->SetPlayer(player);
+
+    //        Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y));
+    //        zako_right->SetPattern(Enemy1Pattern::MoveStraight);
+    //        zako_right->SetPlayer(player);
+    //    }
+    //}
+
+    // --- 60?110秒：Boss2出現（1回のみ） ---
+    if (!stage2boss2_spawned && stage_timer >= 5.0f)
+    {
+        stage2boss2_spawned = true;
+
+        GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+        boss2 = objm->CreateObject<Boss2>(Vector2D(640.0f, 240.0f)); // 真ん中固定
+        boss2->Initialize();
+        boss2->SetPlayer(player);
+    }
+
 }
 
 // クリア判定
@@ -377,8 +369,16 @@ void Stage2::UpdateGameStatus(float delta_second)
         }
     }
 
-    if (stage_timer >= 40.0f)
+    if (stage_timer >= 120.0f)
+
     {
+        is_clear = true;
+    }
+
+    // ボスが倒れたらクリア
+    if ((boss2 != nullptr && boss2->GetIsAlive() == false) && is_over == false)
+    {
+        boss2->SetDestroy();
         is_clear = true;
     }
 
