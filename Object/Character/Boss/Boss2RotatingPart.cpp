@@ -15,7 +15,7 @@ void Boss2RotatingPart::Initialize()
     collision.hit_object_type.push_back(eObjectType::eAttackShot);
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    image = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_a.png", 6, 6, 1, 40, 40)[0];
+    image = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_a.png", 6, 6, 1, 48, 48)[0];
 }
 
 void Boss2RotatingPart::SetUp(Boss2* boss, float radius, float angle_offset)

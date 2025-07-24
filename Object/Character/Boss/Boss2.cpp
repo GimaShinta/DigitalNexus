@@ -28,12 +28,12 @@ void Boss2::Initialize()
     velocity = { 0.0f, 0.0f };
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    images = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_b.png", 6, 6, 1, 40, 40);
+    images = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_b.png", 6, 6, 1, 48, 48);
 
-    if (images.empty())
+   /* if (images.empty())
     {
         images = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy75_b.png", 6, 6, 1, 40, 40);
-    }
+    }*/
 
     image = images.empty() ? -1 : images[0];
 
