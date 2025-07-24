@@ -210,9 +210,26 @@ void GameObjectManager::CheckCollision(GameObjectBase* target, GameObjectBase* p
 		return;
 	}
 
+	// ★ 粗い距離チェック（軽量）
+	const float max_check_distance = 100.0f; // 例：300px以内にいたら詳細チェック
+	Vector2D target_pos = target->GetLocation();
+	Vector2D partner_pos = partner->GetLocation();
+	float dx = target_pos.x - partner_pos.x;
+	float dy = target_pos.y - partner_pos.y;
+	float distance_sq = dx * dx + dy * dy;
+
 	// ★参照で受けるように変更！
 	const BoxCollision& tc = target->GetCollision();
 	const BoxCollision& pc = partner->GetCollision();
+
+	bool is_beam =
+		(tc.object_type == eObjectType::eBeam || pc.object_type == eObjectType::eBeam) ||
+		(tc.object_type == eObjectType::eEnemyBeam || pc.object_type == eObjectType::eBeam);
+
+	if (!is_beam && distance_sq > max_check_distance * max_check_distance)
+	{
+		return; // 通常時のみ距離チェックする（ビームは除外）
+	}
 
 	// 当たり判定が有効な対象同士か確認
 	if (tc.IsCheckHitTarget(pc.object_type) || pc.IsCheckHitTarget(tc.object_type))

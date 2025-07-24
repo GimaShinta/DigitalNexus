@@ -15,8 +15,8 @@ void PlayerBulletBase::Initialize()
 void PlayerBulletBase::Update(float delta_second)
 {
 	// 弾が画面外に出たら削除（移動方向によって判定を変える）
-	if ((velocity.y < 0 && location.y < -300.0f) || // 上方向
-		(velocity.y > 0 && location.y > D_WIN_MAX_Y + 300.0f)) // 下方向
+	if ((velocity.y < 240 && location.y < -50.0f) || // 上方向
+		(velocity.y > 990 && location.y > D_WIN_MAX_Y + 50.0f)) // 下方向
 	{
 		is_destroy = true;
 	}

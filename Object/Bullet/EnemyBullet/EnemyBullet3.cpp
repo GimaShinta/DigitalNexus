@@ -167,10 +167,10 @@ void EnemyBullet3::Update(float delta_second)
 	move_time += delta_second;
 
 	// 弾が画面外に出たら削除（移動方向によって判定を変える）
-	if (location.y < -100.0f || // 上方向
-		location.y > D_WIN_MAX_Y + 100.0f ||
-		location.x > D_WIN_MAX_X - 100.0f ||
-		location.x < 0 + 100.0f) // 下方向
+	if (location.y < -50.0f || // 上方向
+		location.y > D_WIN_MAX_Y + 50.0f ||
+		location.x > 990.0f ||
+		location.x < 240.0f) // 下方向
 	{
 		is_destroy = true;
 	}
@@ -206,35 +206,35 @@ void EnemyBullet3::Update(float delta_second)
 /// <param name="screen_offset"></param>
 void EnemyBullet3::Draw(const Vector2D& screen_offset) const
 {
-	float angle = move_time * 10.0f; // 回転速度
-	float hw = box_size.x;
-	float hh = box_size.y;
+	//float angle = move_time * 10.0f; // 回転速度
+	//float hw = box_size.x;
+	//float hh = box_size.y;
 
-	float cosA = cos(angle);
-	float sinA = sin(angle);
+	//float cosA = cos(angle);
+	//float sinA = sin(angle);
 
-	Vector2D p1(-hw, -hh);
-	Vector2D p2(hw, -hh);
-	Vector2D p3(hw, hh);
-	Vector2D p4(-hw, hh);
+	//Vector2D p1(-hw, -hh);
+	//Vector2D p2(hw, -hh);
+	//Vector2D p3(hw, hh);
+	//Vector2D p4(-hw, hh);
 
-	auto rotate = [&](Vector2D p) {
-		return Vector2D(
-			location.x + p.x * cosA - p.y * sinA,
-			location.y + p.x * sinA + p.y * cosA
-		);
-		};
+	//auto rotate = [&](Vector2D p) {
+	//	return Vector2D(
+	//		location.x + p.x * cosA - p.y * sinA,
+	//		location.y + p.x * sinA + p.y * cosA
+	//	);
+	//	};
 
-	p1 = rotate(p1);
-	p2 = rotate(p2);
-	p3 = rotate(p3);
-	p4 = rotate(p4);
+	//p1 = rotate(p1);
+	//p2 = rotate(p2);
+	//p3 = rotate(p3);
+	//p4 = rotate(p4);
 
-	int color = GetColor(255, 255, 0);
+	//int color = GetColor(255, 255, 0);
 	//DrawTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, color, TRUE);
 	//DrawTriangle(p1.x, p1.y, p3.x, p3.y, p4.x, p4.y, color, TRUE);
 
-	DrawRotaGraph(location.x, location.y, 0.7f, angle, image, TRUE);
+	DrawRotaGraph(location.x, location.y, 0.7f, 0.0f, image, TRUE);
 }
 
 // 終了時処理
