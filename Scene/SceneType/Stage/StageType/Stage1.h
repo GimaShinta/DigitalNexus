@@ -39,7 +39,7 @@ private:
 	bool entry_effect_playing = false;
 	float entry_effect_timer = 0.0f;
 
-	bool debug_boss_only = true; // ★ デバッグ用: ボスだけ出す
+	bool debug_boss_only = false; // ★ デバッグ用: ボスだけ出す
 
 
 public:
