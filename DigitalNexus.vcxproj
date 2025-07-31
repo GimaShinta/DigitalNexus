@@ -137,6 +137,8 @@
   <ItemGroup>
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="AppMain.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet6.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet5.cpp" />
     <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp" />
     <ClCompile Include="Object\Character\Boss\Boss2.cpp" />
     <ClCompile Include="Object\Item\Exp\Exp.cpp" />
@@ -186,6 +188,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Application.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet6.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet5.h" />
     <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h" />
     <ClInclude Include="Object\Character\Boss\Boss2.h" />
     <ClInclude Include="Object\Item\Exp\Exp.h" />

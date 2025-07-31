@@ -6,6 +6,8 @@
 #include "../Player/Player.h"
 #include "../../Bullet/EnemyBullet/EnemyBullet3.h"
 #include "../../Bullet/EnemyBullet/EnemyBullet4.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet5.h"
+#include "../../Bullet/EnemyBullet/EnemyBullet6.h"
 #include "../../Beam/EnemyBeam.h"
 
 // 線形補間
@@ -28,13 +30,14 @@ void Boss3::Initialize()
 	z_layer = 3;
 	box_size = 30;
 #if _DEBUG
-	hp = 100;
+	hp = 10000;
 #else
 	hp = 100000;
 #endif
 
 	// 攻撃パターンの設定
 	attack_pattrn_num = { 7, 12, 5, 12, 6, 12, 10, 12 };
+	attack_pattrn_num = { 6, 7, 8, 9, 10, 11 };
 
 
 	// 当たり判定のオブジェクト設定
@@ -46,7 +49,7 @@ void Boss3::Initialize()
 	is_mobility = true;
 
 	// 戦闘中の中心座標
-	base_position = Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) - 100);
+	base_position = Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) - 150);
 
 	// 登場時の中心座標
 	generate_base_position = Vector2D(D_WIN_MAX_X / 2 + 150, D_WIN_MAX_Y + 200);
@@ -182,7 +185,7 @@ void Boss3::Update(float delta_second)
 		}
 
 		// ===== 時間差で爆発を発生 =====
-		if (explosions_started) {
+		if (explosions_started && ikkai_bakuhatu == false) {
 			explosion_timer += delta_second;
 
 			// 複数爆発（最大数＆間隔）
@@ -229,6 +232,8 @@ void Boss3::Update(float delta_second)
 				Singleton<ShakeManager>::GetInstance()->StartShake(3.5f, 30, 30);
 
 				is_alive = false;
+
+				ikkai_bakuhatu = true;
 			}
 		}
 
@@ -708,13 +713,13 @@ void Boss3::Shot(float delta_second)
 			// 特定の攻撃のみ繰り返す
 			attack_pattrn = 5;
 #else
-			// HPが減ったら攻撃パターンを変更（オーバーフロー防止に合わせてリセット）
-			if (hp <= 3333 && attack_pattrn_num != std::vector<int>{7, 5})
-			{
-				is_drive = true;
-				attack_pattrn_num = { 7, 5 };
-				attack_count = 0; // 安全にリセット
-			}
+			//// HPが減ったら攻撃パターンを変更（オーバーフロー防止に合わせてリセット）
+			//if (hp <= 3333 && attack_pattrn_num != std::vector<int>{7, 5})
+			//{
+			//	is_drive = true;
+			//	attack_pattrn_num = { 7, 5 };
+			//	attack_count = 0; // 安全にリセット
+			//}
 
 			// 決められた攻撃パターンのみ繰り返す
 			if (!attack_pattrn_num.empty())
@@ -861,15 +866,46 @@ bool Boss3::GetIsCrashing() const
 // ボス２の攻撃
 void Boss3::Attack(float delta_second)
 {
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
 	if (is_shot == true)
 	{
-		Vector2D e_location = location;
-
 		switch (attack_pattrn)
 		{
+#if 1
+		case 1:
+			Pattrn4_2(6, 600.0f, 0.05, 5.0f, location, delta_second, 500, 300.0f);
+			break;
+		case 2:
+			Pattrn1_2(300.0f, 0.03, 5.0f, Vector2D(location.x + 100.0f, location.y), Vector2D(location.x - 100.0f, location.y), delta_second);
+			break;
+		case 3:
+			Pattrn2(300.0f, 0.03, 5.0f, location, delta_second);
+			break;
+		case 4:
+			Pattern3(32, 300.0f, 120.0f, 0.15f, 5.0f, location, delta_second);
+			break;
+		case 5:
+			Pattrn5(24, 0.05f, 900.0f, 1.0f, 600.0f, 5.0f, Vector2D(location.x + 150.0f, location.y + 100.0f), Vector2D(location.x - 150.0f, location.y + 100.0f), delta_second);
+			break;
+		case 6:
+			Pattrn6(128, 300.0f, 0.7f, 2.0f, location, delta_second);
+			break;
+		case 7:
+			Pattrn6_2(64, 300.0f, 0.7f, 2.0f, location, delta_second);
+			break;
+		case 8:
+			Pattrn7(20.0f, 300.0f, 0.1f, 5.0f, location, delta_second);
+			break;
+		case 9:
+			Pattrn7_2(20.0f, 300.0f, 0.1f, 5.0f, location, delta_second);
+			break;
+		case 10:
+			Pattrn8(20, 40.0f, 300.0f, 0.1f, 5.0f, location, delta_second, false);
+			break;
+		case 11:
+			Pattrn8_2(40.0f, 300.0f, 0.1f, 5.0f, location, delta_second);
+			break;
+#else
+
 		case 4:
 			/// <summary>
 			/// 攻撃パターン４（花火）
@@ -1016,14 +1052,397 @@ void Boss3::Attack(float delta_second)
 			Pattrn13(delta_second);
 
 			break;
+#endif
 		default:
 			break;
 		}
 	}
 }
 
+
+
 /// <summary>
-/// 攻撃パターン４
+/// 攻撃パターン1（回転する十字弾）
+/// </summary>
+void Boss3::Pattrn1(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float spiral_timer = 0.0f;
+	static float spiral_total_time = 0.0f;
+	static float rotation_angle = 0.0f;
+
+	spiral_timer += delta_second;
+	spiral_total_time += delta_second;
+
+	if (spiral_timer >= spiral_interval)
+	{
+		spiral_timer = 0.0f;
+
+		for (int i = 0; i < 4; i++) // 十字方向（0,90,180,270度）
+		{
+			float angle = rotation_angle + 90.0f * i;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			EnemyBullet3* bullet = objm->CreateObject<EnemyBullet3>(generate_location);
+			bullet->SetVelocity(velocity);
+			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+		}
+
+		rotation_angle += 10.0f; // 少しずつ回転
+		if (rotation_angle >= 360.0f) rotation_angle -= 360.0f;
+	}
+
+	if (spiral_total_time >= spiral_duration_limit)
+	{
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		rotation_angle = 0.0f;
+		is_shot = false;
+	}
+}
+
+/// <summary>
+/// 攻撃パターン1_2（回転する十字弾・2か所から発射）
+/// </summary>
+void Boss3::Pattrn1_2(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location1, const Vector2D& generate_location2, float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float spiral_timer = 0.0f;
+	static float spiral_total_time = 0.0f;
+	static float rotation_angle = 0.0f;
+
+	spiral_timer += delta_second;
+	spiral_total_time += delta_second;
+
+	if (spiral_timer >= spiral_interval)
+	{
+		spiral_timer = 0.0f;
+
+		for (int i = 0; i < 4; i++) // 十字方向（0,90,180,270度）
+		{
+			float angle = rotation_angle + 90.0f * i;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			// 1個目の発射位置
+			EnemyBullet3* bullet1 = objm->CreateObject<EnemyBullet3>(generate_location1);
+			bullet1->SetVelocity(velocity);
+
+			// 2個目の発射位置
+			EnemyBullet3* bullet2 = objm->CreateObject<EnemyBullet3>(generate_location2);
+			bullet2->SetVelocity(velocity);
+
+			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+		}
+
+		rotation_angle += 10.0f;
+		if (rotation_angle >= 360.0f) rotation_angle -= 360.0f;
+	}
+
+	if (spiral_total_time >= spiral_duration_limit)
+	{
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		rotation_angle = 0.0f;
+		is_shot = false;
+	}
+}
+
+/// <summary>
+/// 攻撃パターン2（時計回り・反時計回りの十字弾を同時に発射）
+/// </summary>
+/// <param name="speed">弾の速度</param>
+/// <param name="spiral_interval">発射間隔</param>
+/// <param name="spiral_duration_limit">攻撃継続時間</param>
+/// <param name="generate_location">弾の生成位置</param>
+/// <param name="delta_second">１フレームあたりの時間</param>
+void Boss3::Pattrn2(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float spiral_timer = 0.0f;
+	static float spiral_total_time = 0.0f;
+	static float cw_angle = 0.0f;     // 時計回り
+	static float ccw_angle = 0.0f;    // 反時計回り
+
+	spiral_timer += delta_second;
+	spiral_total_time += delta_second;
+
+	if (spiral_timer >= spiral_interval)
+	{
+		spiral_timer = 0.0f;
+
+		// 時計回りの十字弾
+		for (int i = 0; i < 4; ++i)
+		{
+			float angle = cw_angle + 90.0f * i;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			EnemyBullet3* bullet = objm->CreateObject<EnemyBullet3>(generate_location);
+			bullet->SetVelocity(velocity);
+		}
+
+		// 反時計回りの十字弾
+		for (int i = 0; i < 4; ++i)
+		{
+			float angle = ccw_angle + 90.0f * i;
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			EnemyBullet3* bullet = objm->CreateObject<EnemyBullet3>(generate_location);
+			bullet->SetVelocity(velocity);
+		}
+
+		// 効果音（1回だけでOK）
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		// 回転（時計：+、反時計：-）
+		cw_angle += 10.0f;
+		ccw_angle -= 10.0f;
+
+		if (cw_angle >= 360.0f) cw_angle -= 360.0f;
+		if (ccw_angle < 0.0f) ccw_angle += 360.0f;
+	}
+
+	if (spiral_total_time >= spiral_duration_limit)
+	{
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		cw_angle = 0.0f;
+		ccw_angle = 0.0f;
+		is_shot = false;
+	}
+}
+
+/// <summary>
+/// 攻撃パターン：扇形横一列攻撃
+/// </summary>
+/// <param name="bullet_count">一度に発射する弾の数</param>
+/// <param name="initial_speed">弾の初期速度</param>
+/// <param name="spread_angle">扇の広がる角度（度数）</param>
+/// <param name="shot_interval">弾の発射間隔</param>
+/// <param name="attack_duration">攻撃する時間</param>
+/// <param name="generate_location">生成する場所</param>
+/// <param name="delta_second">1フレームあたりの時間</param>
+void Boss3::Pattern3(int bullet_count, float initial_speed, float spread_angle, float shot_interval, float attack_duration, const Vector2D& generate_location, float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+	static float shot_timer = 0.0f;
+	static float total_attack_time = 0.0f;
+
+	shot_timer += delta_second;
+	total_attack_time += delta_second;
+
+	if (shot_timer >= shot_interval)
+	{
+		shot_timer = 0.0f;
+
+		// 扇の中心角度を決定（例: 真下を0度として左右に広がる場合）
+		// ボスが画面中央にいて、プレイヤーがいる方向を狙う場合は
+		// float center_angle_rad = atan2(player_pos.y - generate_location.y, player_pos.x - generate_location.x);
+		// などでプレイヤーへの角度を取得し、そこからspread_angle分を左右に広げます。
+		// ここでは、ボスから見て「下方向」を中心に左右に広がる扇とします。（0度を右、90度を上、180度を左、270度(または-90度)を下とするDxLibの座標系を想定）
+		float center_angle_degrees = 90.0f; // ボスの向きが真下の場合、中心は-90度（または270度）
+
+		// 扇の開始角度と終了角度を計算
+		float start_angle = center_angle_degrees - (spread_angle / 2.0f);
+		float end_angle = center_angle_degrees + (spread_angle / 2.0f);
+
+		for (int i = 0; i < bullet_count; i++)
+		{
+			// 各弾の角度を均等に配置
+			float current_angle_degrees = start_angle + (spread_angle / (bullet_count - 1)) * i;
+			if (bullet_count == 1) {
+				current_angle_degrees = center_angle_degrees; // 1発の場合、中心から
+			}
+
+			float rad = static_cast<float>(current_angle_degrees * DX_PI / 180.0f);
+
+			Vector2D velocity(cos(rad) * initial_speed, sin(rad) * initial_speed);
+
+			EnemyBullet3* e_shot = objm->CreateObject<EnemyBullet3>(generate_location);
+			e_shot->SetVelocity(velocity);
+		}
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+	}
+
+	if (total_attack_time >= attack_duration)
+	{
+		total_attack_time = 0.0f;
+		is_shot = false;
+	}
+}
+
+/// <summary>
+/// 波状に動く弾を連続で発射する攻撃
+/// </summary>
+/// <param name="bullet_num">弾の数（無視されるがテンプレに合わせて受け取る）</param>
+/// <param name="speed">弾の基礎速度</param>
+/// <param name="spiral_interval">発射間隔（連射間隔）</param>
+/// <param name="spiral_duration_limit">攻撃する時間</param>
+/// <param name="generate_location">生成する場所</param>
+/// <param name="delta_second">１フレームあたりの時間</param>
+/// <param name="range_amplitude">波の振幅（大きさ）</param>
+void Boss3::Pattern4(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second, float range_amplitude)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float wave_timer = 0.0f;
+	static float wave_total_time = 0.0f;
+	static bool left_wave = true;  // 波の向きを交互に
+
+	wave_timer += delta_second;
+	wave_total_time += delta_second;
+
+	if (wave_timer >= spiral_interval)
+	{
+		wave_timer = 0.0f;
+
+		// Y軸方向に進みながらX軸方向に波打つように初期化
+		EnemyBullet5* wave_bullet = objm->CreateObject<EnemyBullet5>(generate_location);
+
+		// 波状に進むため、X方向の振動幅、周波数を渡す（EnemyShotWaveがそれを受け取って動く）
+		wave_bullet->SetWaveParameters(
+			Vector2D(0.0f, speed),   // 基本進行方向は下
+			range_amplitude,         // 振幅（大きさ）
+			5.0f,                    // 周波数（必要なら引数化しても良い）
+			left_wave               // 左右の向きを交互に
+		);
+
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		left_wave = !left_wave;
+	}
+
+	if (wave_total_time >= spiral_duration_limit)
+	{
+		wave_total_time = 0.0f;
+		is_shot = false;
+	}
+}
+
+
+/// <summary>
+/// 2か所から交互 or 同時に波状弾を発射する攻撃
+/// </summary>
+/// <param name="bullet_num">弾の数（無視される）</param>
+/// <param name="speed">弾の速度</param>
+/// <param name="spiral_interval">発射間隔</param>
+/// <param name="spiral_duration_limit">攻撃する時間</param>
+/// <param name="generate_location">中央の位置（左右の基準）</param>
+/// <param name="delta_second">１フレームあたりの時間</param>
+/// <param name="range_amplitude">波の振幅（大きさ）</param>
+void Boss3::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second, float range_amplitude, float range_width)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float wave_timer = 0.0f;
+	static float wave_total_time = 0.0f;
+
+	wave_timer += delta_second;
+	wave_total_time += delta_second;
+
+	if (wave_timer >= spiral_interval)
+	{
+		wave_timer = 0.0f;
+
+		// 左端から右端に bullet_num 個並べる
+		for (int i = 0; i < bullet_num; ++i)
+		{
+			float ratio = (bullet_num <= 1) ? 0.5f : static_cast<float>(i) / (bullet_num - 1); // 0?1の割合
+			float x_offset = (ratio - 0.5f) * range_width; // -width/2 ? +width/2
+
+			Vector2D spawn_pos = generate_location + Vector2D(x_offset, 0);
+
+			EnemyBullet5* wave_bullet = objm->CreateObject<EnemyBullet5>(spawn_pos);
+			wave_bullet->SetWaveParameters(
+				Vector2D(0.0f, speed),
+				range_amplitude,
+				5.0f, // 周波数
+				(i % 2 == 0) // 偶数番目と奇数番目で波を反転
+			);
+		}
+
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+	}
+
+	if (wave_total_time >= spiral_duration_limit)
+	{
+		wave_total_time = 0.0f;
+		is_shot = false;
+	}
+}
+
+
+void Boss3::Pattrn5(
+	int total_bullet_count,
+	float spawn_interval,
+	float initial_speed,
+	float stop_duration,
+	float homing_speed,
+	float duration_limit,
+	const Vector2D& generate_location_left,
+	const Vector2D& generate_location_right,
+	float delta_second
+) {
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float total_time = 0.0f;
+	static float spawn_timer = 0.0f;
+	static int bullets_spawned = 0;
+	static bool initialized = false;
+
+	total_time += delta_second;
+	spawn_timer += delta_second;
+
+	if (!initialized) {
+		initialized = true;
+		bullets_spawned = 0;
+		spawn_timer = 0.0f;
+		total_time = 0.0f;
+	}
+
+	if (bullets_spawned < total_bullet_count && spawn_timer >= spawn_interval) {
+		spawn_timer = 0.0f;
+
+		// 左右どちらかから出す（交互またはランダムでも可）
+		Vector2D base_pos = (bullets_spawned % 2 == 0) ? generate_location_left : generate_location_right;
+
+		// 停止位置をランダムにばらす（例: 100?200px前方で止まる）
+		float random_y_offset = static_cast<float>(GetRand(300)); // [100, 200]
+		float random_x_offset = static_cast<float>(GetRand(50));
+
+		auto* bullet = objm->CreateObject<EnemyBullet6>(base_pos);
+		bullet->SetPhaseParams(initial_speed, stop_duration, homing_speed, random_x_offset,  random_y_offset);
+		bullet->SetPlayer(player);
+
+		bullets_spawned++;
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+	}
+
+	if (total_time >= duration_limit) {
+		total_time = 0.0f;
+		spawn_timer = 0.0f;
+		bullets_spawned = 0;
+		initialized = false;
+		is_shot = false;
+	}
+}
+
+
+/// <summary>
+/// 攻撃パターン6
 /// </summary>
 /// <param name="bullet_num">弾の数</param>
 /// <param name="speed">弾の速度</param>
@@ -1031,7 +1450,7 @@ void Boss3::Attack(float delta_second)
 /// <param name="spiral_duration_limit">攻撃する時間</param>
 /// <param name="generate_location">生成する場所</param>
 /// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn4(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn6(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1069,7 +1488,7 @@ void Boss3::Pattrn4(int bullet_num, float speed, float spiral_interval, float sp
 	}
 }
 
-void Boss3::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn6_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1120,161 +1539,7 @@ void Boss3::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float 
 }
 
 /// <summary>
-/// 攻撃パターン５
-/// </summary>
-/// <param name="spiral_interval">発射間隔</param>
-/// <param name="spiral_duration_limit">攻撃する時間</param>
-/// <param name="spiral_speed">弾の速度</param>
-/// <param name="generate_location">生成する場所</param>
-/// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn5(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float spiral_timer = 0.0f;
-	static float spiral_angle = 0.0f;
-	static float spiral_total_time = 0.0f;
-
-	spiral_timer += delta_second;
-	spiral_total_time += delta_second;
-
-	if (spiral_timer >= spiral_interval)
-	{
-		spiral_timer = 0.0f;
-
-#if 0
-		// 上下二方向に出す
-		for (int dir = 0; dir < 2; dir++)
-		{
-			float base_angle = (dir == 0) ? 90.0f : 270.0f;
-			float current_angle = base_angle + spiral_angle;
-
-			float rad = current_angle * DX_PI / 180.0f;
-			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(generate_location);
-			shot->SetVelocity(velocity);
-			shot->SetAttackPattrn(2);
-		}
-#else
-		// 一方向
-		float base_angle = 90.0f; // 上方向
-		float current_angle = base_angle + spiral_angle;
-
-		float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
-		Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-		EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(generate_location);
-		shot->SetVelocity(velocity);
-		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-#endif
-
-
-		spiral_angle += 40.0f;
-		if (spiral_angle >= 360.0f) spiral_angle -= 360.0f;
-	}
-
-	// 時間制限を超えたら終了（発射しない）
-	if (spiral_total_time >= spiral_duration_limit)
-	{
-		spiral_total_time = 0.0f;
-		is_shot = false;
-	}
-}
-
-void Boss3::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float spiral_timer = 0.0f;
-	static float spiral_angle = 0.0f;
-	static float spiral_total_time = 0.0f;
-
-	spiral_timer += delta_second;
-	spiral_total_time += delta_second;
-
-	if (spiral_timer >= spiral_interval)
-	{
-		spiral_timer = 0.0f;
-
-#if 0
-		for (int dir = 0; dir < 2; dir++)
-		{
-			float base_angle = (dir == 0) ? 90.0f : 270.0f;
-			float current_angle = base_angle + spiral_angle;
-
-			float rad = current_angle * DX_PI / 180.0f;
-			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
-			shot->SetVelocity(velocity);
-			shot->SetAttackPattrn(2);
-		}
-
-		for (int dir = 0; dir < 2; dir++)
-		{
-			float base_angle = (dir == 0) ? 90.0f : 270.0f;
-			float current_angle = base_angle - spiral_angle; // ← 逆回転にする
-
-			float rad = current_angle * DX_PI / 180.0f;
-			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x - 170.0f, generate_location.y + 65.0f));
-			shot->SetVelocity(velocity);
-			shot->SetAttackPattrn(2);
-		}
-#else
-
-		// 右側（時計回り、上方向のみ）
-		{
-			float base_angle = 90.0f;
-			// マイナスにしたら回転が反転する
-			float current_angle = base_angle + spiral_angle;
-
-			float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
-			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
-			shot->SetVelocity(velocity);
-			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-		}
-
-		// 左側（反時計回り、上方向のみ）
-		{
-			float base_angle = 90.0f;
-			float current_angle = base_angle + spiral_angle;
-
-			float rad = current_angle * DX_PI / 180.0f;
-			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
-
-			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y + 65.0f));
-			shot->SetVelocity(velocity);
-		}
-
-
-#endif
-
-
-		spiral_angle += 40.0f;
-		if (spiral_angle >= 360.0f) spiral_angle -= 360.0f;
-	}
-
-	// 時間制限を超えたら終了（発射しない）
-	if (spiral_total_time >= spiral_duration_limit)
-	{
-		spiral_total_time = 0.0f;
-		is_shot = false;
-	}
-}
-
-/// <summary>
-/// 攻撃パターン６
+/// 攻撃パターン7
 /// </summary>
 /// <param name="fan_angle_range">扇の角度（60なら±30°）</param>
 /// <param name="bullet_speed">弾の速度</param>
@@ -1282,7 +1547,7 @@ void Boss3::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 /// <param name="fan_duration_limit">攻撃する時間</param>
 /// <param name="generate_location">生成する場所</param>
 /// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn6(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn7(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1308,7 +1573,7 @@ void Boss3::Pattrn6(float fan_angle_range, float bullet_speed, float fan_interva
 		float rad = static_cast<float>(random_angle * DX_PI / 180.0f);
 		Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
-		e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
+		EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
 		e_shot4->SetVelocity(velocity);
 		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
@@ -1322,7 +1587,7 @@ void Boss3::Pattrn6(float fan_angle_range, float bullet_speed, float fan_interva
 	}
 }
 
-void Boss3::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1348,7 +1613,7 @@ void Boss3::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_inter
 		float rad = random_angle * DX_PI / 180.0f;
 		Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
-		e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
+		EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
 		e_shot4->SetVelocity(velocity);
 		e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y + 65.0f));
 		e_shot4->SetVelocity(velocity);
@@ -1365,8 +1630,170 @@ void Boss3::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_inter
 	}
 }
 
+
+
+
+
+
+
+
+///// <summary>
+///// 攻撃パターン５
+///// </summary>
+///// <param name="spiral_interval">発射間隔</param>
+///// <param name="spiral_duration_limit">攻撃する時間</param>
+///// <param name="spiral_speed">弾の速度</param>
+///// <param name="generate_location">生成する場所</param>
+///// <param name="delta_second">１フレームあたりの時間</param>
+//void Boss3::Pattrn5(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second)
+//{
+//	// オブジェクト管理クラスのインスタンスを取得
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static float spiral_timer = 0.0f;
+//	static float spiral_angle = 0.0f;
+//	static float spiral_total_time = 0.0f;
+//
+//	spiral_timer += delta_second;
+//	spiral_total_time += delta_second;
+//
+//	if (spiral_timer >= spiral_interval)
+//	{
+//		spiral_timer = 0.0f;
+//
+//#if 0
+//		// 上下二方向に出す
+//		for (int dir = 0; dir < 2; dir++)
+//		{
+//			float base_angle = (dir == 0) ? 90.0f : 270.0f;
+//			float current_angle = base_angle + spiral_angle;
+//
+//			float rad = current_angle * DX_PI / 180.0f;
+//			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(generate_location);
+//			shot->SetVelocity(velocity);
+//			shot->SetAttackPattrn(2);
+//		}
+//#else
+//		// 一方向
+//		float base_angle = 90.0f; // 上方向
+//		float current_angle = base_angle + spiral_angle;
+//
+//		float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
+//		Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//		EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(generate_location);
+//		shot->SetVelocity(velocity);
+//		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//#endif
+//
+//
+//		spiral_angle += 40.0f;
+//		if (spiral_angle >= 360.0f) spiral_angle -= 360.0f;
+//	}
+//
+//	// 時間制限を超えたら終了（発射しない）
+//	if (spiral_total_time >= spiral_duration_limit)
+//	{
+//		spiral_total_time = 0.0f;
+//		is_shot = false;
+//	}
+//}
+//
+//void Boss3::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second)
+//{
+//	// オブジェクト管理クラスのインスタンスを取得
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static float spiral_timer = 0.0f;
+//	static float spiral_angle = 0.0f;
+//	static float spiral_total_time = 0.0f;
+//
+//	spiral_timer += delta_second;
+//	spiral_total_time += delta_second;
+//
+//	if (spiral_timer >= spiral_interval)
+//	{
+//		spiral_timer = 0.0f;
+//
+//#if 0
+//		for (int dir = 0; dir < 2; dir++)
+//		{
+//			float base_angle = (dir == 0) ? 90.0f : 270.0f;
+//			float current_angle = base_angle + spiral_angle;
+//
+//			float rad = current_angle * DX_PI / 180.0f;
+//			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
+//			shot->SetVelocity(velocity);
+//			shot->SetAttackPattrn(2);
+//		}
+//
+//		for (int dir = 0; dir < 2; dir++)
+//		{
+//			float base_angle = (dir == 0) ? 90.0f : 270.0f;
+//			float current_angle = base_angle - spiral_angle; // ← 逆回転にする
+//
+//			float rad = current_angle * DX_PI / 180.0f;
+//			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x - 170.0f, generate_location.y + 65.0f));
+//			shot->SetVelocity(velocity);
+//			shot->SetAttackPattrn(2);
+//		}
+//#else
+//
+//		// 右側（時計回り、上方向のみ）
+//		{
+//			float base_angle = 90.0f;
+//			// マイナスにしたら回転が反転する
+//			float current_angle = base_angle + spiral_angle;
+//
+//			float rad = static_cast<float>(current_angle * DX_PI / 180.0f);
+//			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y + 65.0f));
+//			shot->SetVelocity(velocity);
+//			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//		}
+//
+//		// 左側（反時計回り、上方向のみ）
+//		{
+//			float base_angle = 90.0f;
+//			float current_angle = base_angle + spiral_angle;
+//
+//			float rad = current_angle * DX_PI / 180.0f;
+//			Vector2D velocity(cos(rad) * spiral_speed, sin(rad) * spiral_speed);
+//
+//			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y + 65.0f));
+//			shot->SetVelocity(velocity);
+//		}
+//
+//
+//#endif
+//
+//
+//		spiral_angle += 40.0f;
+//		if (spiral_angle >= 360.0f) spiral_angle -= 360.0f;
+//	}
+//
+//	// 時間制限を超えたら終了（発射しない）
+//	if (spiral_total_time >= spiral_duration_limit)
+//	{
+//		spiral_total_time = 0.0f;
+//		is_shot = false;
+//	}
+//}
+//
+
 /// <summary>
-/// 攻撃パターン７
+/// 攻撃パターン8
 /// </summary>
 /// <param name="fan_angle_range">扇の角度範囲（60なら±30°）</param>
 /// <param name="bullet_speed">弾の速度</param>
@@ -1374,7 +1801,7 @@ void Boss3::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_inter
 /// <param name="fan_duration_limit">攻撃時間</param>
 /// <param name="generate_location">生成する場所</param>
 /// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change)
+void Boss3::Pattrn8(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1400,7 +1827,7 @@ void Boss3::Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, f
 			float rad = angle * DX_PI / 180.0f;
 			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
-			e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
 			e_shot4->SetVelocity(velocity);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
@@ -1416,7 +1843,7 @@ void Boss3::Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, f
 	}
 }
 
-void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
+void Boss3::Pattrn8_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
 {
 	// オブジェクト管理クラスのインスタンスを取得
 	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -1442,7 +1869,7 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
-			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y - 10.0f));
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y - 10.0f));
 			e_shot4->SetVelocity(velocity);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
@@ -1457,7 +1884,7 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 			float rad = static_cast<float>(angle * DX_PI / 180.0f);
 			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
 
-			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y - 10.0f));
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y - 10.0f));
 			e_shot4->SetVelocity(velocity);
 		}
 	}
@@ -1470,510 +1897,511 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 	}
 }
 
-/// <summary>
-/// 攻撃パターン８
-/// </summary>
-/// <param name="wave_interval">発射間隔</param>
-/// <param name="wave_duration_limit">発車時間の上限</param>
-/// <param name="generate_location">生成する場所</param>
-/// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn8(float wave_interval, float wave_duration_limit, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-#if 1
-	static float wave_timer = 0.0f;
-	static float wave_total_time = 0.0f;
-
-	wave_timer += delta_second;
-	wave_total_time += delta_second;
-
-	if (wave_timer >= wave_interval)
-	{
-		wave_timer = 0.0f;
-		Vector2D e_lo = generate_location;
-
-		// 右側
-		e_shot5 = objm->CreateObject<EnemyBullet4>(Vector2D(e_lo.x + 50, e_lo.y));
-		e_shot5->SetWaveReflected(false);
-		e_shot5->SetVelocity(Vector2D(0, 200));
-		e_shot5->SetWaveParameters(600.0f, 0.7f);
-
-		// 左側
-		e_shot5 = objm->CreateObject<EnemyBullet4>(Vector2D(e_lo.x - 50, e_lo.y));
-		e_shot5->SetWaveReflected(true);
-		e_shot5->SetVelocity(Vector2D(0, 200));
-		e_shot5->SetWaveParameters(600.0f, 0.7f);
-		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-	}
-
-	// 一定時間経過したら終了
-	if (wave_total_time >= wave_duration_limit)
-	{
-		wave_total_time = 0.0f;
-		is_shot = false;
-	}
-#else
-
-	int num_shots = 20;
-	float spread_speed = 150.0f;
-	Vector2D origin = e_location; // 弾の初期発射位置（ボスの位置）
-	Vector2D boss_center = Boss3->GetLocation(); // 吸い込み中心！
-
-	for (int i = 0; i < num_shots; ++i)
-	{
-		float angle = 360.0f / num_shots * i;
-		float rad = angle * DX_PI / 180.0f;
-
-		e_shot5 = objm->CreateObject<EnemyShot5>(origin);
-		e_shot5->SetVelocity(Vector2D(cosf(rad), sinf(rad)) * spread_speed);
-		e_shot5->SetSuckCenter(boss_center); // 吸い込み先をセット！
-	}
-#endif
-
-}
-
-/// <summary>
-/// 攻撃パターン９
-/// </summary>
-/// <param name="shot_count">弾の数</param>
-/// <param name="radius">ボスからの距離</param>
-/// <param name="angular_speed">回転速度</param>
-/// <param name="bullet_speed">弾速</param>
-/// <param name="rotation_timer">回転の時間計測</param>
-/// <param name="generate_location">生成する場所</param>
-/// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn9(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static std::vector<float> angles;    // 各弾の角度管理
-	static std::vector<EnemyBullet3*> rotating_shots;  // 弾のポインタを保持
-
-	static float rotation_timer = 0.0f;
-
-	rotation_timer += delta_second;
-
-	// 初期化処理
-	if (angles.empty())
-	{
-		rotating_shots.clear();
-		// 弾を生成して初期角度を設定
-		for (int i = 0; i < shot_count; ++i)
-		{
-			float angle = 360.0f / shot_count * i;  // 弾の角度設定
-			angles.push_back(angle);
-
-			// ボスの周囲に弾を配置
-			e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
-			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-			if (e_shot4)
-			{
-				rotating_shots.push_back(e_shot4);  // 正しく生成されたら弾を保存
-				e_shot4->SetVelocity(Vector2D(0, 0)); // 回転だけなので弾速は0
-
-			}
-		}
-	}
-
-	// 各弾の位置を更新して回転させる
-	for (int i = 0; i < shot_count; ++i)
-	{
-		angles[i] += angular_speed * delta_second; // 角度更新
-		if (angles[i] >= 360.0f) angles[i] -= 360.0f; // 角度を0?360度に調整
-
-		float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);  // ラジアンに変換
-
-		// ボスを中心に半径 `radius` の円軌道を描く
-		Vector2D new_pos = generate_location + Vector2D(cos(rad) * radius, sin(rad) * radius);
-
-		// 弾の位置を更新
-		if (rotating_shots[i])  // 弾が正しく存在するか確認
-		{
-			rotating_shots[i]->SetLocation(new_pos);
-
-			// 弾の速度はゼロ（回転のみ）
-			rotating_shots[i]->SetVelocity(Vector2D(0, 0));
-		}
-	}
-
-	// 攻撃の終了判定（一定時間経過後）
-	static float duration_timer = 0.0f;
-	duration_timer += delta_second;
-	if (duration_timer >= 5.0f)  // 5秒後に終了
-	{
-		for (int i = 0; i < shot_count; ++i)
-		{
-			if (rotating_shots[i])
-			{
-				rotating_shots[i]->SetDestroy();  // 弾を削除
-			}
-
-		}
-		angles.clear();  // 角度情報もクリア
-		rotating_shots.clear();  // 弾のリストもクリア
-		duration_timer = 0.0f;
-		is_shot = false;
-	}
-}
-
-void Boss3::Pattrn9_2(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second)
-{
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static std::vector<float> angles_left;
-	static std::vector<float> angles_right;
-	static std::vector<EnemyBullet3*> shots_left;
-	static std::vector<EnemyBullet3*> shots_right;
-
-	static float rotation_timer = 0.0f;
-	rotation_timer += delta_second;
-
-	const float offset_x = 180.0f; // ボスの中心から左右にずらす距離
-	Vector2D left_center = generate_location + Vector2D(-offset_x, 0);
-	Vector2D right_center = generate_location + Vector2D(+offset_x, 0);
-
-	// 初期化
-	if (angles_left.empty() && angles_right.empty())
-	{
-		shots_left.clear();
-		shots_right.clear();
-
-		for (int i = 0; i < shot_count; ++i)
-		{
-			float angle = 360.0f / shot_count * i;
-			EnemyBullet3* e_shot4 = nullptr;
-
-			if (i % 2 == 0)
-			{
-				angles_left.push_back(angle);
-				e_shot4 = objm->CreateObject<EnemyBullet3>(left_center);
-				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-				if (e_shot4)
-				{
-					shots_left.push_back(e_shot4);
-					e_shot4->SetVelocity(Vector2D(0, 0));
-					//e_shot4->SetAttackPattrn(1);
-				}
-			}
-			else
-			{
-				angles_right.push_back(angle);
-				e_shot4 = objm->CreateObject<EnemyBullet3>(right_center);
-				if (e_shot4)
-				{
-					shots_right.push_back(e_shot4);
-					e_shot4->SetVelocity(Vector2D(0, 0));
-					//e_shot4->SetAttackPattrn(1);
-				}
-			}
-		}
-	}
-
-	// 左側の弾を更新
-	for (size_t i = 0; i < angles_left.size(); ++i)
-	{
-		angles_left[i] += angular_speed * delta_second;
-		if (angles_left[i] >= 360.0f) angles_left[i] -= 360.0f;
-
-		float rad = static_cast<float>(angles_left[i] * DX_PI / 180.0f);
-		Vector2D new_pos = left_center + Vector2D(cos(rad) * radius, sin(rad) * radius);
-
-		if (i < shots_left.size() && shots_left[i])
-		{
-			shots_left[i]->SetLocation(new_pos);
-			shots_left[i]->SetVelocity(Vector2D(0, 0));
-		}
-	}
-
-	// 右側の弾を更新
-	for (size_t i = 0; i < angles_right.size(); ++i)
-	{
-		angles_right[i] += angular_speed * delta_second;
-		if (angles_right[i] >= 360.0f) angles_right[i] -= 360.0f;
-
-		float rad = angles_right[i] * DX_PI / 180.0f;
-		Vector2D new_pos = right_center + Vector2D(cos(rad) * radius, sin(rad) * radius);
-
-		if (i < shots_right.size() && shots_right[i])
-		{
-			shots_right[i]->SetLocation(new_pos);
-			shots_right[i]->SetVelocity(Vector2D(0, 0));
-		}
-	}
-
-	// 攻撃終了処理（5秒経過で削除）
-	static float duration_timer = 0.0f;
-	duration_timer += delta_second;
-	if (duration_timer >= 5.0f)
-	{
-		for (auto& s : shots_left)
-			if (s) s->SetDestroy();
-		for (auto& s : shots_right)
-			if (s) s->SetDestroy();
-
-		angles_left.clear();
-		angles_right.clear();
-		shots_left.clear();
-		shots_right.clear();
-		duration_timer = 0.0f;
-		is_shot = false;
-	}
-}
-
-/// <summary>
-/// 攻撃パターン１０
-/// </summary>
-/// <param name="shot_count">弾の数</param>
-/// <param name="radius">ボスからの距離</param>
-/// <param name="angular_speed">回転速度</param>
-/// <param name="bullet_speed">弾速</param>
-/// <param name="rotation_timer">回転の時間計測</param>
-/// <param name="generate_location">生成する場所</param>
-/// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn10(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float duration_timer = 0.0f;
-	static Vector2D center_pos;  // 見えない中心座標
-	static Vector2D center_velocity;
-	static std::vector<float> angles;
-	static std::vector<EnemyBullet3*> rotating_shots;
-	static bool initialized = false;
-
-	// 時間経過
-	duration_timer += delta_second;
-
-	if (duration_timer < duration_limit)
-	{
-		if (!initialized) // 初期化処理
-		{
-			// ボスの位置を初期中心として、真下に移動させる
-			center_pos = generate_location;
-			center_velocity = Vector2D(0.0f, center_speed); // 真下方向
-
-			angles.clear();
-			rotating_shots.clear();
-			for (int i = 0; i < shot_count; ++i)
-			{
-				float angle = 360.0f / shot_count * i;
-				angles.push_back(angle);
-
-				EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(center_pos);
-				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-				if (shot)
-				{
-					shot->SetVelocity(Vector2D(0, 0));
-					rotating_shots.push_back(shot);
-				}
-			}
-
-			initialized = true;
-		}
-
-		// 見えない中心の移動
-		center_pos += center_velocity * delta_second;
-
-		// 回転弾の位置更新
-		for (int i = 0; i < shot_count; ++i)
-		{
-			angles[i] += angular_speed * delta_second;
-			if (angles[i] >= 360.0f) angles[i] -= 360.0f;
-
-			float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);
-			Vector2D offset(cos(rad) * radius, sin(rad) * radius);
-
-			if (rotating_shots[i])
-			{
-				rotating_shots[i]->SetLocation(center_pos + offset);
-			}
-		}
-	}
-	else
-	{
-		// 攻撃終了後の処理
-		duration_timer = 0.0f;
-		is_shot = false;
-		initialized = false;  // 初期化フラグをリセット
-	}
-}
-
-void Boss3::Pattrn10_2(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second)
-{
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float duration_timer = 0.0f;
-	static Vector2D center_pos_L, center_pos_R;
-	static Vector2D center_velocity;
-	static std::vector<RotatingShotData> shot_data_L, shot_data_R;
-	static bool initialized = false;
-	static float arrival_phase_timer = 0.0f;
-	static bool all_arrived = false;
-
-
-	duration_timer += delta_second;
-
-	if (duration_timer < duration_limit)
-	{
-		if (!initialized)
-		{
-			const float offset_x = 170.0f;
-
-			center_pos_L = center_location + Vector2D(-offset_x, 50);
-			center_pos_R = center_location + Vector2D(+offset_x, 50);
-			center_velocity = Vector2D(0.0f, center_speed);
-
-			shot_data_L.clear();
-			shot_data_R.clear();
-
-			for (int i = 0; i < shot_count; ++i)
-			{
-				float angle = 360.0f / shot_count * i;
-				float rad = static_cast<float>(angle * DX_PI / 180.0f);
-				Vector2D offset(cos(rad) * radius, sin(rad) * radius);
-
-				// 左側の弾
-				EnemyBullet3* shot_L = objm->CreateObject<EnemyBullet3>(center_pos_L);
-				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-				if (shot_L)
-				{
-					shot_L->SetVelocity(Vector2D(0, 0));
-					shot_data_L.push_back({ shot_L, angle, offset, 0.0f, RotatingShotData::State::MoveToCircle });
-				}
-
-				// 右側の弾
-				EnemyBullet3* shot_R = objm->CreateObject<EnemyBullet3>(center_pos_R);
-				if (shot_R)
-				{
-					shot_R->SetVelocity(Vector2D(0, 0));
-					shot_data_R.push_back({ shot_R, angle, offset, 0.0f, RotatingShotData::State::MoveToCircle });
-				}
-			}
-
-			initialized = true;
-		}
-
-		// 中心移動
-		if (all_arrived)
-		{
-			center_pos_L += center_velocity * delta_second;
-			center_pos_R += center_velocity * delta_second;
-		}
-
-		auto update_shots = [&](std::vector<RotatingShotData>& shot_data, const Vector2D& center_pos)
-			{
-				for (auto& data : shot_data)
-				{
-					if (!data.shot) continue;
-
-					switch (data.state)
-					{
-					case RotatingShotData::State::MoveToCircle:
-					{
-						data.arrival_timer += delta_second;
-						float t = Min(data.arrival_timer / 1.0f, 1.0f);
-						float eased = 1.0f - pow(1.0f - t, 2.0f); // easeOut
-
-						Vector2D pos = center_pos + data.target_offset * eased;
-						data.shot->SetLocation(pos);
-
-						if (t >= 1.0f)
-							data.state = RotatingShotData::State::Rotate;
-
-						bool all_ready = true;
-						for (auto& d : shot_data_L) if (d.state != RotatingShotData::State::Rotate) all_ready = false;
-						for (auto& d : shot_data_R) if (d.state != RotatingShotData::State::Rotate) all_ready = false;
-
-						if (all_ready) all_arrived = true;
-						break;
-					}
-					case RotatingShotData::State::Rotate:
-					{
-						data.angle_deg += angular_speed * delta_second;
-						if (data.angle_deg >= 360.0f) data.angle_deg -= 360.0f;
-
-						float rad = static_cast<float>(data.angle_deg * DX_PI / 180.0f);
-						Vector2D offset(cos(rad) * radius, sin(rad) * radius);
-						data.shot->SetLocation(center_pos + offset);
-						break;
-					}
-					}
-				}
-			};
-
-		// 左右の弾更新
-		update_shots(shot_data_L, center_pos_L);
-		update_shots(shot_data_R, center_pos_R);
-	}
-	else
-	{
-		// 攻撃終了処理
-		for (auto& d : shot_data_L) if (d.shot) d.shot->SetDestroy();
-		for (auto& d : shot_data_R) if (d.shot) d.shot->SetDestroy();
-
-		shot_data_L.clear();
-		shot_data_R.clear();
-		initialized = false;
-		all_arrived = false;              // ← これが大事
-		duration_timer = 0.0f;
-		arrival_phase_timer = 0.0f;       // ← 使っているなら
-		is_shot = false;
-	}
-}
-
-/// <summary>
-/// 攻撃パターン11（一本ビーム）
-/// </summary>
-/// <param name="offsets_x">ボスからの距離</param>
-void Boss3::Pattrn11(float offsets_x)
-{
-	static bool                         beam_on = false;          // いま発射中か？
-	static EnemyBeam* b;                     // 発射中ビーム
-
-	if (!beam_on)
-	{
-		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-		b = objm->CreateObject<EnemyBeam>(
-			Vector2D(
-				location.x + offsets_x,
-				(location.y + 150.0f) - box_size.y
-			));
-		b->SetBoss3(this);
-		beam_on = true;
-	}
-
-	if (b != nullptr)
-	{
-		// それぞれ +100 / -100 のオフセットで追従
-		b->SetLocation(
-			Vector2D(
-				location.x + offsets_x,
-				(location.y + 150.0f) + b->GetBoxSize().y
-			));
-	}
-
-	if (b != nullptr && b->is_destroy)   // 5 秒後などに true になる想定
-	{
-		b->SetDestroy();                 // 必要なら明示削除
-		is_shot = false;
-		beam_on = false;
-	}
-}
+///// <summary>
+///// 攻撃パターン８
+///// </summary>
+///// <param name="wave_interval">発射間隔</param>
+///// <param name="wave_duration_limit">発車時間の上限</param>
+///// <param name="generate_location">生成する場所</param>
+///// <param name="delta_second">１フレームあたりの時間</param>
+//void Boss3::Pattrn8(float wave_interval, float wave_duration_limit, const Vector2D& generate_location, float delta_second)
+//{
+//	// オブジェクト管理クラスのインスタンスを取得
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//#if 1
+//	static float wave_timer = 0.0f;
+//	static float wave_total_time = 0.0f;
+//
+//	wave_timer += delta_second;
+//	wave_total_time += delta_second;
+//
+//	if (wave_timer >= wave_interval)
+//	{
+//		wave_timer = 0.0f;
+//		Vector2D e_lo = generate_location;
+//
+//		// 右側
+//		e_shot5 = objm->CreateObject<EnemyBullet4>(Vector2D(e_lo.x + 50, e_lo.y));
+//		e_shot5->SetWaveReflected(false);
+//		e_shot5->SetVelocity(Vector2D(0, 200));
+//		e_shot5->SetWaveParameters(600.0f, 0.7f);
+//
+//		// 左側
+//		e_shot5 = objm->CreateObject<EnemyBullet4>(Vector2D(e_lo.x - 50, e_lo.y));
+//		e_shot5->SetWaveReflected(true);
+//		e_shot5->SetVelocity(Vector2D(0, 200));
+//		e_shot5->SetWaveParameters(600.0f, 0.7f);
+//		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//	}
+//
+//	// 一定時間経過したら終了
+//	if (wave_total_time >= wave_duration_limit)
+//	{
+//		wave_total_time = 0.0f;
+//		is_shot = false;
+//	}
+//#else
+//
+//	int num_shots = 20;
+//	float spread_speed = 150.0f;
+//	Vector2D origin = e_location; // 弾の初期発射位置（ボスの位置）
+//	Vector2D boss_center = Boss3->GetLocation(); // 吸い込み中心！
+//
+//	for (int i = 0; i < num_shots; ++i)
+//	{
+//		float angle = 360.0f / num_shots * i;
+//		float rad = angle * DX_PI / 180.0f;
+//
+//		e_shot5 = objm->CreateObject<EnemyShot5>(origin);
+//		e_shot5->SetVelocity(Vector2D(cosf(rad), sinf(rad)) * spread_speed);
+//		e_shot5->SetSuckCenter(boss_center); // 吸い込み先をセット！
+//	}
+//#endif
+//
+//}
+//
+///// <summary>
+///// 攻撃パターン９
+///// </summary>
+///// <param name="shot_count">弾の数</param>
+///// <param name="radius">ボスからの距離</param>
+///// <param name="angular_speed">回転速度</param>
+///// <param name="bullet_speed">弾速</param>
+///// <param name="rotation_timer">回転の時間計測</param>
+///// <param name="generate_location">生成する場所</param>
+///// <param name="delta_second">１フレームあたりの時間</param>
+//void Boss3::Pattrn9(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second)
+//{
+//	// オブジェクト管理クラスのインスタンスを取得
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static std::vector<float> angles;    // 各弾の角度管理
+//	static std::vector<EnemyBullet3*> rotating_shots;  // 弾のポインタを保持
+//
+//	static float rotation_timer = 0.0f;
+//
+//	rotation_timer += delta_second;
+//
+//	// 初期化処理
+//	if (angles.empty())
+//	{
+//		rotating_shots.clear();
+//		// 弾を生成して初期角度を設定
+//		for (int i = 0; i < shot_count; ++i)
+//		{
+//			float angle = 360.0f / shot_count * i;  // 弾の角度設定
+//			angles.push_back(angle);
+//
+//			// ボスの周囲に弾を配置
+//			e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
+//			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//			if (e_shot4)
+//			{
+//				rotating_shots.push_back(e_shot4);  // 正しく生成されたら弾を保存
+//				e_shot4->SetVelocity(Vector2D(0, 0)); // 回転だけなので弾速は0
+//
+//			}
+//		}
+//	}
+//
+//	// 各弾の位置を更新して回転させる
+//	for (int i = 0; i < shot_count; ++i)
+//	{
+//		angles[i] += angular_speed * delta_second; // 角度更新
+//		if (angles[i] >= 360.0f) angles[i] -= 360.0f; // 角度を0?360度に調整
+//
+//		float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);  // ラジアンに変換
+//
+//		// ボスを中心に半径 `radius` の円軌道を描く
+//		Vector2D new_pos = generate_location + Vector2D(cos(rad) * radius, sin(rad) * radius);
+//
+//		// 弾の位置を更新
+//		if (rotating_shots[i])  // 弾が正しく存在するか確認
+//		{
+//			rotating_shots[i]->SetLocation(new_pos);
+//
+//			// 弾の速度はゼロ（回転のみ）
+//			rotating_shots[i]->SetVelocity(Vector2D(0, 0));
+//		}
+//	}
+//
+//	// 攻撃の終了判定（一定時間経過後）
+//	static float duration_timer = 0.0f;
+//	duration_timer += delta_second;
+//	if (duration_timer >= 5.0f)  // 5秒後に終了
+//	{
+//		for (int i = 0; i < shot_count; ++i)
+//		{
+//			if (rotating_shots[i])
+//			{
+//				rotating_shots[i]->SetDestroy();  // 弾を削除
+//			}
+//
+//		}
+//		angles.clear();  // 角度情報もクリア
+//		rotating_shots.clear();  // 弾のリストもクリア
+//		duration_timer = 0.0f;
+//		is_shot = false;
+//	}
+//}
+//
+//void Boss3::Pattrn9_2(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second)
+//{
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static std::vector<float> angles_left;
+//	static std::vector<float> angles_right;
+//	static std::vector<EnemyBullet3*> shots_left;
+//	static std::vector<EnemyBullet3*> shots_right;
+//
+//	static float rotation_timer = 0.0f;
+//	rotation_timer += delta_second;
+//
+//	const float offset_x = 180.0f; // ボスの中心から左右にずらす距離
+//	Vector2D left_center = generate_location + Vector2D(-offset_x, 0);
+//	Vector2D right_center = generate_location + Vector2D(+offset_x, 0);
+//
+//	// 初期化
+//	if (angles_left.empty() && angles_right.empty())
+//	{
+//		shots_left.clear();
+//		shots_right.clear();
+//
+//		for (int i = 0; i < shot_count; ++i)
+//		{
+//			float angle = 360.0f / shot_count * i;
+//			EnemyBullet3* e_shot4 = nullptr;
+//
+//			if (i % 2 == 0)
+//			{
+//				angles_left.push_back(angle);
+//				e_shot4 = objm->CreateObject<EnemyBullet3>(left_center);
+//				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//				if (e_shot4)
+//				{
+//					shots_left.push_back(e_shot4);
+//					e_shot4->SetVelocity(Vector2D(0, 0));
+//					//e_shot4->SetAttackPattrn(1);
+//				}
+//			}
+//			else
+//			{
+//				angles_right.push_back(angle);
+//				e_shot4 = objm->CreateObject<EnemyBullet3>(right_center);
+//				if (e_shot4)
+//				{
+//					shots_right.push_back(e_shot4);
+//					e_shot4->SetVelocity(Vector2D(0, 0));
+//					//e_shot4->SetAttackPattrn(1);
+//				}
+//			}
+//		}
+//	}
+//
+//	// 左側の弾を更新
+//	for (size_t i = 0; i < angles_left.size(); ++i)
+//	{
+//		angles_left[i] += angular_speed * delta_second;
+//		if (angles_left[i] >= 360.0f) angles_left[i] -= 360.0f;
+//
+//		float rad = static_cast<float>(angles_left[i] * DX_PI / 180.0f);
+//		Vector2D new_pos = left_center + Vector2D(cos(rad) * radius, sin(rad) * radius);
+//
+//		if (i < shots_left.size() && shots_left[i])
+//		{
+//			shots_left[i]->SetLocation(new_pos);
+//			shots_left[i]->SetVelocity(Vector2D(0, 0));
+//		}
+//	}
+//
+//	// 右側の弾を更新
+//	for (size_t i = 0; i < angles_right.size(); ++i)
+//	{
+//		angles_right[i] += angular_speed * delta_second;
+//		if (angles_right[i] >= 360.0f) angles_right[i] -= 360.0f;
+//
+//		float rad = angles_right[i] * DX_PI / 180.0f;
+//		Vector2D new_pos = right_center + Vector2D(cos(rad) * radius, sin(rad) * radius);
+//
+//		if (i < shots_right.size() && shots_right[i])
+//		{
+//			shots_right[i]->SetLocation(new_pos);
+//			shots_right[i]->SetVelocity(Vector2D(0, 0));
+//		}
+//	}
+//
+//	// 攻撃終了処理（5秒経過で削除）
+//	static float duration_timer = 0.0f;
+//	duration_timer += delta_second;
+//	if (duration_timer >= 5.0f)
+//	{
+//		for (auto& s : shots_left)
+//			if (s) s->SetDestroy();
+//		for (auto& s : shots_right)
+//			if (s) s->SetDestroy();
+//
+//		angles_left.clear();
+//		angles_right.clear();
+//		shots_left.clear();
+//		shots_right.clear();
+//		duration_timer = 0.0f;
+//		is_shot = false;
+//	}
+//}
+//
+///// <summary>
+///// 攻撃パターン１０
+///// </summary>
+///// <param name="shot_count">弾の数</param>
+///// <param name="radius">ボスからの距離</param>
+///// <param name="angular_speed">回転速度</param>
+///// <param name="bullet_speed">弾速</param>
+///// <param name="rotation_timer">回転の時間計測</param>
+///// <param name="generate_location">生成する場所</param>
+///// <param name="delta_second">１フレームあたりの時間</param>
+//void Boss3::Pattrn10(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& generate_location, float delta_second)
+//{
+//	// オブジェクト管理クラスのインスタンスを取得
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static float duration_timer = 0.0f;
+//	static Vector2D center_pos;  // 見えない中心座標
+//	static Vector2D center_velocity;
+//	static std::vector<float> angles;
+//	static std::vector<EnemyBullet3*> rotating_shots;
+//	static bool initialized = false;
+//
+//	// 時間経過
+//	duration_timer += delta_second;
+//
+//	if (duration_timer < duration_limit)
+//	{
+//		if (!initialized) // 初期化処理
+//		{
+//			// ボスの位置を初期中心として、真下に移動させる
+//			center_pos = generate_location;
+//			center_velocity = Vector2D(0.0f, center_speed); // 真下方向
+//
+//			angles.clear();
+//			rotating_shots.clear();
+//			for (int i = 0; i < shot_count; ++i)
+//			{
+//				float angle = 360.0f / shot_count * i;
+//				angles.push_back(angle);
+//
+//				EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(center_pos);
+//				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//				if (shot)
+//				{
+//					shot->SetVelocity(Vector2D(0, 0));
+//					rotating_shots.push_back(shot);
+//				}
+//			}
+//
+//			initialized = true;
+//		}
+//
+//		// 見えない中心の移動
+//		center_pos += center_velocity * delta_second;
+//
+//		// 回転弾の位置更新
+//		for (int i = 0; i < shot_count; ++i)
+//		{
+//			angles[i] += angular_speed * delta_second;
+//			if (angles[i] >= 360.0f) angles[i] -= 360.0f;
+//
+//			float rad = static_cast<float>(angles[i] * DX_PI / 180.0f);
+//			Vector2D offset(cos(rad) * radius, sin(rad) * radius);
+//
+//			if (rotating_shots[i])
+//			{
+//				rotating_shots[i]->SetLocation(center_pos + offset);
+//			}
+//		}
+//	}
+//	else
+//	{
+//		// 攻撃終了後の処理
+//		duration_timer = 0.0f;
+//		is_shot = false;
+//		initialized = false;  // 初期化フラグをリセット
+//	}
+//}
+//
+//void Boss3::Pattrn10_2(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second)
+//{
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	static float duration_timer = 0.0f;
+//	static Vector2D center_pos_L, center_pos_R;
+//	static Vector2D center_velocity;
+//	static std::vector<RotatingShotData> shot_data_L, shot_data_R;
+//	static bool initialized = false;
+//	static float arrival_phase_timer = 0.0f;
+//	static bool all_arrived = false;
+//
+//
+//	duration_timer += delta_second;
+//
+//	if (duration_timer < duration_limit)
+//	{
+//		if (!initialized)
+//		{
+//			const float offset_x = 170.0f;
+//
+//			center_pos_L = center_location + Vector2D(-offset_x, 50);
+//			center_pos_R = center_location + Vector2D(+offset_x, 50);
+//			center_velocity = Vector2D(0.0f, center_speed);
+//
+//			shot_data_L.clear();
+//			shot_data_R.clear();
+//
+//			for (int i = 0; i < shot_count; ++i)
+//			{
+//				float angle = 360.0f / shot_count * i;
+//				float rad = static_cast<float>(angle * DX_PI / 180.0f);
+//				Vector2D offset(cos(rad) * radius, sin(rad) * radius);
+//
+//				// 左側の弾
+//				EnemyBullet3* shot_L = objm->CreateObject<EnemyBullet3>(center_pos_L);
+//				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+//				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+//
+//				if (shot_L)
+//				{
+//					shot_L->SetVelocity(Vector2D(0, 0));
+//					shot_data_L.push_back({ shot_L, angle, offset, 0.0f, RotatingShotData::State::MoveToCircle });
+//				}
+//
+//				// 右側の弾
+//				EnemyBullet3* shot_R = objm->CreateObject<EnemyBullet3>(center_pos_R);
+//				if (shot_R)
+//				{
+//					shot_R->SetVelocity(Vector2D(0, 0));
+//					shot_data_R.push_back({ shot_R, angle, offset, 0.0f, RotatingShotData::State::MoveToCircle });
+//				}
+//			}
+//
+//			initialized = true;
+//		}
+//
+//		// 中心移動
+//		if (all_arrived)
+//		{
+//			center_pos_L += center_velocity * delta_second;
+//			center_pos_R += center_velocity * delta_second;
+//		}
+//
+//		auto update_shots = [&](std::vector<RotatingShotData>& shot_data, const Vector2D& center_pos)
+//			{
+//				for (auto& data : shot_data)
+//				{
+//					if (!data.shot) continue;
+//
+//					switch (data.state)
+//					{
+//					case RotatingShotData::State::MoveToCircle:
+//					{
+//						data.arrival_timer += delta_second;
+//						float t = Min(data.arrival_timer / 1.0f, 1.0f);
+//						float eased = 1.0f - pow(1.0f - t, 2.0f); // easeOut
+//
+//						Vector2D pos = center_pos + data.target_offset * eased;
+//						data.shot->SetLocation(pos);
+//
+//						if (t >= 1.0f)
+//							data.state = RotatingShotData::State::Rotate;
+//
+//						bool all_ready = true;
+//						for (auto& d : shot_data_L) if (d.state != RotatingShotData::State::Rotate) all_ready = false;
+//						for (auto& d : shot_data_R) if (d.state != RotatingShotData::State::Rotate) all_ready = false;
+//
+//						if (all_ready) all_arrived = true;
+//						break;
+//					}
+//					case RotatingShotData::State::Rotate:
+//					{
+//						data.angle_deg += angular_speed * delta_second;
+//						if (data.angle_deg >= 360.0f) data.angle_deg -= 360.0f;
+//
+//						float rad = static_cast<float>(data.angle_deg * DX_PI / 180.0f);
+//						Vector2D offset(cos(rad) * radius, sin(rad) * radius);
+//						data.shot->SetLocation(center_pos + offset);
+//						break;
+//					}
+//					}
+//				}
+//			};
+//
+//		// 左右の弾更新
+//		update_shots(shot_data_L, center_pos_L);
+//		update_shots(shot_data_R, center_pos_R);
+//	}
+//	else
+//	{
+//		// 攻撃終了処理
+//		for (auto& d : shot_data_L) if (d.shot) d.shot->SetDestroy();
+//		for (auto& d : shot_data_R) if (d.shot) d.shot->SetDestroy();
+//
+//		shot_data_L.clear();
+//		shot_data_R.clear();
+//		initialized = false;
+//		all_arrived = false;              // ← これが大事
+//		duration_timer = 0.0f;
+//		arrival_phase_timer = 0.0f;       // ← 使っているなら
+//		is_shot = false;
+//	}
+//}
+//
+///// <summary>
+///// 攻撃パターン11（一本ビーム）
+///// </summary>
+///// <param name="offsets_x">ボスからの距離</param>
+//void Boss3::Pattrn11(float offsets_x)
+//{
+//	static bool                         beam_on = false;          // いま発射中か？
+//	static EnemyBeam* b;                     // 発射中ビーム
+//
+//	if (!beam_on)
+//	{
+//		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//		b = objm->CreateObject<EnemyBeam>(
+//			Vector2D(
+//				location.x + offsets_x,
+//				(location.y + 150.0f) - box_size.y
+//			));
+//		b->SetBoss3(this);
+//		beam_on = true;
+//	}
+//
+//	if (b != nullptr)
+//	{
+//		// それぞれ +100 / -100 のオフセットで追従
+//		b->SetLocation(
+//			Vector2D(
+//				location.x + offsets_x,
+//				(location.y + 150.0f) + b->GetBoxSize().y
+//			));
+//	}
+//
+//	if (b != nullptr && b->is_destroy)   // 5 秒後などに true になる想定
+//	{
+//		b->SetDestroy();                 // 必要なら明示削除
+//		is_shot = false;
+//		beam_on = false;
+//	}
+//}
+//
 
 /// <summary>
 /// 攻撃パターン12（ビーム二本）
@@ -2033,108 +2461,108 @@ void Boss3::Pattrn12()
 	}
 }
 
-/// <summary>
-/// 攻撃パターン13（ビームの段階攻撃）バグあり
-/// </summary>
-/// <param name="delta_second">1フレーム当たりの時間</param>
-void Boss3::Pattrn13(float delta_second)
-{
-	static int   step = 0;
-	static float timer = 0.0f;
-	static std::vector<EnemyBeam*> beams;
-
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	timer += delta_second; // 可変FPSなら delta_second を使う
-
-	switch (step)
-	{
-	case 0: // 第1段階：中央に1本
-	{
-		EnemyBeam* b = objm->CreateObject<EnemyBeam>(
-			Vector2D(location.x, location.y - D_OBJECT_SIZE)
-		);
-		b->SetBoss3(this);
-		beams.push_back(b);
-		step = 1;
-		timer = 0.0f;
-	}
-	break;
-
-	case 1: // 2秒後に第2段階：2本（左右）
-		if (timer >= 2.0f)
-		{
-			float offsets[] = { +100.0f, -100.0f };
-			for (float ox : offsets)
-			{
-				EnemyBeam* b = objm->CreateObject<EnemyBeam>(
-					Vector2D(location.x + ox, location.y - D_OBJECT_SIZE)
-				);
-				b->SetBoss3(this);
-				beams.push_back(b);
-			}
-			step = 2;
-			timer = 0.0f;
-		}
-		break;
-
-	case 2: // 2秒後に第3段階：3本（全体）
-		if (timer >= 2.0f)
-		{
-			float offsets[] = { +200.0f, 0.0f, -200.0f };
-			for (float ox : offsets)
-			{
-				EnemyBeam* b = objm->CreateObject<EnemyBeam>(
-					Vector2D(location.x + ox, location.y - D_OBJECT_SIZE)
-				);
-				b->SetBoss3(this);
-				beams.push_back(b);
-			}
-			step = 3;
-		}
-		break;
-
-	case 3: // ビーム位置追従と終了判定
-		for (size_t i = 0; i < beams.size(); ++i)
-		{
-			if (beams[i] == nullptr) continue;
-
-			float offset = 0.0f;
-			switch (beams.size())
-			{
-			case 1: offset = 0.0f; break;
-			case 3: offset = (i == 0) ? +100.0f : (i == 1) ? -100.0f : 0.0f; break;
-			case 6: offset = (i == 0) ? +0.0f : (i == 1) ? +100.0f : (i == 2) ? -100.0f :
-				(i == 3) ? +200.0f : (i == 4) ? 0.0f : -200.0f;
-				break;
-			}
-
-			beams[i]->SetLocation(
-				Vector2D(
-					location.x + offset,
-					(location.y - D_OBJECT_SIZE) + beams[i]->GetBoxSize().y
-				)
-			);
-		}
-
-		// ビームがすべて消えたら終了
-		for (auto it = beams.begin(); it != beams.end(); )
-		{
-			EnemyBeam* b = *it;
-			if (b != nullptr && b->is_destroy)
-			{
-				b->SetDestroy();
-				it = beams.erase(it);
-			}
-			else ++it;
-		}
-
-		if (beams.empty())
-		{
-			is_shot = false;
-			step = 0;
-			timer = 0.0f;
-		}
-		break;
-	}
-}
+///// <summary>
+///// 攻撃パターン13（ビームの段階攻撃）バグあり
+///// </summary>
+///// <param name="delta_second">1フレーム当たりの時間</param>
+//void Boss3::Pattrn13(float delta_second)
+//{
+//	static int   step = 0;
+//	static float timer = 0.0f;
+//	static std::vector<EnemyBeam*> beams;
+//
+//	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+//
+//	timer += delta_second; // 可変FPSなら delta_second を使う
+//
+//	switch (step)
+//	{
+//	case 0: // 第1段階：中央に1本
+//	{
+//		EnemyBeam* b = objm->CreateObject<EnemyBeam>(
+//			Vector2D(location.x, location.y - D_OBJECT_SIZE)
+//		);
+//		b->SetBoss3(this);
+//		beams.push_back(b);
+//		step = 1;
+//		timer = 0.0f;
+//	}
+//	break;
+//
+//	case 1: // 2秒後に第2段階：2本（左右）
+//		if (timer >= 2.0f)
+//		{
+//			float offsets[] = { +100.0f, -100.0f };
+//			for (float ox : offsets)
+//			{
+//				EnemyBeam* b = objm->CreateObject<EnemyBeam>(
+//					Vector2D(location.x + ox, location.y - D_OBJECT_SIZE)
+//				);
+//				b->SetBoss3(this);
+//				beams.push_back(b);
+//			}
+//			step = 2;
+//			timer = 0.0f;
+//		}
+//		break;
+//
+//	case 2: // 2秒後に第3段階：3本（全体）
+//		if (timer >= 2.0f)
+//		{
+//			float offsets[] = { +200.0f, 0.0f, -200.0f };
+//			for (float ox : offsets)
+//			{
+//				EnemyBeam* b = objm->CreateObject<EnemyBeam>(
+//					Vector2D(location.x + ox, location.y - D_OBJECT_SIZE)
+//				);
+//				b->SetBoss3(this);
+//				beams.push_back(b);
+//			}
+//			step = 3;
+//		}
+//		break;
+//
+//	case 3: // ビーム位置追従と終了判定
+//		for (size_t i = 0; i < beams.size(); ++i)
+//		{
+//			if (beams[i] == nullptr) continue;
+//
+//			float offset = 0.0f;
+//			switch (beams.size())
+//			{
+//			case 1: offset = 0.0f; break;
+//			case 3: offset = (i == 0) ? +100.0f : (i == 1) ? -100.0f : 0.0f; break;
+//			case 6: offset = (i == 0) ? +0.0f : (i == 1) ? +100.0f : (i == 2) ? -100.0f :
+//				(i == 3) ? +200.0f : (i == 4) ? 0.0f : -200.0f;
+//				break;
+//			}
+//
+//			beams[i]->SetLocation(
+//				Vector2D(
+//					location.x + offset,
+//					(location.y - D_OBJECT_SIZE) + beams[i]->GetBoxSize().y
+//				)
+//			);
+//		}
+//
+//		// ビームがすべて消えたら終了
+//		for (auto it = beams.begin(); it != beams.end(); )
+//		{
+//			EnemyBeam* b = *it;
+//			if (b != nullptr && b->is_destroy)
+//			{
+//				b->SetDestroy();
+//				it = beams.erase(it);
+//			}
+//			else ++it;
+//		}
+//
+//		if (beams.empty())
+//		{
+//			is_shot = false;
+//			step = 0;
+//			timer = 0.0f;
+//		}
+//		break;
+//	}
+//}

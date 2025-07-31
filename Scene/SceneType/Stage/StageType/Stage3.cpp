@@ -356,7 +356,21 @@ void Stage3::EnemyAppearance(float delta_second)
 
     if (stage_timer < 4.5f)
     {
+
         GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+        if (boss_spawned) return;
+
+        objm->CreateObject<PowerUp>(Vector2D(D_WIN_MAX_X / 2 - 60, 120))->SetPlayer(player);
+        objm->CreateObject<Shield>(Vector2D(D_WIN_MAX_X / 2 + 60, 120))->SetPlayer(player);
+
+        boss = objm->CreateObject<Boss3>(Vector2D(670, -200));
+        boss->SetPlayer(player);
+        //enemy_list.push_back(boss2);
+        boss_spawned = true;
+        //is_warning = false;
+
+
 
         const int num = 6;
         const float spacing = 100.0f;

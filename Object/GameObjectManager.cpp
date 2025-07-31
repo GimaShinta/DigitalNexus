@@ -210,8 +210,8 @@ void GameObjectManager::CheckCollision(GameObjectBase* target, GameObjectBase* p
 		return;
 	}
 
-	// ★ 粗い距離チェック（軽量）
-	const float max_check_distance = 100.0f; // 例：300px以内にいたら詳細チェック
+	// 粗い距離チェック（軽量）
+	const float max_check_distance = 200.0f; // 例：300px以内にいたら詳細チェック
 	Vector2D target_pos = target->GetLocation();
 	Vector2D partner_pos = partner->GetLocation();
 	float dx = target_pos.x - partner_pos.x;

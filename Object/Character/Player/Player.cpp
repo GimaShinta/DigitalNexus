@@ -222,7 +222,12 @@ void Player::Draw(const Vector2D& screen_offset) const
 		else
 			DrawString(location.x - 50.0f, location.y, "Omega Code", GetColor(255, 255, 255), TRUE);
 	#endif
+
+		DrawBox(location.x - box_size.x, location.y - box_size.y,
+			location.x + box_size.x, location.y + box_size.y, GetColor(255, 255, 255), TRUE);
+
 	}
+
 }
 
 // I—¹Žžˆ—
@@ -315,17 +320,33 @@ void Player::Movement(float delta_second)
 	if (force_neutral_anim)
 	{
 		anim_state = PlayerAnimState::Neutral;
+		if (now_type == PlayerType::AlphaCode)
+			box_size = Vector2D(10.0f, 10.0f);
+		else
+			box_size = Vector2D(15.0f, 25.0f);
 	}
 	else
 	{
 		if (input_dir.x > 0.1f) {
 			anim_state = PlayerAnimState::TiltRight;
+			if (now_type == PlayerType::AlphaCode)
+				box_size = Vector2D(7.0f, 10.0f);
+			else
+				box_size = Vector2D(12.0f, 25.0f);
 		}
 		else if (input_dir.x < -0.1f) {
 			anim_state = PlayerAnimState::TiltLeft;
+			if (now_type == PlayerType::AlphaCode)
+				box_size = Vector2D(7.0f, 10.0f);
+			else
+				box_size = Vector2D(12.0f, 25.0f);
 		}
 		else {
 			anim_state = PlayerAnimState::Neutral;
+			if (now_type == PlayerType::AlphaCode)
+				box_size = Vector2D(10.0f, 10.0f);
+			else
+				box_size = Vector2D(12.0f, 25.0f);
 		}
 	}
 

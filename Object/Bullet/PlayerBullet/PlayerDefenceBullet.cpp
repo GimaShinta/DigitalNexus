@@ -11,7 +11,7 @@ PlayerDefenceBullet::~PlayerDefenceBullet()
 void PlayerDefenceBullet::Initialize()
 {
 	z_layer = 7;
-	velocity.y = -1500.0f;
+	velocity.y = -1250.0f;
 	box_size = Vector2D(5.0f, 14.0f);
 
 	// 当たり判定のオブジェクト設定

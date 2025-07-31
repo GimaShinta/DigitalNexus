@@ -147,11 +147,22 @@
     <ClCompile Include="Utility\ShakeManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-
     <ClCompile Include="Object\Bullet\PlayerBullet\PlayerBulletBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Character\Boss\Boss2.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet5.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet6.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -297,12 +308,22 @@
     <ClInclude Include="Utility\ShakeManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h">
-
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Character\Boss\Boss2.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet5.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet6.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
