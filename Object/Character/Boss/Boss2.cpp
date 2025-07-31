@@ -6,6 +6,7 @@
 #include "../../../Utility/ScoreData.h"
 #include "../../../Utility/ResourceManager.h"
 #include "../../../Object/GameObjectManager.h"
+#include"../../../Object/Beam/BeamEffects.h"
 #include <cmath>
 
 Boss2::Boss2()
@@ -121,19 +122,69 @@ void Boss2::Shot(float delta_second)
 {
     if (!player) return;
 
-    shot_timer += delta_second;
-    if (shot_timer >= 1.0f)
+    if (hp > 4000 * 2 / 3)
     {
-        Vector2D dir = player->GetLocation() - location;
-        float len = dir.Length();
-        if (len > 0) dir /= len;
+        shot_timer += delta_second;
+        if (shot_timer >= 3.0f)
+        {
+            if (!pattern_toggle)  // ▼ パターンA：三角形ビームだけ
+            {
+                int tri_indices[] = { 0, 2, 4 };
+                for (int j = 0; j < 3; j++)
+                {
+                    int a = tri_indices[j];
+                    int b = tri_indices[(j + 1) % 3];
 
-        auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
-        shot->SetVelocity(dir);
+                    if (rotating_parts[a] && rotating_parts[b])
+                    {
+                        auto tri_warn = Singleton<GameObjectManager>::GetInstance()->CreateObject<TriangleWarningBeam>(rotating_parts[a]->GetLocation());
+                        tri_warn->SetEndpoints(rotating_parts[a], rotating_parts[b]);
+                        tri_warn->SetLifeTime(0.6f);
+                    }
+                }
+            }
+            else  // ▼ パターンB：中心 or 外向きビーム（従来通り group_toggle 使用）
+            {
+                if (!group_toggle)  // 偶数：中心へ
+                {
+                    for (size_t i = 0; i < rotating_parts.size(); ++i)
+                    {
+                        if (!rotating_parts[i]) continue;
+                        if (i % 2 == 0)
+                        {
+                            auto warn = Singleton<GameObjectManager>::GetInstance()->CreateObject<LinkedWarningBeam>(rotating_parts[i]->GetLocation());
+                            warn->SetEndpoints(rotating_parts[i], this);
+                            warn->SetLifeTime(0.6f);
+                        }
+                    }
+                }
+                else  // 奇数：外向き
+                {
+                    for (size_t i = 0; i < rotating_parts.size(); ++i)
+                    {
+                        if (!rotating_parts[i]) continue;
+                        if (i % 2 == 1)
+                        {
+                            float deg = rotating_parts[i]->GetAngleGlobal();
+                            float rad = deg * 3.1415926f / 180.0f;
+                            Vector2D dir = Vector2D(cosf(rad), sinf(rad));
 
-        shot_timer = 0.0f;
+                            auto warn = Singleton<GameObjectManager>::GetInstance()->CreateObject<WarningBeam>(rotating_parts[i]->GetLocation());
+                            warn->SetUp(dir, 600.0f, 0.6f);
+                            warn->SetFollowTarget(rotating_parts[i]);
+                        }
+                    }
+                }
+
+                group_toggle = !group_toggle;  // 奇数/偶数ビーム切替
+            }
+
+            pattern_toggle = !pattern_toggle;  // パターン切替
+            shot_timer = 0.0f;
+        }
     }
 }
+
 
 bool Boss2::GetIsAlive() const
 {
