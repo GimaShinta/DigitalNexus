@@ -29,6 +29,7 @@ private:
     bool is_flashing = false;
     float flash_timer = 0.0f;
     bool visible = true;
+    bool group_toggle = false; // ビームグループ切り替えフラグ
 
     std::vector<int> images;
     std::vector<int> images_a;
@@ -38,4 +39,5 @@ private:
 
     int sound_destroy = NULL;
     class Player* player = nullptr;
+    bool pattern_toggle = false;  // 新しく追加：攻撃パターン切替（true/falseで交互）
 };

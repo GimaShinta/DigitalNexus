@@ -4,16 +4,11 @@
 enum class BossPattern
 {
     Entrance,
-    GlitchWarp,
-    CircleMove,
-    ZigzagMove,
-    RushDown,
-    Hover,
-    RandomMove
+    Hovering,
+    Dead
 };
 
-class Boss1 :
-    public EnemyBase
+class Boss1 : public EnemyBase
 {
 public:
     Boss1();
@@ -27,64 +22,48 @@ public:
     void SetPattern(BossPattern new_pattern);
     bool GetIsAlive() const;
 
-protected:
-    void Shot(float delta_second);
+private:
+    // 行動パターン更新
+    void UpdateEntrance(float delta_second);
+    void UpdateHovering(float delta_second);
+
+    // 攻撃パターン
+    void ShotSpiral(float delta_second);
+    void ShotAllRange();
+    void ShotCrossShot();
+    void ShotFanWide();  // ★弾幕系パターン
+    void ShotWaveBullets();          // ★追加パターン
+    void ShotTripleSpread();         // ★追加パターン
+    void ShotFastSpiral(float delta_second); // ★追加パターン
+    void ExplosionEffect(float delta_second);
 
 private:
     BossPattern pattern = BossPattern::Entrance;
-    float pattern_timer = 0.0f;
-    float pattern_change_timer = 0.0f;
     bool is_alive = true;
 
-    bool floating_center_initialized = false;
-    float floating_center_x = 0.0f;
-    float floating_center_y = 0.0f;
+    // パターン管理
+    float pattern_timer = 0.0f;
+    int attack_mode = 0;
 
-    Vector2D start_location;
-    bool has_shot = false;
-    float after_shot_timer = 0.0f;
-    float spawn_delay_timer = 0.0f;
+    // 移動・登場演出
+    Vector2D target_pos;
+    Vector2D velocity;
+    float move_timer = 0.0f;
 
-    bool is_transforming = false;
-    float transform_timer = 0.0f;
-    float transform_duration = 2.0f;
-    bool is_transformed = false;
-
-    bool is_flashing = false;
-    float flash_timer = 0.0f;
-    bool visible = true;
-    const float flash_interval = 0.2f;
-
-    bool is_screen_flash = false;
-    float screen_flash_timer = 0.0f;
-    float screen_flash_duration = 0.3f;
-
-    float life_timer = 0.0f;
-    bool is_returning = false;
-    bool is_leaving = false;
-    Vector2D return_target = 0.0f;
-    Vector2D original_location_before_return = 0.0f;
-    float return_timer = 0.0f;
-    const float return_duration = 2.0f;
-    float stop_timer = 0.0f;
+    // 攻撃管理
     float shot_timer = 0.0f;
-    float stop_duration = 2.0f;
 
+    // 演出
+    float alpha = 0.0f;
+
+    // 爆発管理
+    bool explosions_started = false;
+    float explosion_timer = 0.0f;
+    int explosion_count = 0;
+    bool final_explosion_done = false;
+
+    // 画像・音
     std::vector<int> images;
-    std::vector<int> images_a;
-    std::vector<int> images_b;
-    std::vector<int> anim_indices;
-
-    void ChangePatternRandomly();
-
-    int sound_destroy = NULL;
-
-    // Entranceパターン専用：ワープフラグ
-    bool entrance_warp_done[5] = { false };
-
-    class Player* player = nullptr;
-
-public:
-    void SetPlayer(Player* p) { player = p; }
+    int image = 0;
+    int sound_destroy = -1;
 };
-

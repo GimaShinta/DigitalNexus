@@ -47,3 +47,8 @@ void Boss2RotatingPart::Draw(const Vector2D& screen_offset) const
     if (image == -1) return;
     DrawRotaGraph(location.x, location.y, 2.0f, 0.0f, image, TRUE);
 }
+
+float Boss2RotatingPart::GetAngleGlobal() const
+{
+    return angle + angle_offset;
+}

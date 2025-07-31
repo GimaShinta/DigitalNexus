@@ -12,6 +12,7 @@ public:
     void Update(float delta_second) override;
     void Draw(const Vector2D& screen_offset) const override;
     void SetUp(Boss2* boss, float radius, float angle_offset);
+    float GetAngleGlobal() const;
 
 private:
     Boss2* boss = nullptr;
