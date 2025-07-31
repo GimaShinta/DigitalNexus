@@ -89,15 +89,18 @@ void Enemy3::Update(float delta_second)
             velocity = (location - prev) / delta_second;
 
             scale = scale_min + (0.1f * (scale_max - scale_min)) * ease_t;
-            alpha = 255;
-            rotation += delta_second * (1.5f * (1.0f - t));
+
+            // ★alphaを補間（0→255）
+            alpha = static_cast<int>(255 * ease_t);
+
+           // rotation += delta_second * (1.5f * (1.0f - t));
 
             if (t >= 1.0f) {
-                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot); // ←仮のSE名
-
-                ShootToPlayer(0.003f); // ← 弾速を適切に設定
+                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+                ShootToPlayer(0.003f);
                 float_timer = 0.0f;
                 state = ZakoState::Descending;
+                alpha = 255;  // 到着後は不透明に固定
             }
             break;
         }
@@ -110,7 +113,7 @@ void Enemy3::Update(float delta_second)
             velocity = (location - prev) / delta_second;
 
             scale = (scale_min + 0.1f * (scale_max - scale_min)) + ((scale_max - scale_min) * 0.9f) * ease_t;
-            rotation *= (1.0f - t);
+            //rotation *= (1.0f - t);
 
             if (t >= 1.0f) {
                 float_timer = 0.0f;
@@ -131,9 +134,9 @@ void Enemy3::Update(float delta_second)
             break;
         }
         case ZakoState::Leaving: {
-            location.y -= delta_second * 300.0f;  // 300px/secで上に移動
+            location.y -= delta_second * 300.0f;
             if (location.y + box_size.y < 0) {
-                is_destroy = true;  // 画面外に出たら削除
+                is_destroy = true;
             }
             break;
         }
@@ -149,13 +152,15 @@ void Enemy3::Update(float delta_second)
 
             location = start_pos + (target_pos - start_pos) * ease_t;
             location.y += 150.0f * sinf(t * DX_PI);
+
+            // ★alphaを補間（0→255）
             alpha = static_cast<int>(255 * ease_t);
-            rotation += delta_second * (1.0f - t) * (is_from_left ? +1.0f : -1.0f);
+
+           // rotation += delta_second * (1.0f - t) * (is_from_left ? +1.0f : -1.0f);
             scale = 5.0f - 4.2f * ease_t;
 
             if (t >= 1.0f) {
-                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot); // ←仮のSE名
-
+                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
                 ShootToPlayer(0.003f);
                 state = ZakoState::Floating;
                 base_location = location;
@@ -197,29 +202,29 @@ void Enemy3::Update(float delta_second)
             velocity = (location - prev) / delta_second;
 
             scale = scale_min + (scale_max - scale_min) * ease_t * 0.2f;
+
+            // ★alphaを補間
             alpha = static_cast<int>(255 * ease_t);
 
             if (t >= 1.0f) {
                 float_timer = 0.0f;
                 base_location = location;
                 state = ZakoState::Redirecting;
+                alpha = 255;
             }
             break;
         }
-
         case ZakoState::Redirecting: {
             float t = my_min(float_timer / 1.0f, 1.0f);
             float ease_t = 1 - powf(1 - t, 3);
 
-            // Y方向にだけ移動する（Xはそのまま）
             location.x = base_location.x;
-            location.y = base_location.y - 150.0f * ease_t;  // ← ゆっくり上へ（50px上昇）
+            location.y = base_location.y - 150.0f * ease_t;
 
             scale = scale_min + (0.6 - scale_min) * ease_t;
 
             if (t >= 1.0f) {
-                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot); // ←仮のSE名
-
+                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
                 ShootToPlayer(0.003f);
                 float_timer = 0.0f;
                 state = ZakoState::Floating;
@@ -227,7 +232,6 @@ void Enemy3::Update(float delta_second)
             }
             break;
         }
-
         case ZakoState::Floating: {
             location.x = base_location.x + sinf(float_timer * 1.5f) * 10.0f;
             location.y = base_location.y + sinf(float_timer * 2.0f) * 5.0f;
@@ -238,7 +242,6 @@ void Enemy3::Update(float delta_second)
             }
             break;
         }
-
         case ZakoState::Leaving: {
             location.y -= delta_second * 300.0f;
             if (location.y + box_size.y < 0) {
@@ -263,10 +266,10 @@ void Enemy3::Update(float delta_second)
         collision.hit_object_type.clear();
     }
 
+    // HPが0で破壊
     if (hp <= 0)
     {
         is_destroy = true;
-
         DropItems();
         SEManager* sm = Singleton<SEManager>::GetInstance();
         EffectManager* manager = Singleton<EffectManager>::GetInstance();
@@ -278,12 +281,11 @@ void Enemy3::Update(float delta_second)
         Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
     }
 
+    // アニメーション更新処理（既存）
     std::vector<int> animation_num;
     switch (mode)
     {
     case ZakoMode::Zako2:
-        animation_num = { 0, 1, 2, 3 };
-        break;
     case ZakoMode::Zako3:
         animation_num = { 0, 1, 2, 3 };
         break;
@@ -295,21 +297,14 @@ void Enemy3::Update(float delta_second)
         break;
     }
 
-    //フレームレートで時間を計測
     animation_time += delta_second;
-    //8秒経ったら画像を切り替える
     if (animation_time >= 0.1f)
     {
-        //計測時間の初期化
         animation_time = 0.0f;
-        //時間経過カウントの増加
         animation_count++;
-        //カウントがアニメーション画像の要素数以上になったら
         if (animation_count >= animation_num.size())
-        {
-            //カウントの初期化
             animation_count = 0;
-        }
+
         switch (mode)
         {
         case ZakoMode::Zako2:
@@ -319,46 +314,35 @@ void Enemy3::Update(float delta_second)
             image = zako3_images[animation_num[animation_count]];
             break;
         case ZakoMode::Zako7:
-            image = zako7_image;
-            break;
         default:
             image = zako7_image;
             break;
         }
-        // アニメーションが順番に代入される
     }
 
-
+    // ジェットエフェクトのアニメーション更新
     std::vector<int> engen_num = { 3, 4, 5, 4 };
-    //フレームレートで時間を計測
     jet_time += delta_second;
-    //8秒経ったら画像を切り替える
     if (jet_time >= 0.02f)
     {
-        //計測時間の初期化
         jet_time = 0.0f;
-        //時間経過カウントの増加
         jet_count++;
-        //カウントがアニメーション画像の要素数以上になったら
         if (jet_count >= engen_num.size())
-        {
-            //カウントの初期化
             jet_count = 0;
-        }
-        // アニメーションが順番に代入される
+
         jet = enemy_jet[engen_num[jet_count]];
     }
-
 
     __super::Update(delta_second);
 }
 
 void Enemy3::Draw(const Vector2D& screen_offset) const
 {
-    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    DrawRotaGraph(location.x, location.y, scale, 0.0f, image, TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    DrawRotaGraph(location.x, location.y, scale, rotation, image, TRUE);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
+
 
 void Enemy3::Finalize()
 {

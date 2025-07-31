@@ -1,17 +1,25 @@
 #pragma once
 #include "EnemyBase.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"
 
-enum class Enemy2Phase
+enum class Enemy2State
 {
     Appearing,
-    Fighting
+    Floating,
+    Leaving
+};
+
+enum class Enemy2MoveMode
+{
+    Normal,         // 通常（漂い）
+    ChaseFeint,     // 追尾フェイント
+    DoubleHelix     // ダブルヘリックス
 };
 
 class Enemy2 : public EnemyBase
 {
 public:
     Enemy2();
-    Enemy2(const Vector2D& pos);
     ~Enemy2();
 
     void Initialize() override;
@@ -19,58 +27,50 @@ public:
     void Draw(const Vector2D& screen_offset) const override;
     void Finalize() override;
 
-    void EnableCircularMove(const Vector2D& center, float radius, float speed, float start_angle);
-    void EnableRectangularLoopMove(bool clockwise = true);
-    void EnableLoopMoveNow(); // ← 追加
-    bool IsAppearingFinished() const
-    {
-        return phase == Enemy2Phase::Fighting;
-    }
+    void SetAppearParams(const Vector2D& start, const Vector2D& end, float time);
+    void SetPlayer(Player* p) { player = p; }
+
+    // モード指定メソッド
+    void SetChaseAndFeint(bool from_left, Player* p);
+    void SetDoubleHelixMove(bool from_left, int index);
 
 protected:
-    void Shot(float delta_second);
+    void Shot(float speed);
 
 private:
-    Enemy2Phase phase = Enemy2Phase::Appearing;
+    std::vector<int> images;
+    int image = -1;
+
+    Enemy2State state = Enemy2State::Appearing;
+    Enemy2MoveMode move_mode = Enemy2MoveMode::Normal;
+
+    // 出現用パラメータ
+    Vector2D start_location = 0.0f;
+    Vector2D target_location = 0.0f;
+    Vector2D base_location = 0.0f;
+
     float appear_timer = 0.0f;
+    float float_timer = 0.0f;
+    float appear_duration = 1.5f;
 
-    float scale = 0.2f;
+    // アニメーション
+    float animation_time = 0.0f;
+    int animation_count = 0;
+
+    // 描画演出
+    float scale = 1.0f;
+    float scale_min = 0.4f;
+    float scale_max = 1.6f;
     int alpha = 0;
-    bool is_invincible = true;
 
-    int sound_destroy;
+    // 追尾フェイント用
+    bool feint_from_left = true;
+    Player* player_ref = nullptr;
+    bool feint_triggered = false;
 
-    bool is_attacking = false;
-    float attack_cooldown = 0.0f;
-    int attack_pattern = 6;
-
-    float spiral_timer = 0.0f;
-    float spiral_total_time = 0.0f;
-
-    void Pattern6(float delta_second);
-    void Pattern7(float delta_second);
-
-    Vector2D circular_center = { 640.0f, 360.0f };
-    float circular_radius = 300.0f;
-    float circular_angle = 0.0f;
-    float circular_speed = 1.0f;
-    bool is_circular_move = false;
-
-    enum class MoveState
-    {
-        MoveDown,
-        MoveRight,
-        MoveUp,
-        MoveLeft
-    };
-
-    bool is_rectangular_loop_move = false;
-    bool is_clockwise = true;
-    bool loop_move_enabled = false;  // ← 追加
-    MoveState move_state = MoveState::MoveDown;
-
-    static constexpr float LOOP_TOP = 200.0f;
-    static constexpr float LOOP_BOTTOM = 400.0f;
-    static constexpr float LOOP_LEFT = 400.0f;
-    static constexpr float LOOP_RIGHT = 880.0f;
+    // ダブルヘリックス用
+    bool helix_from_left = true;
+    float helix_angle = 0.0f;
+    float helix_radius = 180.0f;
+    int helix_order = 0;
 };

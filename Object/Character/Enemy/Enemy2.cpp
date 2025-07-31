@@ -1,317 +1,217 @@
 #include "Enemy2.h"
-#include "../../../Object/GameObjectManager.h"
-#include "../../../Object/Bullet/EnemyBullet/EnemyBullet2.h"
-#include "../../../Object/Bullet/EnemyBullet/EnemyBullet3.h"
 #include "../../../Utility/EffectManager.h"
+#include "../../../Utility/SEManager.h"
 #include "../../../Utility/ScoreData.h"
-#include <cmath>
+#include "../../../Object/GameObjectManager.h"
+#include "../../../Utility/ResourceManager.h"
 
-Enemy2::Enemy2()
-{}
-Enemy2::Enemy2(const Vector2D& pos)
-{
-    location = pos;
-}
-Enemy2::~Enemy2()
-{}
+Enemy2::Enemy2() {}
+Enemy2::~Enemy2() {}
 
 void Enemy2::Initialize()
 {
-    z_layer = 3;
-    box_size = Vector2D(120, 40);
-    hp = 5000;
+    EnemyBase::Initialize();
+    hp = 20;
+    z_layer = 2;
+    box_size = 16;
 
-    phase = Enemy2Phase::Appearing;
+    ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
+    images = rm->GetImages("Resource/Image/Object/Enemy/Zako1/anime_enemy30_a.png", 4, 4, 1, 32, 32);
+    image = images[0];
+
+    collision.is_blocking = false;
+    collision.object_type = eObjectType::eNone;
+    collision.hit_object_type.clear();
+
+    state = Enemy2State::Appearing;
+    move_mode = Enemy2MoveMode::Normal;
+
     appear_timer = 0.0f;
-    is_invincible = true;
-    scale = 4.0f;
+    float_timer = 0.0f;
     alpha = 0;
-    velocity = Vector2D(0, 0);
-
-    collision.is_blocking = true;
-    collision.object_type = eObjectType::eEnemy;
-    collision.hit_object_type.push_back(eObjectType::eAttackShot);
-    collision.hit_object_type.push_back(eObjectType::eBeam);
-    is_mobility = true;
-
-    auto* rm = Singleton<ResourceManager>::GetInstance();
-    image = rm->GetImages("Resource/Image/Object/Enemy/Zako5/enemy53.png")[0];
-
-    sound_destroy = rm->GetSounds("Resource/sound/se/se_effect/kill_4.mp3");
-    ChangeVolumeSoundMem(255 * 100 / 100, sound_destroy);
+    scale = scale_min;
 }
 
-void Enemy2::Update(float delta)
+void Enemy2::SetAppearParams(const Vector2D& start, const Vector2D& end, float time)
 {
-    switch (phase)
+    start_location = start;
+    target_location = end;
+    appear_duration = time;
+    location = start_location;
+    state = Enemy2State::Appearing;
+    appear_timer = 0.0f;
+    float_timer = 0.0f;
+    alpha = 0;
+    scale = scale_min;
+}
+
+void Enemy2::SetChaseAndFeint(bool from_left, Player* p)
+{
+    move_mode = Enemy2MoveMode::ChaseFeint;
+    feint_from_left = from_left;
+    player_ref = p;
+    feint_triggered = false;
+}
+
+void Enemy2::SetDoubleHelixMove(bool from_left, int index)
+{
+    move_mode = Enemy2MoveMode::DoubleHelix;
+    helix_from_left = from_left;
+    helix_order = index;
+    helix_angle = from_left ? 180.0f : 0.0f;
+}
+
+void Enemy2::Update(float delta_second)
+{
+    appear_timer += delta_second;
+
+    switch (state)
     {
-    case Enemy2Phase::Appearing:
+    case Enemy2State::Appearing:
     {
-        appear_timer += delta;
+        // 出現演出
+        float t = appear_timer / appear_duration;
+        if (t > 1.0f) t = 1.0f;
+        float ease_t = t * t * (3 - 2 * t); // smoothstep
 
-        if (velocity.x == 0.0f && velocity.y == 0.0f)
+        Vector2D prev = location;
+        location = start_location + (target_location - start_location) * ease_t;
+        velocity = (location - prev) / delta_second;
+
+        scale = scale_min + (scale_max - scale_min) * ease_t;
+        alpha = static_cast<int>(255 * ease_t);
+
+        if (t >= 1.0f)
         {
-            velocity = (location.x < 640.0f)
-                ? Vector2D(0.0f, 150.0f)   // 左から登場 → 下へ
-                : Vector2D(0.0f, -150.0f); // 右から登場 → 上へ
-        }
-
-        float t = (appear_timer < 1.0f) ? appear_timer : 1.0f;
-        scale = 4.0f - (2.5f * t);
-        location += velocity * delta;
-
-        if (appear_timer >= 2.0f)
-        {
-            phase = Enemy2Phase::Fighting;
-            is_invincible = false;
-            scale = 1.5f;
-
-            if (is_rectangular_loop_move && is_clockwise)
-            {
-                if (velocity.y > 0.0f) // 下へ
-                {
-                    velocity = Vector2D(250.0f, 0.0f);
-                    move_state = MoveState::MoveRight;
-                }
-                else // 上へ
-                {
-                    velocity = Vector2D(0.0f, -150.0f);
-                    move_state = MoveState::MoveUp;
-                }
-            }
-            else if (is_rectangular_loop_move && !is_clockwise)
-            {
-                if (velocity.y > 0.0f) // 左から来た → 下から開始
-                {
-                    velocity = Vector2D(250.0f, 0.0f);  // →
-                    move_state = MoveState::MoveRight;
-                }
-                else // 右から来た → 上から開始
-                {
-                    velocity = Vector2D(-250.0f, 0.0f); // ←
-                    move_state = MoveState::MoveLeft;
-                }
-            }
+            state = Enemy2State::Floating;
+            base_location = location;
+            float_timer = 0.0f;
+            collision.is_blocking = true;
+            collision.object_type = eObjectType::eEnemy;
         }
         break;
     }
 
-    case Enemy2Phase::Fighting:
-        if (is_rectangular_loop_move)
+    case Enemy2State::Floating:
+    {
+        float_timer += delta_second;
+
+        switch (move_mode)
         {
-            if (is_clockwise)
+        case Enemy2MoveMode::ChaseFeint:
+        {
+            if (player_ref)
             {
-                // 時計回り（↑ ← ↓ →）
-                switch (move_state)
+                Vector2D dir = player_ref->GetLocation() - location;
+                dir.Normalize();
+
+                if (float_timer < 2.0f)
                 {
-                case MoveState::MoveUp:
-                    location.y += velocity.y * delta;
-                    if (location.y <= LOOP_TOP)
+                    // プレイヤー追尾
+                    location += dir * delta_second * 220.0f;
+                }
+                else
+                {
+                    // フェイントで左右逃げ
+                    if (!feint_triggered)
                     {
-                        location.y = LOOP_TOP;
-                        velocity = Vector2D(-250.0f, 0.0f);
-                        move_state = MoveState::MoveLeft;
+                        feint_triggered = true;
                     }
-                    break;
-                case MoveState::MoveLeft:
-                    location.x += velocity.x * delta;
-                    if (location.x <= LOOP_LEFT)
-                    {
-                        location.x = LOOP_LEFT;
-                        velocity = Vector2D(0.0f, 150.0f);
-                        move_state = MoveState::MoveDown;
-                    }
-                    break;
-                case MoveState::MoveDown:
-                    location.y += velocity.y * delta;
-                    if (location.y >= LOOP_BOTTOM)
-                    {
-                        location.y = LOOP_BOTTOM;
-                        velocity = Vector2D(250.0f, 0.0f);
-                        move_state = MoveState::MoveRight;
-                    }
-                    break;
-                case MoveState::MoveRight:
-                    location.x += velocity.x * delta;
-                    if (location.x >= LOOP_RIGHT)
-                    {
-                        location.x = LOOP_RIGHT;
-                        velocity = Vector2D(0.0f, -150.0f);
-                        move_state = MoveState::MoveUp;
-                    }
-                    break;
+                    float side = feint_from_left ? -1.0f : 1.0f;
+                    location.x += side * delta_second * 300.0f;
+                    location.y -= delta_second * 100.0f;
                 }
             }
-            else
-            {
-                // 反時計回り（← ↓ → ↑）→ 見た目は対称
-                switch (move_state)
-                {
-                case MoveState::MoveLeft:
-                    location.x += velocity.x * delta;
-                    if (location.x <= LOOP_LEFT)
-                    {
-                        location.x = LOOP_LEFT;
-                        velocity = Vector2D(0.0f, 150.0f);  // ↓
-                        move_state = MoveState::MoveDown;
-                    }
-                    break;
-                case MoveState::MoveDown:
-                    location.y += velocity.y * delta;
-                    if (location.y >= LOOP_BOTTOM)
-                    {
-                        location.y = LOOP_BOTTOM;
-                        velocity = Vector2D(250.0f, 0.0f);  // →
-                        move_state = MoveState::MoveRight;
-                    }
-                    break;
-                case MoveState::MoveRight:
-                    location.x += velocity.x * delta;
-                    if (location.x >= LOOP_RIGHT)
-                    {
-                        location.x = LOOP_RIGHT;
-                        velocity = Vector2D(0.0f, -150.0f);  // ↑
-                        move_state = MoveState::MoveUp;
-                    }
-                    break;
-                case MoveState::MoveUp:
-                    location.y += velocity.y * delta;
-                    if (location.y <= LOOP_TOP)
-                    {
-                        location.y = LOOP_TOP;
-                        velocity = Vector2D(-250.0f, 0.0f);  // ←
-                        move_state = MoveState::MoveLeft;
-                    }
-                    break;
-                }
-            }
+            break;
         }
 
-        Shot(delta);
+        case Enemy2MoveMode::DoubleHelix:
+        {
+            // DNAのように交差
+            helix_angle += 4.0f;
+            float rad = helix_angle * DX_PI_F / 180.0f;
 
-        if (hp <= 0)
+            float advance = (float_timer + helix_order * 0.2f) * 120.0f;
+            float x_offset = cosf(rad) * helix_radius;
+            float y_offset = sinf(rad) * 40.0f;
+
+            if (helix_from_left)
+                location = Vector2D(start_location.x + advance, target_location.y + y_offset);
+            else
+                location = Vector2D(start_location.x - advance, target_location.y + y_offset);
+            break;
+        }
+
+        default:
+        {
+            // 通常漂い
+            location.x = base_location.x + sinf(float_timer * 1.2f) * 25.0f;
+            location.y = base_location.y + sinf(float_timer * 2.0f) * 10.0f;
+            break;
+        }
+        }
+
+        // 攻撃
+        if (fmodf(float_timer, 2.0f) < 0.02f)
+        {
+            Shot(0.004f);
+        }
+
+        if (float_timer >= 4.5f)
+        {
+            state = Enemy2State::Leaving;
+        }
+        break;
+    }
+
+    case Enemy2State::Leaving:
+    {
+        location.y -= delta_second * 220.0f;
+        if (location.y + box_size.y < 0)
         {
             is_destroy = true;
-            PlaySoundMem(sound_destroy, DX_PLAYTYPE_BACK);
-            auto* manager = Singleton<EffectManager>::GetInstance();
-            int anim_id = manager->PlayerAnimation(EffectName::eExprotion2, location, 0.03f, false);
-            manager->SetScale(anim_id, 1.5f);
-            Singleton<ScoreData>::GetInstance()->AddScore(1500);
-            Singleton<ShakeManager>::GetInstance()->StartShake(1.0, 5, 5);
         }
         break;
     }
-
-    SetLocation(location);
-    __super::Update(delta);
-}
-
-
-
-
-void Enemy2::EnableLoopMoveNow()
-{
-    loop_move_enabled = true;
-}
-
-
-void Enemy2::Shot(float delta)
-{
-    if (!is_attacking)
-    {
-        attack_cooldown -= delta;
-        if (attack_cooldown <= 0.0f)
-        {
-            is_attacking = true;
-            attack_cooldown = 4.0f;
-            spiral_timer = 0.0f;
-            spiral_total_time = 0.0f;
-        }
     }
 
-    if (is_attacking)
+    // 撃破判定
+    if (hp <= 0)
     {
-        if (attack_pattern == 6) Pattern6(delta);
-        else if (attack_pattern == 7) Pattern7(delta);
-
-        if (spiral_total_time >= 2.5f)
-        {
-            is_attacking = false;
-            attack_pattern = (attack_pattern == 6) ? 7 : 6;
-        }
+        is_destroy = true;
+        DropItems();
+        SEManager::GetInstance()->PlaySE(SE_NAME::Destroy);
+        EffectManager::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
+        Singleton<ScoreData>::GetInstance()->AddScore(1500);
     }
-}
 
-void Enemy2::Pattern6(float delta)
-{
-    spiral_timer += delta;
-    spiral_total_time += delta;
-
-    if (spiral_timer >= 1.6f)
+    // アニメーション更新
+    animation_time += delta_second;
+    if (animation_time >= 0.1f)
     {
-        spiral_timer = 0.0f;
-        const int bullet_num = 5;
-        const float base_angle = 90.0f;
-        const float fan_range = 120.0f;
-        const float speed = 180.0f;
-
-        for (int i = 0; i < bullet_num; ++i)
-        {
-            float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = static_cast<float>(angle * DX_PI / 180.0f);
-            Vector2D vel(cos(rad) * speed, sin(rad) * speed);
-
-            auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet3>(location);
-            shot->SetVelocity(vel);
-            shot->SetAttackPattrn(1);
-        }
+        animation_time = 0.0f;
+        animation_count = (animation_count + 1) % images.size();
+        image = images[animation_count];
     }
-}
 
-void Enemy2::Pattern7(float delta)
-{
-    spiral_timer += delta;
-    spiral_total_time += delta;
-
-    if (spiral_timer >= 1.6f)
-    {
-        spiral_timer = 0.0f;
-        const int bullet_num = 5;
-        const float base_angle = 90.0f;
-        const float fan_range = 60.0f;
-        const float speed = 160.0f;
-
-        for (int i = 0; i < bullet_num; ++i)
-        {
-            float angle = base_angle - (fan_range / 2) + (fan_range / (bullet_num - 1)) * i;
-            float rad = static_cast<float>(angle * DX_PI / 180.0f);
-            Vector2D vel(cos(rad) * speed, sin(rad) * speed);
-
-            auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);
-            shot->SetVelocity(vel);
-        }
-    }
+    EnemyBase::Update(delta_second);
 }
 
 void Enemy2::Draw(const Vector2D& screen_offset) const
 {
-    DrawRotaGraph(location.x, location.y, scale, 3.14, image, TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    DrawRotaGraph(location.x, location.y, scale, 0.0f, image, TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
-void Enemy2::Finalize()
-{}
+void Enemy2::Finalize() {}
 
-void Enemy2::EnableCircularMove(const Vector2D& center, float radius, float speed, float start_angle)
+void Enemy2::Shot(float speed)
 {
-    circular_center = center;
-    circular_radius = radius;
-    circular_speed = speed;
-    circular_angle = start_angle;
-    is_circular_move = true;
-}
+    if (!player) return;
+    Vector2D dir = player->GetLocation() - location;
+    dir.Normalize();
 
-void Enemy2::EnableRectangularLoopMove(bool clockwise)
-{
-    is_rectangular_loop_move = true;
-    is_clockwise = clockwise;
+    auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
+    if (shot) shot->SetVelocity(dir * speed);
 }

@@ -8,7 +8,7 @@ enum class ZakoMode {
 };
 
 enum class ZakoState {
-    AppearingFromBottom,  // Zako2スタイル
+    AppearingFromBottom,  // Zako2スタイルg
     Descending,           // Zako2スタイル
     Appearing,            // Zako3スタイル
     Floating,              // 共通
@@ -72,6 +72,8 @@ private:
     int jet = NULL;
     float jet_time = 0.0f;
     int jet_count = 0;
+
+
 
     template <typename T>
     T my_min(T a, T b) {
