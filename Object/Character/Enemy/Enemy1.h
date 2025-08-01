@@ -111,6 +111,9 @@ private:
     float scale_max = 1.2f;
     int alpha = 0;
 
+    float leave_delay = 3.0f;
+
+
     template <typename T>
     T my_min(T a, T b) {
         return (a < b) ? a : b;

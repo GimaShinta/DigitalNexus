@@ -7,7 +7,7 @@
 #include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
-Player::Player() : is_shot(false), life(1), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(4), on_hit(false), is_damage(false)
 {
 }
 

@@ -40,6 +40,9 @@ private:
 	float entry_effect_timer = 0.0f;
 
 	bool debug_boss_only = false; // ★ デバッグ用: ボスだけ出す
+	//bool spawned_enemy1 = false;
+
+	bool spawned_enemy1_wave3 = false;
 
 
 public:

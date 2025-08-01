@@ -7,6 +7,11 @@
 
 Enemy1::Enemy1() {}                  // コンストラクタ
 Enemy1::~Enemy1() {}                 // デストラクタ ← これが必要！！
+Enemy1::Enemy1(const Vector2D& pos)
+{
+    // 基本的な初期化
+    location = pos;   // 初期位置を指定
+}
 
 
 void Enemy1::Initialize()
@@ -17,7 +22,7 @@ void Enemy1::Initialize()
     box_size = 12;
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    images = rm->GetImages("Resource/Image/Object/Enemy/Zako1/anime_enemy30_a.png", 4, 4, 1, 32, 32);
+    images = rm->GetImages("Resource/Image/Object/Enemy/Zako2/anime_enemy45.png", 6, 6, 1, 64, 64);
     image = images[0];
 
     collision.is_blocking = false;  // 出現中は無敵
@@ -42,6 +47,8 @@ void Enemy1::SetAppearParams(const Vector2D& start, const Vector2D& end, float t
     float_timer = 0.0f;
     alpha = 0;
     scale = scale_min;
+    leave_delay = 2.5f + (GetRand(20) * 0.1f); // 2.5?4.5秒のランダム遅延
+
 }
 
 //void Enemy1::Update(float delta_second)
@@ -157,19 +164,39 @@ void Enemy1::Update(float delta_second) {
         location.x = base_location.x + sinf(float_timer * 1.5f) * 10.0f;
         location.y = base_location.y + sinf(float_timer * 2.0f) * 5.0f;
 
-        if (float_timer >= 3.0f) {
+        // ★降り始めを個体ごとにランダム遅延（2.5?4.5秒後）
+        if (float_timer >= leave_delay)
+        {
             state = Enemy1State::Leaving;
         }
         break;
     }
+
     case Enemy1State::Leaving: {
-        location.y -= delta_second * 300.0f;
-        if (location.y + box_size.y < 0) {
+        // 左右にランダム方向の横移動を追加
+        static float horizontal_speed = 100.0f;
+
+        // 登場時に方向を決定しておくのがベストだが簡易的に左右ランダム
+        if (velocity.x == 0) {
+            velocity.x = (GetRand(1) == 0 ? -1 : 1) * horizontal_speed;
+            velocity.y = 300.0f; // 下方向の速度
+        }
+
+        // 移動更新
+        location.x += velocity.x * delta_second;
+        location.y += velocity.y * delta_second;
+
+        // 画面外に出たら削除
+        if (location.y - box_size.y > D_WIN_MAX_Y ||
+            location.x + box_size.x < 0 || location.x - box_size.x > D_WIN_MAX_X) {
             is_destroy = true;
         }
         break;
     }
-    }
+
+
+    
+}
 
     // 当たり判定のON/OFF
     collision.is_blocking = (state != Enemy1State::Appearing);
@@ -178,8 +205,10 @@ void Enemy1::Update(float delta_second) {
     if (hp <= 0) {
         is_destroy = true;
         DropItems();
+        EffectManager* manager = Singleton<EffectManager>::GetInstance();
         SEManager::GetInstance()->PlaySE(SE_NAME::Destroy);
         EffectManager::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
+        manager->SetScale(anim_id, 0.5f);
         Singleton<ScoreData>::GetInstance()->AddScore(500);
     }
 
