@@ -2,6 +2,11 @@
 #include "DxLib.h"
 #include "../../Object/GameObjectManager.h"
 
+// ビーム太さ統一マクロ
+#define BEAM_THICKNESS 36.0f
+#define WARNING_LINE_THICKNESS 6
+#define BEAM_LIFE_TIME 0.8f  // ★ ビームが消えるまでの時間（秒）
+
 // ===================== FollowBeam =====================
 void FollowBeam::Initialize()
 {
@@ -27,9 +32,36 @@ void FollowBeam::SetBeamTarget(Vector2D target_position)
     length = delta.Length();
 }
 
+void FollowBeam::SetFollowAndLookTarget(GameObjectBase* follow, GameObjectBase* look, float max_length)
+{
+    follow_target = follow;
+    look_target = look;
+    length = max_length;
+}
+
+void FollowBeam::SetBeamThickness(float thickness)
+{
+    beam_thickness = thickness;
+    initial_thickness = thickness;
+}
+
+void FollowBeam::SetBeamTextures(const std::vector<int>& tops, const std::vector<int>& bottoms)
+{
+    beam_textures_top = tops;
+    beam_textures_bottom = bottoms;
+
+    if (!beam_textures_top.empty()) beam_texture_top = beam_textures_top[0];
+    if (!beam_textures_bottom.empty()) beam_texture_bottom = beam_textures_bottom[0];
+}
+
 void FollowBeam::Update(float delta_second)
 {
     elapsed_time += delta_second;
+
+    float t = elapsed_time / life_time;
+    if (t > 1.0f) t = 1.0f;
+    beam_thickness = (1.0f - t) * initial_thickness;
+
     if (elapsed_time >= life_time)
     {
         is_destroy = true;
@@ -87,36 +119,61 @@ void FollowBeam::Update(float delta_second)
             }
         }
     }
+
+    animation_time += delta_second;
+    if (!beam_textures_top.empty() && animation_time >= 0.03f)
+    {
+        animation_time = 0.0f;
+        animation_count = (animation_count + 1) % beam_textures_top.size();
+        beam_texture_top = beam_textures_top[animation_count];
+        beam_texture_bottom = beam_textures_bottom[animation_count];
+    }
 }
 
 void FollowBeam::Draw(const Vector2D& screen_offset) const
 {
+    if (beam_texture_top < 0 || beam_texture_bottom < 0)
+    {
+        Vector2D start = location + screen_offset;
+        Vector2D end = start + dir * length;
+
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 160);
+        DrawLine(start.x, start.y, end.x, end.y, GetColor(100, 255, 255), static_cast<int>(beam_thickness));
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        DrawCircle(static_cast<int>(location.x), static_cast<int>(location.y), static_cast<int>(box_size.x), GetColor(255, 255, 0), FALSE);
+        return;
+    }
+
     Vector2D start = location + screen_offset;
     Vector2D end = start + dir * length;
 
-    SetDrawBlendMode(DX_BLENDMODE_ADD, 160);
-    DrawLine(start.x, start.y, end.x, end.y, GetColor(100, 255, 255), static_cast<int>(beam_thickness));
-    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    float wave_amplitude = 2.0f;
+    float wave_speed = 100.0f;
+    float wave_offset = sinf(elapsed_time * wave_speed) * wave_amplitude;
 
-    DrawCircle(static_cast<int>(location.x), static_cast<int>(location.y), static_cast<int>(box_size.x), GetColor(255, 255, 0), FALSE);
+    Vector2D normal = Vector2D(-dir.y, dir.x);
+
+    Vector2D top1 = start + normal * (beam_thickness + wave_offset);
+    Vector2D top2 = end + normal * (beam_thickness + wave_offset);
+    Vector2D bottom2 = end - normal * (beam_thickness + wave_offset);
+    Vector2D bottom1 = start - normal * (beam_thickness + wave_offset);
+
+    SetDrawBlendMode(DX_BLENDMODE_ADD, 180);
+    DrawModiGraph(top1.x, top1.y, top2.x, top2.y, bottom2.x, bottom2.y, bottom1.x, bottom1.y, beam_texture_top, TRUE);
+
+    Vector2D deco1 = start + normal * (beam_thickness + 25.0f);
+    Vector2D deco2 = end + normal * (beam_thickness + 25.0f);
+    Vector2D deco3 = end + normal * (beam_thickness + 40.0f);
+    Vector2D deco4 = start + normal * (beam_thickness + 40.0f);
+
+    DrawModiGraph(deco1.x, deco1.y, deco2.x, deco2.y, deco3.x, deco3.y, deco4.x, deco4.y, beam_texture_bottom, TRUE);
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void FollowBeam::OnHitCollision(GameObjectBase* hit_object)
-{
-    // 必要であれば衝突処理
-}
-
-void FollowBeam::SetFollowAndLookTarget(GameObjectBase* follow, GameObjectBase* look, float max_length)
-{
-    follow_target = follow;
-    look_target = look;
-    length = max_length;
-}
-
-void FollowBeam::SetBeamThickness(float thickness)
-{
-    beam_thickness = thickness;
-}
+{}
 
 // ===================== LinkedBeam =====================
 void LinkedBeam::Initialize()
@@ -134,6 +191,7 @@ void LinkedBeam::SetEndpoints(GameObjectBase* a, GameObjectBase* b)
 void LinkedBeam::SetThickness(float thickness)
 {
     beam_thickness = thickness;
+    initial_thickness = thickness; // ★ 太さの初期値を保存
 }
 
 void LinkedBeam::SetLifeTime(float time)
@@ -144,6 +202,12 @@ void LinkedBeam::SetLifeTime(float time)
 void LinkedBeam::Update(float delta_second)
 {
     elapsed_time += delta_second;
+
+    // ★ 時間とともに太さを細くする
+    float t = elapsed_time / life_time;
+    if (t > 1.0f) t = 1.0f;
+    beam_thickness = (1.0f - t) * initial_thickness;
+
     if (elapsed_time >= life_time)
     {
         is_destroy = true;
@@ -164,6 +228,7 @@ void LinkedBeam::Draw(const Vector2D& screen_offset) const
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }
+
 
 // ===================== LinkedWarningBeam =====================
 void LinkedWarningBeam::Initialize()
@@ -192,7 +257,8 @@ void LinkedWarningBeam::Update(float delta_second)
         {
             auto beam = Singleton<GameObjectManager>::GetInstance()->CreateObject<FollowBeam>(part_a->GetLocation());
             beam->SetFollowAndLookTarget(part_a, part_b, 600.0f);
-            beam->SetBeamThickness(16.0f);
+            beam->SetBeamThickness(BEAM_THICKNESS);
+            beam->SetLifeTime(BEAM_LIFE_TIME);  // ★ 寿命設定
         }
         is_destroy = true;
     }
@@ -208,7 +274,7 @@ void LinkedWarningBeam::Draw(const Vector2D& screen_offset) const
         Vector2D end = part_b->GetLocation() + screen_offset;
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
-        DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 0, 0), 2);
+        DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 0, 0), WARNING_LINE_THICKNESS);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }
@@ -262,7 +328,8 @@ void WarningBeam::Update(float delta_second)
         auto beam = Singleton<GameObjectManager>::GetInstance()->CreateObject<FollowBeam>(location);
         beam->SetFollowAndLookTarget(follow_target, look_target, beam_length);
         beam->SetFollowTarget(follow_target, dir);
-        beam->SetBeamThickness(20.0f);
+        beam->SetBeamThickness(BEAM_THICKNESS);
+        beam->SetLifeTime(BEAM_LIFE_TIME);  // ★ 寿命設定
 
         SetDestroy();
     }
@@ -276,7 +343,7 @@ void WarningBeam::Draw(const Vector2D& screen_offset) const
     Vector2D end = start + dir * beam_length;
 
     SetDrawBlendMode(DX_BLENDMODE_ADD, 128);
-    DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 0, 0), 2);
+    DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 0, 0), WARNING_LINE_THICKNESS);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
@@ -307,9 +374,9 @@ void TriangleWarningBeam::Update(float delta_second)
         {
             auto beam = Singleton<GameObjectManager>::GetInstance()->CreateObject<LinkedBeam>(part_a->GetLocation());
             beam->SetEndpoints(part_a, part_b);
-            beam->SetThickness(10.0f);
-            beam->SetLifeTime(1.0f);
-        }
+            beam->SetThickness(BEAM_THICKNESS);
+            beam->SetLifeTime(0.8f);
+         }
         is_destroy = true;
     }
 
@@ -324,7 +391,7 @@ void TriangleWarningBeam::Draw(const Vector2D& screen_offset) const
         Vector2D end = part_b->GetLocation() + screen_offset;
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
-        DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 128, 0), 2);
+        DrawLine(start.x, start.y, end.x, end.y, GetColor(255, 128, 0), WARNING_LINE_THICKNESS);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }
