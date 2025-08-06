@@ -2,6 +2,9 @@
 
 #include "EnemyBase.h"
 #include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet2.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet3.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet5.h"
 
 enum class Enemy1Pattern
 {
@@ -87,7 +90,7 @@ private:
     std::vector<int> images_b;
     std::vector<int> anim_indices;
 
-    void ChangePatternRandomly();
+   // void ChangePatternRandomly();
 
     int sound_hit = -1;
     int sound_destroy = -1;
