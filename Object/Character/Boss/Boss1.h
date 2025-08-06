@@ -22,6 +22,9 @@ public:
     void SetPattern(BossPattern new_pattern);
     bool GetIsAlive() const;
 
+    void OnHitCollision(GameObjectBase* hit_object) override;
+
+
 private:
     // 行動パターン更新
     void UpdateEntrance(float delta_second);
@@ -66,4 +69,14 @@ private:
     std::vector<int> images;
     int image = 0;
     int sound_destroy = -1;
+
+    float aura_timer = 0.0f;
+    float ripple_timer = 0.0f;
+
+    float beam_damage_timer = 0.0f;
+    const int BOSS1_MAX_HP = 8000;
+
+   
+
+
 };

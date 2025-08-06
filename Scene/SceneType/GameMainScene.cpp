@@ -31,10 +31,11 @@ void GameMainScene::Initialize()
 
     // BGM読み込み（初回のみ）
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/stage/stage1_2.mp3");
+    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/stage/Magical World.mp3");
     stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
 
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
+   // stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Stage4.mp3"); // 任意のファイル
     se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       // 警告音SE
 
     se_charge = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
