@@ -6,7 +6,7 @@
 #include "../../../Utility/ScoreData.h"
 #include "../../../Utility/ResourceManager.h"
 #include "../../../Object/GameObjectManager.h"
-#include"../../../Object/Beam/BeamEffects.h"
+#include "../../../Object/Beam/BeamEffects.h"
 #include <cmath>
 
 Boss2::Boss2()
@@ -30,12 +30,6 @@ void Boss2::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     images = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy74_b.png", 6, 6, 1, 48, 48);
-
-   /* if (images.empty())
-    {
-        images = rm->GetImages("Resource/Image/Object/Enemy/Boss/s1_Boss/anime_enemy75_b.png", 6, 6, 1, 40, 40);
-    }*/
-
     image = images.empty() ? -1 : images[0];
 
     anim_indices.clear();
@@ -45,8 +39,8 @@ void Boss2::Initialize()
     }
 
     // === 6体の回転パーツ生成 ===
-    const float radius = 250.0f;          // 距離を広げる
-    const float angle_step = 360.0f / 6;  // 60°ずつ
+    const float radius = 250.0f;
+    const float angle_step = 360.0f / 6;
     for (int i = 0; i < 6; i++)
     {
         auto part = Singleton<GameObjectManager>::GetInstance()
@@ -66,6 +60,13 @@ void Boss2::Update(float delta_second)
         is_alive = false;
         is_destroy = true;
 
+        // ★ 回転パーツを消す
+        for (auto* part : rotating_parts)
+        {
+            if (part) part->SetDestroy();
+        }
+        rotating_parts.clear();
+
         PlaySoundMem(sound_destroy, DX_PLAYTYPE_BACK);
 
         auto* manager = Singleton<EffectManager>::GetInstance();
@@ -81,7 +82,7 @@ void Boss2::Update(float delta_second)
         GameObjectBase::AnimationControl(delta_second, images, anim_indices, 10.0f);
     }
 
-    // 破壊されていたら再生成（任意）
+    // パーツ破壊時の再生成（任意）
     if (rotating_parts.empty())
     {
         const float radius = 250.0f;
@@ -115,8 +116,7 @@ void Boss2::Draw(const Vector2D& screen_offset) const
 }
 
 void Boss2::Finalize()
-{
-}
+{}
 
 void Boss2::Shot(float delta_second)
 {
@@ -143,7 +143,7 @@ void Boss2::Shot(float delta_second)
                     }
                 }
             }
-            else  // ▼ パターンB：中心 or 外向きビーム（従来通り group_toggle 使用）
+            else  // ▼ パターンB：中心 or 外向きビーム
             {
                 if (!group_toggle)  // 偶数：中心へ
                 {
@@ -176,15 +176,14 @@ void Boss2::Shot(float delta_second)
                     }
                 }
 
-                group_toggle = !group_toggle;  // 奇数/偶数ビーム切替
+                group_toggle = !group_toggle;
             }
 
-            pattern_toggle = !pattern_toggle;  // パターン切替
+            pattern_toggle = !pattern_toggle;
             shot_timer = 0.0f;
         }
     }
 }
-
 
 bool Boss2::GetIsAlive() const
 {

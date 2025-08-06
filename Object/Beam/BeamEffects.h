@@ -1,7 +1,7 @@
 #pragma once
 #include "../../Object/GameObjectBase.h"
+#include <vector>
 
-// ===================== FollowBeam =====================
 class FollowBeam : public GameObjectBase
 {
 public:
@@ -14,6 +14,11 @@ public:
     void SetBeamTarget(Vector2D target_position);
     void SetFollowAndLookTarget(GameObjectBase* follow, GameObjectBase* look, float max_length);
     void SetBeamThickness(float thickness);
+    void SetBeamTextures(const std::vector<int>& tops, const std::vector<int>& bottoms);
+    void SetLifeTime(float time)
+    {
+        life_time = time;
+    }
     bool GetIsDestroy() const
     {
         return is_destroy;
@@ -28,9 +33,16 @@ private:
     float life_time = 1.0f;
     float elapsed_time = 0.0f;
     float beam_thickness = 3.0f;
+    float initial_thickness = 3.0f;
+
+    std::vector<int> beam_textures_top;
+    std::vector<int> beam_textures_bottom;
+    int beam_texture_top = -1;
+    int beam_texture_bottom = -1;
+    float animation_time = 0.0f;
+    int animation_count = 0;
 };
 
-// ===================== LinkedBeam =====================
 class LinkedBeam : public GameObjectBase
 {
 public:
@@ -46,11 +58,11 @@ private:
     GameObjectBase* part_a = nullptr;
     GameObjectBase* part_b = nullptr;
     float beam_thickness = 6.0f;
+    float initial_thickness = 6.0f; // Åö í«â¡
     float life_time = 1.5f;
     float elapsed_time = 0.0f;
 };
 
-// ===================== LinkedWarningBeam =====================
 class LinkedWarningBeam : public GameObjectBase
 {
 public:
@@ -68,7 +80,6 @@ private:
     float warning_time = 1.0f;
 };
 
-// ===================== WarningBeam =====================
 class WarningBeam : public GameObjectBase
 {
 public:
@@ -89,7 +100,6 @@ private:
     GameObjectBase* look_target = nullptr;
 };
 
-// ===================== TriangleWarningBeam =====================
 class TriangleWarningBeam : public GameObjectBase
 {
 public:
@@ -106,4 +116,3 @@ private:
     float elapsed_time = 0.0f;
     float warning_time = 0.6f;
 };
-
