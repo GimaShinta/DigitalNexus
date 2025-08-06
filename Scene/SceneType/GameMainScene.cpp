@@ -35,11 +35,11 @@ void GameMainScene::Initialize()
     stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
 
    // stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Stage4.mp3"); // 任意のファイル
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Boss4_BGM.mp3"); // 任意のファイル
     se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       // 警告音SE
 
     se_charge = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
-    ChangeVolumeSoundMem(255 * 100 / 100, se_charge);
+    ChangeVolumeSoundMem(255 * 100 / 60, se_charge);
 
     cursor_se = rm->GetSounds("Resource/sound/se/se_effect/cursor.mp3");
 
@@ -56,7 +56,7 @@ void GameMainScene::Initialize()
     // ステージ1用BGMを再生
     current_bgm_handle = stage_bgm1;
 
-    ChangeVolumeSoundMem(255 * 50 / 100, current_bgm_handle);
+    ChangeVolumeSoundMem(255 * 100 / 60, current_bgm_handle);
 
     PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
 
@@ -1096,7 +1096,7 @@ void GameMainScene::WarningUpdate(float delta_second)
         }
         // ステージ4のBGM再生
         PlaySoundMem(stage_bgm4, DX_PLAYTYPE_LOOP);
-        ChangeVolumeSoundMem(255 * 50 / 100, stage_bgm4);
+        ChangeVolumeSoundMem(255 * 100 / 100, stage_bgm4);
 
         if (player)
             player->SetShotStop(false);
@@ -1307,7 +1307,7 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
             {
                 StopSoundMem(current_bgm_handle);
                 current_bgm_handle = stage_bgm3;
-                ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
+                ChangeVolumeSoundMem(255 * 95 / 100, current_bgm_handle);
                 PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
             }
         }
@@ -1382,7 +1382,7 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
                     {
                         StopSoundMem(current_bgm_handle);
                         current_bgm_handle = stage_bgm4;
-                        ChangeVolumeSoundMem(255 * 50 / 100, current_bgm_handle);
+                        ChangeVolumeSoundMem(255 * 100 / 100, current_bgm_handle);
                         PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
                     }
 
