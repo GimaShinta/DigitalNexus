@@ -16,7 +16,7 @@ void Boss4::Initialize()
 	z_layer = 3;
 	box_size = 30;
 #if _DEBUG
-	hp = 150;
+	hp = 15000;
 #else
 	hp = 150000;
 #endif
