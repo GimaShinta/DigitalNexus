@@ -11,7 +11,7 @@ PlayerDefenceBullet::~PlayerDefenceBullet()
 void PlayerDefenceBullet::Initialize()
 {
 	z_layer = 7;
-	velocity.y = -1250.0f;
+	velocity.y = -2000.0f;
 	box_size = Vector2D(5.0f, 14.0f);
 
 	// 当たり判定のオブジェクト設定
@@ -36,7 +36,7 @@ void PlayerDefenceBullet::Finalize()
 void PlayerDefenceBullet::SetDirection(float degree)
 {
 	angle_deg = degree;
-	const float speed = 1500.0f;
+	const float speed = 2000.0f;
 	float rad = static_cast<float>(degree * DX_PI / 180.0f);
 	velocity.x = speed * std::sin(rad);
 	velocity.y = -speed * std::cos(rad);

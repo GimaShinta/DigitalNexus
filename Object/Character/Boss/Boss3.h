@@ -208,6 +208,12 @@ private:
 	void Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
 	void Pattrn8(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change);
 	void Pattrn8_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn9(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
+		float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn9_2(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
+		float spiral_duration_limit,
+		const Vector2D& generate_location_left, const Vector2D& generate_location_right,
+		float delta_second);
 
 
 

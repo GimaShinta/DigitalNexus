@@ -37,7 +37,7 @@ void Boss3::Initialize()
 
 	// 攻撃パターンの設定
 	attack_pattrn_num = { 7, 12, 5, 12, 6, 12, 10, 12 };
-	attack_pattrn_num = { 6, 7, 8, 9, 10, 11 };
+	attack_pattrn_num = { 12, 13 };
 
 
 	// 当たり判定のオブジェクト設定
@@ -875,13 +875,13 @@ void Boss3::Attack(float delta_second)
 			Pattrn4_2(6, 600.0f, 0.05, 5.0f, location, delta_second, 500, 300.0f);
 			break;
 		case 2:
-			Pattrn1_2(300.0f, 0.03, 5.0f, Vector2D(location.x + 100.0f, location.y), Vector2D(location.x - 100.0f, location.y), delta_second);
+			Pattrn1_2(300.0f, 0.03, 3.0f, Vector2D(location.x + 100.0f, location.y), Vector2D(location.x - 100.0f, location.y), delta_second);
 			break;
 		case 3:
-			Pattrn2(300.0f, 0.03, 5.0f, location, delta_second);
+			Pattrn2(300.0f, 0.03, 3.0f, location, delta_second);
 			break;
 		case 4:
-			Pattern3(32, 300.0f, 120.0f, 0.15f, 5.0f, location, delta_second);
+			Pattern3(32, 300.0f, 120.0f, 0.15f, 2.0f, location, delta_second);
 			break;
 		case 5:
 			Pattrn5(24, 0.05f, 900.0f, 1.0f, 600.0f, 5.0f, Vector2D(location.x + 150.0f, location.y + 100.0f), Vector2D(location.x - 150.0f, location.y + 100.0f), delta_second);
@@ -903,6 +903,25 @@ void Boss3::Attack(float delta_second)
 			break;
 		case 11:
 			Pattrn8_2(40.0f, 300.0f, 0.1f, 5.0f, location, delta_second);
+			break;
+
+		case 12:
+			//Pattrn1_2(300.0f, 0.03, 3.0f, Vector2D(location.x + 100.0f, location.y), Vector2D(location.x - 100.0f, location.y), delta_second);
+			//Pattrn9(300.0f, 0.02f, -120, +120, 5, 5.0f, location, delta_second);
+			Pattrn9_2(500.0f, 0.03f, -120.0f, 120.0f, 5.0f, 5.0f, Vector2D(location.x + 100.0f, location.y), Vector2D(location.x - 100.0f, location.y), delta_second);
+			//Pattrn8_2(150.0f, 500.0f, 0.2f, 5.0f, Vector2D(location.x, location.y + 100.0f), delta_second);
+
+			break;
+
+		case 13:
+			Pattrn8_2(90.0f, 300.0f, 0.5f, 5.0f, location, delta_second);
+			break;
+
+		case 14:
+			// 全方位弾をまず発射
+			Pattrn6(64, 400.0f, 0.5f, 5.0f, location, delta_second);
+			// その直後から回転弾幕を開始
+			Pattrn2(300.0f, 0.05f, 5.0f, location, delta_second);
 			break;
 #else
 
@@ -1384,7 +1403,18 @@ void Boss3::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float 
 	}
 }
 
-
+/// <summary>
+/// 追尾
+/// </summary>
+/// <param name="total_bullet_count"></param>
+/// <param name="spawn_interval"></param>
+/// <param name="initial_speed"></param>
+/// <param name="stop_duration"></param>
+/// <param name="homing_speed"></param>
+/// <param name="duration_limit"></param>
+/// <param name="generate_location_left"></param>
+/// <param name="generate_location_right"></param>
+/// <param name="delta_second"></param>
 void Boss3::Pattrn5(
 	int total_bullet_count,
 	float spawn_interval,
@@ -1539,7 +1569,7 @@ void Boss3::Pattrn6_2(int bullet_num, float speed, float spiral_interval, float 
 }
 
 /// <summary>
-/// 攻撃パターン7
+/// 攻撃パターン7扇ランダム
 /// </summary>
 /// <param name="fan_angle_range">扇の角度（60なら±30°）</param>
 /// <param name="bullet_speed">弾の速度</param>
@@ -1631,7 +1661,284 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 }
 
 
+/// <summary>
+/// 攻撃パターン8扇段階
+/// </summary>
+/// <param name="fan_angle_range">扇の角度範囲（60なら±30°）</param>
+/// <param name="bullet_speed">弾の速度</param>
+/// <param name="fan_interval">発射の間隔</param>
+/// <param name="fan_duration_limit">攻撃時間</param>
+/// <param name="generate_location">生成する場所</param>
+/// <param name="delta_second">１フレームあたりの時間</param>
+void Boss3::Pattrn8(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change)
+{
+	// オブジェクト管理クラスのインスタンスを取得
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
 
+	static float fan_timer = 0.0f;
+	static float fan_total_time = 0.0f;
+
+	fan_timer += delta_second;
+	fan_total_time += delta_second;
+
+	if (fan_timer >= fan_interval)
+	{
+		fan_timer = 0.0f;
+
+		int bullet_count = 4;
+		float base_angle = 90.0f; // 中心下方向
+
+		for (int i = 0; i < bullet_count; ++i)
+		{
+			float angle = base_angle - fan_angle_range / 2.0f +
+				(fan_angle_range / (bullet_count - 1)) * i;
+
+			float rad = angle * DX_PI / 180.0f;
+			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
+
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
+			e_shot4->SetVelocity(velocity);
+			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		}
+	}
+
+	// 一定時間経過したら終了
+	if (fan_total_time >= fan_duration_limit)
+	{
+		fan_total_time = 0.0f;
+		is_shot = false;
+	}
+}
+
+void Boss3::Pattrn8_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
+{
+	// オブジェクト管理クラスのインスタンスを取得
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float fan_timer = 0.0f;
+	static float fan_total_time = 0.0f;
+
+	fan_timer += delta_second;
+	fan_total_time += delta_second;
+
+	if (fan_timer >= fan_interval)
+	{
+		fan_timer = 0.0f;
+
+		int bullet_count = 16;
+		float base_angle = 90.0f; // 中心下方向
+
+		for (int i = 0; i < bullet_count; ++i)
+		{
+			float angle = base_angle - fan_angle_range / 2.0f +
+				(fan_angle_range / (bullet_count - 1)) * i;
+
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
+
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y - 10.0f));
+			e_shot4->SetVelocity(velocity);
+			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		}
+
+		for (int i = 0; i < bullet_count; ++i)
+		{
+			float angle = base_angle - fan_angle_range / 2.0f +
+				(fan_angle_range / (bullet_count - 1)) * i;
+
+			float rad = static_cast<float>(angle * DX_PI / 180.0f);
+			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
+
+			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y - 10.0f));
+			e_shot4->SetVelocity(velocity);
+		}
+	}
+
+	// 一定時間経過したら終了
+	if (fan_total_time >= fan_duration_limit)
+	{
+		fan_total_time = 0.0f;
+		is_shot = false;
+	}
+}
+
+
+/// <summary>
+/// 攻撃パターンX（扇形マヨネーズ発射：往復）
+/// </summary>
+/// <param name="speed">弾速</param>
+/// <param name="spiral_interval">発射間隔</param>
+/// <param name="min_angle">扇形の開始角度（例：-60）</param>
+/// <param name="max_angle">扇形の終了角度（例：+60）</param>
+/// <param name="angle_step">発射角の変化量（例：+5ずつ）</param>
+/// <param name="spiral_duration_limit">攻撃する時間</param>
+/// <param name="generate_location">生成する場所</param>
+/// <param name="delta_second">１フレームあたりの時間</param>
+void Boss3::Pattrn9(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
+	float spiral_duration_limit, const Vector2D& generate_location, float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float spiral_timer = 0.0f;
+	static float spiral_total_time = 0.0f;
+	static float current_angle = 0.0f;
+	static bool initialized = false;
+	static bool reverse = false;  // ← 追加：角度の進行方向を制御
+
+	if (!initialized)
+	{
+		current_angle = min_angle;
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		reverse = false;
+		initialized = true;
+	}
+
+	spiral_timer += delta_second;
+	spiral_total_time += delta_second;
+
+	if (spiral_timer >= spiral_interval)
+	{
+		spiral_timer = 0.0f;
+
+		float rad = (current_angle + 90) * DX_PI / 180.0f;
+		Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+		auto* bullet = objm->CreateObject<EnemyBullet3>(generate_location);
+		bullet->SetVelocity(velocity);
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		// 角度の更新（往復）
+		if (!reverse)
+		{
+			current_angle += angle_step;
+			if (current_angle >= max_angle)
+			{
+				current_angle = max_angle;
+				reverse = true;
+			}
+		}
+		else
+		{
+			current_angle -= angle_step;
+			if (current_angle <= min_angle)
+			{
+				current_angle = min_angle;
+				reverse = false;
+			}
+		}
+	}
+
+	if (spiral_total_time >= spiral_duration_limit)
+	{
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		current_angle = min_angle;
+		reverse = false;
+		initialized = false;
+		is_shot = false;
+	}
+}
+
+
+/// <summary>
+/// 攻撃パターンX_2（左右2か所から扇形マヨネーズ発射：往復）
+/// </summary>
+/// <param name="speed">弾速</param>
+/// <param name="spiral_interval">発射間隔</param>
+/// <param name="min_angle">開始角度</param>
+/// <param name="max_angle">終了角度</param>
+/// <param name="angle_step">角度の変化量</param>
+/// <param name="spiral_duration_limit">攻撃する時間</param>
+/// <param name="generate_location_left">左の射出口</param>
+/// <param name="generate_location_right">右の射出口</param>
+/// <param name="delta_second">1フレームあたりの時間</param>
+void Boss3::Pattrn9_2(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
+	float spiral_duration_limit,
+	const Vector2D& generate_location_left, const Vector2D& generate_location_right,
+	float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float spiral_timer = 0.0f;
+	static float spiral_total_time = 0.0f;
+	static float current_angle = 0.0f;
+	static bool initialized = false;
+	static bool reverse = false;
+
+	if (!initialized)
+	{
+		current_angle = min_angle;
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		reverse = false;
+		initialized = true;
+	}
+
+	spiral_timer += delta_second;
+	spiral_total_time += delta_second;
+
+	if (spiral_timer >= spiral_interval)
+	{
+		spiral_timer = 0.0f;
+
+		// 左からの弾（正角度）
+		{
+			float rad = (current_angle + 90.0f) * DX_PI / 180.0f;
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			auto* bullet = objm->CreateObject<EnemyBullet3>(generate_location_left);
+			bullet->SetVelocity(velocity);
+		}
+
+		// 右からの弾（角度反転：-angle）
+		{
+			float rad = (-current_angle + 90.0f) * DX_PI / 180.0f;
+			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
+
+			auto* bullet = objm->CreateObject<EnemyBullet3>(generate_location_right);
+			bullet->SetVelocity(velocity);
+		}
+
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+
+		// 角度更新（往復）
+		if (!reverse)
+		{
+			current_angle += angle_step;
+			if (current_angle >= max_angle)
+			{
+				current_angle = max_angle;
+				reverse = true;
+			}
+		}
+		else
+		{
+			current_angle -= angle_step;
+			if (current_angle <= min_angle)
+			{
+				current_angle = min_angle;
+				reverse = false;
+			}
+		}
+	}
+
+	if (spiral_total_time >= spiral_duration_limit)
+	{
+		spiral_timer = 0.0f;
+		spiral_total_time = 0.0f;
+		current_angle = min_angle;
+		reverse = false;
+		initialized = false;
+		is_shot = false;
+	}
+}
 
 
 
@@ -1791,111 +2098,6 @@ void Boss3::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 //	}
 //}
 //
-
-/// <summary>
-/// 攻撃パターン8
-/// </summary>
-/// <param name="fan_angle_range">扇の角度範囲（60なら±30°）</param>
-/// <param name="bullet_speed">弾の速度</param>
-/// <param name="fan_interval">発射の間隔</param>
-/// <param name="fan_duration_limit">攻撃時間</param>
-/// <param name="generate_location">生成する場所</param>
-/// <param name="delta_second">１フレームあたりの時間</param>
-void Boss3::Pattrn8(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float fan_timer = 0.0f;
-	static float fan_total_time = 0.0f;
-
-	fan_timer += delta_second;
-	fan_total_time += delta_second;
-
-	if (fan_timer >= fan_interval)
-	{
-		fan_timer = 0.0f;
-
-		int bullet_count = 4;
-		float base_angle = 90.0f; // 中心下方向
-
-		for (int i = 0; i < bullet_count; ++i)
-		{
-			float angle = base_angle - fan_angle_range / 2.0f +
-				(fan_angle_range / (bullet_count - 1)) * i;
-
-			float rad = angle * DX_PI / 180.0f;
-			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
-
-			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
-			e_shot4->SetVelocity(velocity);
-			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-		}
-	}
-
-	// 一定時間経過したら終了
-	if (fan_total_time >= fan_duration_limit)
-	{
-		fan_total_time = 0.0f;
-		is_shot = false;
-	}
-}
-
-void Boss3::Pattrn8_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second)
-{
-	// オブジェクト管理クラスのインスタンスを取得
-	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-	static float fan_timer = 0.0f;
-	static float fan_total_time = 0.0f;
-
-	fan_timer += delta_second;
-	fan_total_time += delta_second;
-
-	if (fan_timer >= fan_interval)
-	{
-		fan_timer = 0.0f;
-
-		int bullet_count = 6;
-		float base_angle = 90.0f; // 中心下方向
-
-		for (int i = 0; i < bullet_count; ++i)
-		{
-			float angle = base_angle - fan_angle_range / 2.0f +
-				(fan_angle_range / (bullet_count - 1)) * i;
-
-			float rad = static_cast<float>(angle * DX_PI / 180.0f);
-			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
-
-			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 170.0f, generate_location.y - 10.0f));
-			e_shot4->SetVelocity(velocity);
-			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
-		}
-
-		for (int i = 0; i < bullet_count; ++i)
-		{
-			float angle = base_angle - fan_angle_range / 2.0f +
-				(fan_angle_range / (bullet_count - 1)) * i;
-
-			float rad = static_cast<float>(angle * DX_PI / 180.0f);
-			Vector2D velocity(cos(rad) * bullet_speed, sin(rad) * bullet_speed);
-
-			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 170.0f, generate_location.y - 10.0f));
-			e_shot4->SetVelocity(velocity);
-		}
-	}
-
-	// 一定時間経過したら終了
-	if (fan_total_time >= fan_duration_limit)
-	{
-		fan_total_time = 0.0f;
-		is_shot = false;
-	}
-}
 
 ///// <summary>
 ///// 攻撃パターン８
