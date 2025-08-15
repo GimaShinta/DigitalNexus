@@ -1,24 +1,24 @@
-#include "Exp.h"
+#include "Exp2.h"
 #include "DxLib.h"
 #include "../../Character/Player/Player.h"
 #include "../../GameObjectManager.h"
 #include "../../../Utility/ScoreData.h"
 
-Exp::Exp() :
+Exp2::Exp2() :
     lifetime(5.0f)         //自動削除する秒数
 {
 }
 
-Exp::~Exp()
+Exp2::~Exp2()
 {
 }
 
 // 初期化処理
-void Exp::Initialize()
+void Exp2::Initialize()
 {
     // 当たり判定設定
     collision.is_blocking = true;                         // 接触判定有効
-    collision.object_type = eObjectType::eExp;            // 自分の種類はExp
+    collision.object_type = eObjectType::eExp2;            // 自分の種類はExp2
     collision.hit_object_type.push_back(eObjectType::ePlayer); // プレイヤーと衝突判定
 
     box_size = 6.0f;             // 経験値アイテムのサイズ（半径）
@@ -30,12 +30,12 @@ void Exp::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
-    images = rm->GetImages("Resource/Image/Effect/Exp/pipo-nazoobj03b_480.png", 30, 5, 6, 480, 480);
+    images = rm->GetImages("Resource/Image/Effect/Exp/pipo-nazoobj03c_480.png", 30, 5, 6, 480, 480);
     image = images[0];
 }
 
 // 更新処理
-void Exp::Update(float delta)
+void Exp2::Update(float delta)
 {
     if (!player)
     {
@@ -110,13 +110,13 @@ void Exp::Update(float delta)
 }
 
 // 描画処理
-void Exp::Draw(const Vector2D& offset) const
+void Exp2::Draw(const Vector2D& offset) const
 {
     DrawRotaGraph(location.x, location.y, 0.7f, 0.0f, image, TRUE);
 }
 
 // 衝突処理
-void Exp::OnHitCollision(GameObjectBase* hit_object)
+void Exp2::OnHitCollision(GameObjectBase* hit_object)
 {
     // すでに吸収済みなら無視
     if (is_collected) return;
