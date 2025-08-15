@@ -13,7 +13,6 @@ Enemy1::Enemy1(const Vector2D& pos)
     location = pos;   // ‰ŠúˆÊ’u‚ğw’è
 }
 
-
 void Enemy1::Initialize()
 {
     EnemyBase::Initialize();

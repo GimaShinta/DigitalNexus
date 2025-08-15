@@ -93,6 +93,16 @@ void Boss1::Update(float delta_second)
         int frame = static_cast<int>((GetNowCount() / 10) % images.size());
         image = images[frame];
     }
+    // 戦闘開始後は時間経過でHPを減らす
+    if (battle_started && pattern != BossPattern::Dead)
+    {
+        damage_timer += delta_second;
+        if (damage_timer >= 0.05f) // 0.05秒ごとに減少
+        {
+            damage_timer = 0.0f;
+            hp -= 0.2; // 減少量
+        }
+    }
 
     on_hit = false;
 
@@ -104,14 +114,15 @@ void Boss1::UpdateEntrance(float delta_second)
     float speed = 3.0f; // 大きいほど早く到達
     location.y += (target_pos.y - location.y) * speed * delta_second;
 
-    // 到達判定
     if (fabs(location.y - target_pos.y) < 1.0f)
     {
         location.y = target_pos.y;
         pattern = BossPattern::Hovering;
         shot_timer = 0.0f;
         move_timer = 0.0f;
+        battle_started = true; // ★戦闘開始
     }
+
 
     // フェードイン
     alpha += delta_second * 150.0f;

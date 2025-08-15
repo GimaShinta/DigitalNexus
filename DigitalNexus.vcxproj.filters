@@ -1,332 +1,114 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ソース ファイル">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="ヘッダー ファイル">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="リソース ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="Application\Application.cpp" />
+    <ClCompile Include="AppMain.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet6.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet5.cpp" />
+    <ClCompile Include="Object\Beam\BeamEffects.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss2.cpp" />
+    <ClCompile Include="Object\Item\Exp\Exp.cpp" />
+    <ClCompile Include="Object\Item\MaxCharge\MaxCharge.cpp" />
+    <ClCompile Include="Object\Item\ItemBase.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss4.cpp" />
+    <ClCompile Include="Object\Beam\EnemyBeam.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet4.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss3.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy3.cpp" />
+    <ClCompile Include="Object\Character\Enemy\EnemyBase.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet3.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet2.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy2.cpp" />
+    <ClCompile Include="Object\Character\Boss\Boss1.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy1.cpp" />
+    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet1.cpp" />
+    <ClCompile Include="Object\GameObjectBase.cpp" />
+    <ClCompile Include="Object\GameObjectManager.cpp" />
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.cpp" />
+    <ClCompile Include="Object\Beam\PlayerBeam.cpp" />
+    <ClCompile Include="Object\Item\Shield\Shield.cpp" />
+    <ClCompile Include="Object\Item\PowerUp\PowerUp.cpp" />
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerBulletBase.cpp" />
+    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.cpp" />
+    <ClCompile Include="Utility\ShakeManager.cpp" />
+    <ClCompile Include="Utility\ScoreData.cpp" />
+    <ClCompile Include="Utility\BoxCollision.cpp" />
+    <ClCompile Include="Object\Character\CharacterBase.cpp" />
+    <ClCompile Include="Object\Character\Player\Player.cpp" />
+    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage1.cpp" />
+    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage2.cpp" />
+    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage3.cpp" />
+    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage4.cpp" />
+    <ClCompile Include="Utility\SEManager.cpp" />
+    <ClCompile Include="Utility\EffectManager.cpp" />
+    <ClCompile Include="Scene\SceneType\ExitScene.cpp" />
+    <ClCompile Include="Scene\SceneType\CreditScene.cpp" />
+    <ClCompile Include="Scene\SceneType\RankingScene.cpp" />
+    <ClCompile Include="Scene\SceneType\GameMainScene.cpp" />
+    <ClCompile Include="Scene\SceneManager.cpp" />
+    <ClCompile Include="Scene\SceneType\TitleScene.cpp" />
+    <ClCompile Include="Scene\SceneType\StartScene.cpp" />
+    <ClCompile Include="Utility\ResourceManager.cpp" />
+    <ClCompile Include="Utility\InputManager.cpp" />
+    <ClCompile Include="Utility\Vector2D.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy4.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppMain.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Application\Application.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\InputManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\ResourceManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\Vector2D.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\TitleScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\GameMainScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\StartScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\RankingScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\CreditScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\ExitScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\EffectManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\SEManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\CharacterBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Player\Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage1.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage2.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage3.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\SceneType\Stage\StageType\Stage4.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\BoxCollision.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\GameObjectManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\GameObjectBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Beam\PlayerBeam.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\ScoreData.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet1.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Enemy\Enemy1.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss1.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Enemy\Enemy2.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet2.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet3.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Enemy\EnemyBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Enemy\Enemy3.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss3.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet4.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Beam\EnemyBeam.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss4.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Item\ItemBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Item\Shield\Shield.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Item\PowerUp\PowerUp.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Item\MaxCharge\MaxCharge.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Item\Exp\Exp.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\ShakeManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerBulletBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss2RotatingPart.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Character\Boss\Boss2.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet5.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Bullet\EnemyBullet\EnemyBullet6.cpp">
-    <ClCompile Include="Object\Beam\BeamEffects.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Application\Application.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\ProjectConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\InputManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\ResourceManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\Vector2D.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\TitleScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\GameMainScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\StartScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\RankingScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\CreditScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\ExitScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\EffectManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\SEManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\Stage\StageBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\CharacterBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Player\Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage1.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage4.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\BoxCollision.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\GameObjectManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\GameObjectBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Beam\PlayerBeam.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\ScoreData.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet1.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Enemy\Enemy1.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss1.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Enemy\Enemy2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Enemy\EnemyBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Enemy\Enemy3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet4.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Beam\EnemyBeam.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss4.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Item\ItemBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Item\Shield\Shield.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Item\PowerUp\PowerUp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Item\MaxCharge\MaxCharge.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Item\Exp\Exp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\ShakeManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Character\Boss\Boss2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet5.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet6.h">
-    <ClInclude Include="Object\Beam\BeamEffects.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
+    <ClInclude Include="Application\Application.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet6.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet5.h" />
+    <ClInclude Include="Object\Beam\BeamEffects.h" />
+    <ClInclude Include="Object\Character\Boss\Boss2RotatingPart.h" />
+    <ClInclude Include="Object\Character\Boss\Boss2.h" />
+    <ClInclude Include="Object\Item\Exp\Exp.h" />
+    <ClInclude Include="Object\Item\MaxCharge\MaxCharge.h" />
+    <ClInclude Include="Object\Item\ItemBase.h" />
+    <ClInclude Include="Object\Character\Boss\Boss4.h" />
+    <ClInclude Include="Object\Beam\EnemyBeam.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet4.h" />
+    <ClInclude Include="Object\Character\Boss\Boss3.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy3.h" />
+    <ClInclude Include="Object\Character\Enemy\EnemyBase.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet3.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet2.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy2.h" />
+    <ClInclude Include="Object\Character\Boss\Boss1.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy1.h" />
+    <ClInclude Include="Object\Bullet\EnemyBullet\EnemyBullet1.h" />
+    <ClInclude Include="Object\GameObjectBase.h" />
+    <ClInclude Include="Object\GameObjectManager.h" />
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerAttackBullet.h" />
+    <ClInclude Include="Object\Beam\PlayerBeam.h" />
+    <ClInclude Include="Object\Item\Shield\Shield.h" />
+    <ClInclude Include="Object\Item\PowerUp\PowerUp.h" />
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h" />
+    <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h" />
+    <ClInclude Include="Utility\ShakeManager.h" />
+    <ClInclude Include="Utility\ScoreData.h" />
+    <ClInclude Include="Utility\BoxCollision.h" />
+    <ClInclude Include="Object\Character\CharacterBase.h" />
+    <ClInclude Include="Object\Character\Player\Player.h" />
+    <ClInclude Include="Scene\SceneType\Stage\StageBase.h" />
+    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage1.h" />
+    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage2.h" />
+    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage3.h" />
+    <ClInclude Include="Scene\SceneType\Stage\StageType\Stage4.h" />
+    <ClInclude Include="Utility\SEManager.h" />
+    <ClInclude Include="Utility\EffectManager.h" />
+    <ClInclude Include="Scene\SceneType\ExitScene.h" />
+    <ClInclude Include="Scene\SceneType\CreditScene.h" />
+    <ClInclude Include="Scene\SceneType\RankingScene.h" />
+    <ClInclude Include="Scene\SceneType\GameMainScene.h" />
+    <ClInclude Include="Scene\SceneBase.h" />
+    <ClInclude Include="Scene\SceneManager.h" />
+    <ClInclude Include="Scene\SceneType\TitleScene.h" />
+    <ClInclude Include="Scene\SceneType\StartScene.h" />
+    <ClInclude Include="Utility\ResourceManager.h" />
+    <ClInclude Include="Utility\InputManager.h" />
+    <ClInclude Include="Singleton.h" />
+    <ClInclude Include="Utility\ProjectConfig.h" />
+    <ClInclude Include="Utility\Vector2D.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy4.h" />
   </ItemGroup>
 </Project>

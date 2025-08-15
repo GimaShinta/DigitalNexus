@@ -37,6 +37,16 @@ void Stage1::Initialize()
         player->ForceNeutralAnim(true); // ← アニメも固定
         player->SetShotStop(false);
     }
+
+    // === 追加: Enemy2 スケジューラ初期化 ===
+    e2_line_enabled = false;
+    e2_group_next = 10.2f;  // Wave2 開始直後から少し遅らせる
+    e2_group_id = 0;
+
+    e2_single_next = 11.2f;  // 合間の単発はさらに少し遅らせる
+    e2_group_interval = 3.5f;
+    e2_single_interval = 1.6f;
+
 }
 
 // 終了時処理
@@ -347,38 +357,31 @@ void Stage1::EnemyAppearance(float delta_second)
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     enemy_spawn_timer += delta_second;
 
-    //デバッグ用：ebug_boss_only→true　ならボスのみ出現する
     if (debug_boss_only)
     {
         if (!boss_spawned)
         {
             const float CENTER_X = D_WIN_MAX_X / 2;
-
             boss = objm->CreateObject<Boss1>(Vector2D(CENTER_X, -200));
             boss->SetPattern(BossPattern::Entrance);
             boss->SetPlayer(player);
-
             boss_spawned = true;
         }
-        return; // 雑魚出現処理を飛ばす
+        return;
     }
-
-    //通常のステージ１の敵出現処理
     if (boss != nullptr) return;
 
     const float CENTER_X = D_WIN_MAX_X / 2;
     const float CENTER_Y = D_WIN_MAX_Y / 2;
 
-    // === Wave1:(Enemy1) ===
-    if (stage_timer < 7.0f)
+    // ==== Wave1 : Enemy1 波状突入 ====
+    if (stage_timer < 10.0f)
     {
         const int enemy_count = 6;
-        const float spacing = 100.0f;        // 横の間隔
-        const float center_x = D_WIN_MAX_X / 2;
-        const float appear_y = -80.0f;       // 上の外から出現
-        const float target_y_base = 150.0f;  // 基準の停止位置
+        const float spacing_x = 100.0f;
+        const float appear_y = -80.0f;
+        const float target_y = 150.0f;
 
-        // 一定間隔で出現させる
         if (!spawning)
         {
             spawning = true;
@@ -391,219 +394,175 @@ void Stage1::EnemyAppearance(float delta_second)
             spawn_delay_timer -= delta_second;
             if (spawn_delay_timer <= 0.0f && spawn_index < enemy_count)
             {
-                float offset_x = (spawn_index - (enemy_count - 1) / 2.0f) * spacing;
-
-                float target_y = target_y_base + (GetRand(120) - 60);
-
-                Vector2D start_pos(center_x + offset_x, appear_y);
-                Vector2D target_pos(center_x + offset_x, target_y);
+                float offset_x = (spawn_index - (enemy_count - 1) / 2.0f) * spacing_x;
+                Vector2D start_pos(CENTER_X + offset_x, appear_y - (spawn_index % 2) * 50);
+                Vector2D target_pos(CENTER_X + offset_x, target_y + (spawn_index % 2) * 40);
 
                 auto zako = objm->CreateObject<Enemy1>(start_pos);
                 if (zako)
                 {
-                    // 出現到達時間を長めに（1.8?2.8秒）
-                    float appear_time = 1.0f + GetRand(20) * 0.05f;
+                    float appear_time = 0.8f + GetRand(10) * 0.05f;
                     zako->SetAppearParams(start_pos, target_pos, appear_time);
                     zako->SetPlayer(player);
                 }
-
-                // 次の個体までの間隔を広め（1.0?1.5秒）
                 spawn_index++;
-                spawn_delay_timer = 0.6f + GetRand(5) * 0.1f;
+                spawn_delay_timer = 0.4f;
+            }
+            if (spawn_index >= enemy_count) spawning = false;
+        }
+    }
+
+    // ==== Wave2 : Enemy2 下から派手登場 ====
+    else if (stage_timer < 25.0f)
+    {
+        // Wave2 に入ったら一度だけ有効化
+        if (!e2_line_enabled) {
+            e2_line_enabled = true;
+            // e2_group_next / e2_single_next は Initialize で設定済み
+        }
+
+        // 1) LineRise グループ: 一度に5体生成するが、各個体は順番待ちで 0.45s 間隔で出現
+        if (e2_line_enabled && stage_timer >= e2_group_next) {
+            const float CENTER_X = D_WIN_MAX_X / 2;
+            const int   group_size = 5;
+            // グループごとに横幅や到達高さを少し変えて派手さを出す
+            float spacing_x = 120.0f + (e2_group_id % 3) * 10.0f;
+            float base_x = CENTER_X - (spacing_x * (group_size - 1) * 0.5f);
+            float appear_y = D_WIN_MAX_Y + 100.0f;
+            float base_target_y = D_WIN_MAX_Y / 2.0f - 70.0f + (GetRand(60) - 30);
+
+            for (int i = 0; i < group_size; ++i) {
+                float x = base_x + i * spacing_x;
+                Vector2D s(x, appear_y + i * 35.0f); // 後続ほど下から出る＝見た目に“連なってくる”
+                Vector2D t(x + (GetRand(20) - 10), base_target_y - i * 12.0f);
+
+                auto e2 = objm->CreateObject<Enemy2>(s);
+                if (e2) {
+                    // ★Enemy2 側に追加したモード/ライン演出APIを使用
+                    e2->SetMode(Enemy2Mode::LineRise);       // 列モード
+                    e2->SetLineParams(i, group_size, 0.45f); // i番目が0.45秒刻みで出現
+                    e2->SetAppearParams(s, t, 1.2f + (GetRand(20) * 0.01f), true);
+                    e2->SetPlayer(player);
+                }
             }
 
-            // 全員出し終わったら終了
-            if (spawn_index >= enemy_count)
+            e2_group_id++;
+            e2_group_next = stage_timer + e2_group_interval; // 次のグループ時刻
+        }
+
+        // 2) 合間の単発（Zako3Like）: 位置と到達時間をランダムにしてリズムを作る
+        if (e2_line_enabled && stage_timer >= e2_single_next) {
+            const float CENTER_X = D_WIN_MAX_X / 2;
+            float x = CENTER_X + (GetRand(560) - 280);   // 広めに散らす
+            Vector2D s(x, D_WIN_MAX_Y + 100.0f);
+            Vector2D t(x, D_WIN_MAX_Y / 2.0f - 80.0f + (GetRand(60) - 30));
+
+            auto e2 = objm->CreateObject<Enemy2>(s);
+            if (e2) {
+                e2->SetMode(Enemy2Mode::Zako3Like);                  // 下からZako3風
+                e2->SetAppearParams(s, t, 1.1f + (GetRand(40) * 0.01f), true);
+                e2->SetPlayer(player);
+            }
+            e2_single_next = stage_timer + e2_single_interval;       // 次の単発時刻
+        }
+
+        if (!zako_spawned)
+        {
+            zako_spawned = true;
+            const int enemy_count = 5;
+            const float spacing_x = 150.0f;
+            const float appear_y = D_WIN_MAX_Y + 100.0f;
+            const float target_y = CENTER_Y - 60.0f;
+
+            for (int i = 0; i < enemy_count; ++i)
             {
-                spawning = false;
+                float offset_x = (i - (enemy_count - 1) / 2.0f) * spacing_x;
+                Vector2D start_pos(CENTER_X + offset_x, appear_y + i * 40);
+                Vector2D target_pos(CENTER_X + offset_x, target_y - i * 20);
+
+                auto e2 = objm->CreateObject<Enemy2>(start_pos);
+                if (e2)
+                {
+                    e2->SetAppearParams(start_pos, target_pos, 1.4f, true);
+                    e2->SetPlayer(player);
+                }
             }
         }
     }
 
-
-    // === Wave2:(Enemy3 Zako2) ===
-    else if (stage_timer < 20.0f)
+    // ==== Wave3 : Enemy3 Zako2 + Zako7 複合 ====
+    else if (stage_timer < 40.0f)
     {
-
-        // Enemy1を追加で同時出現させる（例：stage_timerが14?15秒の間）
-        if (stage_timer > 14.0f && stage_timer < 15.0f && !spawned_enemy1)
-        {
-            spawned_enemy1 = true;
-
-            const int enemy_count = 3;
-            const float spacing = 140.0f;
-            const float center_x = D_WIN_MAX_X / 2;
-            const float appear_y = -80.0f;
-            const float target_y = 200.0f;
-
-            for (int i = 0; i < enemy_count; ++i)
-            {
-                float offset_x = (i - (enemy_count - 1) / 2.0f) * spacing;
-                Vector2D start_pos(center_x + offset_x, appear_y);
-                Vector2D target_pos(center_x + offset_x, target_y + GetRand(60) - 30);
-
-                auto zako = objm->CreateObject<Enemy1>(start_pos);
-                if (zako)
-                {
-                    float appear_time = 1.8f + GetRand(20) * 0.05f;
-                    zako->SetAppearParams(start_pos, target_pos, appear_time);
-                    zako->SetPlayer(player);
-                }
-            }
-        }
-
-        const int num = 3;
-        const float spacing = 100.0f;  // Y間隔を広く
-
-        if (!spawning_left && enemy_spawn_timer >= 3.0f)
+        if (!spawning_left && enemy_spawn_timer >= 1.5f)
         {
             spawn_index_left = 0;
             spawn_index_right = 0;
             spawn_delay_timer_left = 0.0f;
-            spawn_delay_timer_right = 0.8f; // 縦方向はさらに遅らせる
+            spawn_delay_timer_right = 0.8f;
             spawning_left = spawning_right = true;
             enemy_spawn_timer = 0.0f;
         }
 
-        // 横方向を順番に
         if (spawning_left)
         {
             spawn_delay_timer_left -= delta_second;
             if (spawn_delay_timer_left <= 0.0f)
             {
                 float x = -80.0f;
-                float y = CENTER_Y - 100 + spawn_index_left * spacing;
+                float y = CENTER_Y - 80 + spawn_index_left * 80;
 
-                auto zako = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                zako->SetMode(ZakoMode::Zako2);
-                zako->SetAppearParams(Vector2D(x, y), Vector2D(D_WIN_MAX_X + 80.0f, y), 3.0f, true); // スピード遅め
-                zako->SetPlayer(player);
+                auto e3 = objm->CreateObject<Enemy3>(Vector2D(x, y));
+                e3->SetMode(ZakoMode::Zako2);
+                e3->SetAppearParams(Vector2D(x, y), Vector2D(D_WIN_MAX_X + 80.0f, y + 50), 2.0f, true);
+                e3->SetPlayer(player);
 
                 spawn_index_left++;
-                if (spawn_index_left >= num) spawning_left = false;
-                else spawn_delay_timer_left = 0.9f; // 出現間隔を広げる
+                if (spawn_index_left >= 3) spawning_left = false;
+                else spawn_delay_timer_left = 1.0f;
             }
         }
 
-        // 縦方向を順番に
         if (spawning_right)
         {
             spawn_delay_timer_right -= delta_second;
             if (spawn_delay_timer_right <= 0.0f)
             {
-                float x = CENTER_X - 140 + spawn_index_right * spacing;
-                float y = -60.0f;
-
-                auto zako = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                zako->SetMode(ZakoMode::Zako2);
-                zako->SetAppearParams(Vector2D(x, y), Vector2D(x, D_WIN_MAX_Y + 80.0f), 3.0f, true);
-                zako->SetPlayer(player);
-
-                spawn_index_right++;
-                if (spawn_index_right >= num) spawning_right = false;
-                else spawn_delay_timer_right = 0.9f;
-            }
-        }
-    }
-
-    // === Wave3:(Enemy3 Zako7) ===
-    else if (stage_timer < 40.0f)
-    {
-        // Enemy1を追加で同時出現させる（例：stage_timerが32?33秒の間）
-        if (stage_timer > 32.0f && stage_timer < 33.0f && !spawned_enemy1_wave3)
-        {
-            spawned_enemy1_wave3 = true;
-
-            const int enemy_count = 4;
-            const float spacing = 140.0f;
-            const float center_x = D_WIN_MAX_X / 2;
-            const float appear_y = -80.0f;
-            const float target_y_base = 180.0f;
-
-            for (int i = 0; i < enemy_count; ++i)
-            {
-                float offset_x = (i - (enemy_count - 1) / 2.0f) * spacing;
-
-                Vector2D start_pos(center_x + offset_x, appear_y);
-                Vector2D target_pos(center_x + offset_x, target_y_base + (GetRand(100) - 50));
-
-                auto zako = objm->CreateObject<Enemy1>(start_pos);
-                if (zako)
-                {
-                    float appear_time = 1.8f + GetRand(20) * 0.05f; // 出現時間もランダム
-                    zako->SetAppearParams(start_pos, target_pos, appear_time);
-                    zako->SetPlayer(player);
-                }
-            }
-        }
-
-        const int num = 4;                   // 数を減らす
-        const float spacing = 130.0f;        // 間隔広め
-        const float base_x = (D_WIN_MAX_X / 2) - (spacing * (num - 1) / 2);
-
-        if (!spawning_left && enemy_spawn_timer >= 3.0f)
-        {
-            spawn_index_left = 0;
-            spawn_index_right = 0;
-            spawn_delay_timer_left = 3.8f;
-            spawn_delay_timer_right = 1.0f; // 下方向を遅らせる
-            spawning_left = spawning_right = true;
-            enemy_spawn_timer = 0.0f;
-        }
-
-        // 上から順番に
-        if (spawning_left)
-        {
-            spawn_delay_timer_left -= delta_second;
-            if (spawn_delay_timer_left <= 0.0f)
-            {
-                float x = base_x + spawn_index_left * spacing;
-                float y = -100.0f;
-
-                auto zako = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                zako->SetMode(ZakoMode::Zako7);
-                zako->SetAppearParams(Vector2D(x, y), Vector2D(x, CENTER_Y + 120), 2.8f, true);
-                zako->SetPlayer(player);
-
-                spawn_index_left++;
-                if (spawn_index_left >= num) spawning_left = false;
-                else spawn_delay_timer_left = 3.0f; // 出現間隔を広げる
-            }
-        }
-
-        // 下から順番に
-        if (spawning_right)
-        {
-            spawn_delay_timer_right -= delta_second;
-            if (spawn_delay_timer_right <= 0.0f)
-            {
-                float x = base_x + spawn_index_right * spacing;
+                float x = CENTER_X - 100 + spawn_index_right * 100;
                 float y = D_WIN_MAX_Y + 100.0f;
 
-                auto zako = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                zako->SetMode(ZakoMode::Zako7);
-                zako->SetAppearParams(Vector2D(x, y), Vector2D(x, CENTER_Y - 120), 2.8f, true);
-                zako->SetPlayer(player);
+                auto e3 = objm->CreateObject<Enemy3>(Vector2D(x, y));
+                e3->SetMode(ZakoMode::Zako7);
+                e3->SetAppearParams(Vector2D(x, y), Vector2D(x, CENTER_Y - 100), 2.2f, true);
+                e3->SetPlayer(player);
 
                 spawn_index_right++;
-                if (spawn_index_right >= num) spawning_right = false;
-                else spawn_delay_timer_right = 3.8f;
+                if (spawn_index_right >= 3) spawning_right = false;
+                else spawn_delay_timer_right = 1.2f;
             }
         }
     }
 
-    // === Boss出現 ===
+    // ==== アイテム休憩 ====
+    else if (stage_timer < 45.0f)
+    {
+        if (!spawned_enemy1)
+        {
+            spawned_enemy1 = true;
+            objm->CreateObject<PowerUp>(Vector2D(CENTER_X - 80, CENTER_Y))->SetPlayer(player);
+            objm->CreateObject<Shield>(Vector2D(CENTER_X + 80, CENTER_Y))->SetPlayer(player);
+        }
+    }
+
+    // ==== Boss ====
     else if (stage_timer > 45.0f && !boss_spawned)
     {
-        objm->CreateObject<PowerUp>(Vector2D(CENTER_X - 80, 120))->SetPlayer(player);
-        objm->CreateObject<Shield>(Vector2D(CENTER_X + 80, 120))->SetPlayer(player);
-
         boss = objm->CreateObject<Boss1>(Vector2D(CENTER_X, -200));
         boss->SetPattern(BossPattern::Entrance);
         boss->SetPlayer(player);
         boss_spawned = true;
     }
 }
+
 
 //void Stage1::EnemyAppearance(float delta_second)
 //{

@@ -76,7 +76,11 @@ private:
     float beam_damage_timer = 0.0f;
     const int BOSS1_MAX_HP = 8000;
 
-   
+private:
+    // 時間経過ダメージ用
+    float damage_timer = 0.0f;
+    bool battle_started = false; // 戦闘開始フラグ
+
 
 
 };

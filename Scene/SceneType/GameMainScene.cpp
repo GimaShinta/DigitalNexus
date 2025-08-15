@@ -35,7 +35,7 @@ void GameMainScene::Initialize()
     stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
 
    // stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Boss4_BGM.mp3"); // 任意のファイル
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Stage4_BGM.mp3"); // 任意のファイル
     se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       // 警告音SE
 
     se_charge = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
