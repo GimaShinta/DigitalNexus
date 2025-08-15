@@ -90,7 +90,7 @@ void PowerUp::Update(float delta)
 
 void PowerUp::Draw(const Vector2D& offset) const
 {
-    DrawRotaGraph(location.x, location.y, 1.0f, 0.0f, image, TRUE);
+    DrawRotaGraph(location.x, location.y, 1.5f, 0.0f, image, TRUE);
 
 }
 

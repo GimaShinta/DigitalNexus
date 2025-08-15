@@ -19,8 +19,10 @@ void EffectManager::LoadAllEffects()
 		charge_2.push_back(charge[i]);
 	}
 	effect_images[EffectName::eChenge] = charge_2;
-	effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/pipo-gate01a.png", 15, 5, 3, 480, 480);
-	effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/pipo-gate01b.png", 15, 5, 3, 480, 480);
+	//effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/pipo-gate01a.png", 15, 5, 3, 480, 480);
+	//effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/pipo-gate01b.png", 15, 5, 3, 480, 480);
+	effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect021_480.png", 20, 5, 4, 480, 480);
+	effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect023_480.png", 20, 5, 4, 480, 480);
 }
 
 // エフェクトの再生

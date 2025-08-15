@@ -17,6 +17,7 @@ enum eObjectType
     eEnemyPart,
     eBoss,
     eExp,
+    eExp2,
     ePowerUp,
     eShield,
     eMaxCharge,

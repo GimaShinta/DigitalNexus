@@ -414,7 +414,7 @@ void Player::Shot(float delta_second)
 
 			EffectManager* em =  Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 0.35f);
+			em->SetScale(effe_id, 0.6f);
 		}
 		else
 		{
@@ -427,11 +427,11 @@ void Player::Shot(float delta_second)
 
 			nozzle_type = attack_nozzles;
 
-			shot_interval = 0.07f;
+			shot_interval = 0.05f;
 
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 0.35f);
+			em->SetScale(effe_id, 0.6f);
 		}
 	}
 
@@ -736,11 +736,11 @@ void Player::GenarateBullet()
 			}
 			else // powerd >= 3
 			{
-				angle_infos.push_back({ 0.0f, { -15.0f, 0.0f, +15.0f } });  // 中央3発
-				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } });      // 左30°
-				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } });      // 右30°
-				angle_infos.push_back({ -30.0f, { 0.0f } });                // 左60° 1発
-				angle_infos.push_back({ 30.0f, { 0.0f } });                // 右60° 1発
+				angle_infos.push_back({ 0.0f, { -10.0f, 0.0f, +10.0f } });  // 中央3発
+				angle_infos.push_back({ -10.0f, { -5.0f, +5.0f } });      // 左30°
+				angle_infos.push_back({ 10.0f, { -5.0f, +5.0f } });      // 右30°
+				angle_infos.push_back({ -20.0f, { 0.0f } });                // 左60° 1発
+				angle_infos.push_back({ 20.0f, { 0.0f } });                // 右60° 1発
 			}
 
 			for (const auto& info : angle_infos)
