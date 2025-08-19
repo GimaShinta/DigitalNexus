@@ -98,5 +98,12 @@ public:
 	// 2点間の距離
 	static float Distance(const Vector2D& a, const Vector2D& b);
 
+	// 安全に正規化（長さ0ならゼロベクトルを返す）
+	Vector2D NormalizedSafe() const;
+
+	// 指定角度だけ回転させたベクトルを返す（度数法）
+	Vector2D RotatedSafe(float degree) const;
+
+
 	void ToInt(int* x, int* y) const;
 };

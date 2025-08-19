@@ -102,3 +102,26 @@ void Vector2D::ToInt(int* x, int* y) const
 	*x = static_cast<int>(this->x);
 	*y = static_cast<int>(this->y);
 }
+
+#include <cmath>
+
+// NormalizedSafe
+Vector2D Vector2D::NormalizedSafe() const
+{
+	float len = Length();
+	if (len < 1.0e-6f)   // ƒ[ƒœŽZ–hŽ~
+		return Vector2D(0.0f, 0.0f);
+	return *this / len;
+}
+
+// RotatedSafe
+Vector2D Vector2D::RotatedSafe(float degree) const
+{
+	float rad = degree * (3.1415926535f / 180.0f);
+	float cs = cosf(rad);
+	float sn = sinf(rad);
+	return Vector2D(
+		x * cs - y * sn,
+		x * sn + y * cs
+	);
+}

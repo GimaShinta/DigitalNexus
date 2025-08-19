@@ -46,6 +46,10 @@ void Boss2::Initialize()
         auto part = Singleton<GameObjectManager>::GetInstance()
             ->CreateObject<Boss2RotatingPart>(location);
         part->SetUp(this, radius, i * angle_step);
+
+        // ★ ここで役割を分ける：奇数インデックスのパーツだけ弾を撃つ
+        part->SetIsBulletPart(i % 2 == 1);
+
         rotating_parts.push_back(part);
     }
 
@@ -92,6 +96,10 @@ void Boss2::Update(float delta_second)
             auto part = Singleton<GameObjectManager>::GetInstance()
                 ->CreateObject<Boss2RotatingPart>(location);
             part->SetUp(this, radius, i * angle_step);
+
+            // ★ 再生成時も同じ役割を付与
+            part->SetIsBulletPart(i % 2 == 1);
+
             rotating_parts.push_back(part);
         }
     }

@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include "EnemyBase.h"
 #include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"

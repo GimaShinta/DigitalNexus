@@ -180,6 +180,13 @@ void LinkedBeam::Initialize()
 {
     z_layer = 2;
     is_destroy = false;
+
+    // ▼ 当たり判定の基本設定（敵弾→プレイヤーに当てる）
+    box_size = Vector2D(8.0f, 8.0f);
+    collision.is_blocking = true;
+    collision.object_type = eObjectType::eEnemyShot;
+    collision.hit_object_type.clear();
+    collision.hit_object_type.push_back(eObjectType::ePlayer);
 }
 
 void LinkedBeam::SetEndpoints(GameObjectBase* a, GameObjectBase* b)
@@ -203,7 +210,7 @@ void LinkedBeam::Update(float delta_second)
 {
     elapsed_time += delta_second;
 
-    // ★ 時間とともに太さを細くする
+    // 時間に応じて太さを細くする
     float t = elapsed_time / life_time;
     if (t > 1.0f) t = 1.0f;
     beam_thickness = (1.0f - t) * initial_thickness;
@@ -214,6 +221,54 @@ void LinkedBeam::Update(float delta_second)
     }
 
     __super::Update(delta_second);
+
+    // ▼ 当たり判定（線分上に複数の点判定を打つ）
+    if (part_a && part_b && !is_destroy)
+    {
+        Vector2D start = part_a->GetLocation();
+        Vector2D end = part_b->GetLocation();
+        Vector2D seg = end - start;
+        float len = seg.Length();
+
+        if (len > 0.01f)
+        {
+            Vector2D dir = seg / len;
+
+            constexpr int hitbox_count = 10;  // 必要なら長さに応じて増やしてもOK
+            for (int i = 0; i < hitbox_count; ++i)
+            {
+                float tt = (i + 1) / static_cast<float>(hitbox_count + 1);
+                Vector2D check_pos = start + dir * (len * tt);
+
+                BoxCollision temp_collision;
+                // FollowBeamと同じく 12x12 程度の小BOXで判定
+                const float half = 6.0f;
+                temp_collision.point[0] = check_pos - Vector2D(half, half);
+                temp_collision.point[1] = check_pos + Vector2D(half, half);
+                temp_collision.object_type = collision.object_type;
+                temp_collision.is_blocking = true;
+                temp_collision.hit_object_type = collision.hit_object_type;
+
+                for (GameObjectBase* obj : Singleton<GameObjectManager>::GetInstance()->GetGameObjects())
+                {
+                    const auto& obj_col = obj->GetCollision();
+                    if (obj_col.object_type == eObjectType::ePlayer)
+                    {
+                        BoxCollision obj_copy = obj_col;
+                        obj_copy.point[0] += obj->GetLocation() - obj->GetBoxSize();
+                        obj_copy.point[1] += obj->GetLocation() + obj->GetBoxSize();
+
+                        if (IsCheckCollision(temp_collision, obj_copy))
+                        {
+                            obj->OnHitCollision(this);
+                            this->OnHitCollision(obj);
+                            return; // 多重ヒットを避けて終了
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void LinkedBeam::Draw(const Vector2D& screen_offset) const
