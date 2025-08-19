@@ -50,7 +50,7 @@ private:
     // 見た目
     float scale_min = 0.3f;
     float scale_max = 0.8f;
-    float scale = 0.3f;
+    float scale = 1.0f;
     float rotation = 0.0f;
     int   alpha = 0;
 
@@ -66,9 +66,15 @@ private:
     int   line_total = 1;           // 総数
     float line_interval = 0.5f;     // 1体ずつの開始間隔
 
+
+
     // 画像（Zako3系）
     std::vector<int> zako3_images;
     int zako3_image = -1;
+
+    std::vector<int> images;
+    float animation_time = 0.0f;
+    int   animation_index = 0;
 
     // 内部
     void Shot(float delta_second);

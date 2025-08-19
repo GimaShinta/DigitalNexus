@@ -8,6 +8,7 @@ private:
 	class Zako* zako = nullptr;             // 雑魚敵その1
 	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
 	class Boss1* boss = nullptr;
+	class Enemy4* enemy4 = nullptr;
 
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	bool zako_spawned = false;         // Zakoがすでに出現したかどうか
@@ -40,6 +41,7 @@ private:
 	float entry_effect_timer = 0.0f;
 
 	bool debug_boss_only = false; // ★ デバッグ用: ボスだけ出す
+	bool enemy4_spawned = false;  // 中ボス風ザコ（Enemy4）出現済みフラグ
 	//bool spawned_enemy1 = false;
 
 	bool spawned_enemy1_wave3 = false;

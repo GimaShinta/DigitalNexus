@@ -25,12 +25,17 @@ void Enemy2::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     // Enemy3 Zako3 と同系統の画像
-    zako3_images = rm->GetImages("Resource/Image/Object/Enemy/Zako3/anime_enemy41.png", 4, 4, 1, 104, 80);
-    if (!zako3_images.empty()) zako3_image = zako3_images[0];
+    images = rm->GetImages("Resource/Image/Object/Enemy/Zako1/anime_enemy09.png",6, 6, 1, 40, 32);
+
+    if (!images.empty()) {
+        image = images[0];          // 現在表示フレーム
+        animation_time = 0.0f;
+        animation_index = 0;
+    }
 
     // 既定はZako3ライク（下から弧）
     scale_min = 0.3f;
-    scale_max = 0.8f;
+    scale_max = 1.4f;
     appear_duration = 1.2f;
 
     start_pos = Vector2D(D_WIN_MAX_X / 2, D_WIN_MAX_Y + 50);
@@ -137,7 +142,7 @@ void Enemy2::Update(float delta_second)
         location.y -= 150.0f * sinf(t * DX_PI);  // 浮上の弧
 
         alpha = static_cast<int>(255 * ease_t);
-        scale = 5.0f - 4.2f * ease_t;
+        scale = scale_min + (scale_max - scale_min) * ease_t;
 
         if (t >= 1.0f) {
             SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
@@ -190,6 +195,7 @@ void Enemy2::Update(float delta_second)
         collision.hit_object_type.clear();
     }
 
+
     // 破壊処理（Enemy3と足並み）
     if (hp <= 0) {
         is_destroy = true;
@@ -203,20 +209,30 @@ void Enemy2::Update(float delta_second)
         Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
     }
 
+    if (!images.empty()) {
+        animation_time += delta_second;
+        if (animation_time >= 0.1f) {
+            animation_time -= 0.1f;
+            animation_index = (animation_index + 1) % static_cast<int>(images.size());
+            image = images[animation_index];
+        }
+    }
+
     EnemyBase::Update(delta_second);
 }
 
 void Enemy2::Draw(const Vector2D& screen_offset) const
 {
-    const int img = (zako3_image != -1) ? zako3_image : -1;
-
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-    DrawRotaGraphF(
-        location.x - screen_offset.x,
-        location.y - screen_offset.y,
-        scale, rotation, img, TRUE, zako3_flip
+    DrawRotaGraph(
+        static_cast<int>(location.x - screen_offset.x),
+        static_cast<int>(location.y - screen_offset.y),
+        scale,
+        rotation,
+        image,
+        TRUE
     );
-    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void Enemy2::Finalize() {}

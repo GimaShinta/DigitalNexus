@@ -1,15 +1,13 @@
 #pragma once
 #include "EnemyBase.h"
+#include "../../../Object/Bullet/EnemyBullet/EnemyBullet2.h"
 #include <vector>
 
-enum class Enemy4Mode {
-    Zako3,   // Enemy3(Zako3)互換
-};
-
-enum class Enemy4State {
-    Appearing,   // せり出し（手前へ寄る演出）
-    Floating,    // 小さく揺れて滞空
-    Leaving,     // 上へ退場
+enum class Enemy4Pattern {
+    Entrance,   // 画面手前から落ちる（スケール縮小＋フェードイン）
+    Battle,     // 不規則に動きながら激しめ弾幕
+    Retreat,   // 退場
+    Dead
 };
 
 class Enemy4 : public EnemyBase {
@@ -22,43 +20,69 @@ public:
     void Draw(const Vector2D& screen_offset) const override;
     void Finalize() override;
 
-    void SetAppearParams(const Vector2D& start_pos_param,
-        const Vector2D& end_pos_param,
-        float appear_time,
-        bool from_left);
-    void SetMode(Enemy4Mode m) { mode = m; }
-    void SetFlip(bool flip) { zako3_flip = flip; }
+    void SetPlayer(Player* p) { player = p; }
 
-    // Zako3と同じ“プレイヤーへ一発”
-    void ShootToPlayer(float speed);
+    // ★ 追加API：退場開始を外部から指示
+    void ForceRetreat();
 
 private:
-    // モード/ステート
-    Enemy4Mode  mode = Enemy4Mode::Zako3;
-    Enemy4State state = Enemy4State::Appearing;
+    // 内部更新
+    void UpdateEntrance(float dt);
+    void UpdateBattle(float dt);
+    void UpdateDead(float dt);
+    void UpdateRetreat(float dt);   // ★ 追加
 
-    // 時間系
-    float float_timer = 0.0f; // 浮遊・生存カウント
-    float appear_timer = 0.0f; // 登場アニメ
-    float appear_duration = 1.2f; // 到達まで
+    // 攻撃
+    void ShotFanBurst();      // 下方向広角を連射（3連）
+    void ShotFastSpiral();    // 高速スパイラル
+    void ShotAllRange();      // 全方位リング
+    void ShotCrossFan();      // 十字＋扇の合わせ技
 
-    // 見た目
-    float scale_min = 0.3f;
-    float scale_max = 0.8f;
-    float scale = 0.3f;
-    float rotation = 0.0f;
-    int   alpha = 0;
-    bool  zako3_flip = false;
-    bool  is_from_left = true;
+    // 落下演出：0..1 サチュレート / イージング
+    static inline float Saturate(float t) {
+        return (t < 0.0f) ? 0.0f : (t > 1.0f ? 1.0f : t);
+    }
+    static inline float EaseOutCubic(float t01) {
+        float u = 1.0f - t01;
+        return 1.0f - u * u * u;
+    }
+    static inline float Deg2Rad(float d) { return d * (DX_PI / 180.0f); }
 
-    // 位置
-    Vector2D start_pos = 0.0f;
+    // 表示
+    std::vector<int> images;
+    int   image_index = 0;
+    float anim_time = 0.0f;
+
+    // パターン管理
+    Enemy4Pattern pattern = Enemy4Pattern::Entrance;
+    float pattern_timer = 0.0f;
+
+    // 落下演出
+    Vector2D enter_start = 0.0f;
     Vector2D target_pos = 0.0f;
-    Vector2D base_loc = 0.0f;
+    float    enter_time = 1.6f;   // 1.6秒で収束
+    float    scale_from = 2.0f;   // かなり大きく
+    float    scale_to = 1.2f;   // 大きめをキープ
+    float    scale_draw = 1.2f;   // 現在スケール
+    int      alpha = 0;      // フェードイン
 
-    // 画像
-    std::vector<int> zako3_images;
-    int zako3_image = -1;
+    // バトル中の徘徊
+    Vector2D wander_target = 0.0f;
+    float    wander_timer = 0.0f;
+    float    next_wander = 1.2f;  // 1.0?1.8秒で更新（可変）
+    float    noise_t = 0.0f;
 
-    template <typename T> T my_min(T a, T b) { return (a < b) ? a : b; }
+    // 攻撃
+    float    shot_timer = 0.0f;
+    int      attack_mode = 0;      // 0..3 パターン
+
+    bool is_alive = false;
+
+    // 追加（public内）
+    void OnHitCollision(GameObjectBase* hit_object) override;
+
+    // 追加（privateでもOK）
+    float beam_damage_timer = 0.0f;
+
+    
 };

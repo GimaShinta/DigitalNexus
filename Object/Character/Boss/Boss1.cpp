@@ -481,9 +481,9 @@ void Boss1::OnHitCollision(GameObjectBase* hit_object)
     if (type == eObjectType::eBeam)
     {
         beam_damage_timer += 1.0f / 60.0f;
-        if (beam_damage_timer >= 0.35f)
+        if (beam_damage_timer >= 0.15f)
         {
-            hp -= 10;
+            hp -= 30;
             beam_damage_timer = 0.0f;
         }
     }
