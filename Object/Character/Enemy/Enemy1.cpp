@@ -13,7 +13,6 @@ Enemy1::Enemy1(const Vector2D& pos)
     location = pos;   // 初期位置を指定
 }
 
-
 void Enemy1::Initialize()
 {
     EnemyBase::Initialize();
@@ -151,11 +150,12 @@ void Enemy1::Update(float delta_second) {
 
         if (t >= 1.0f) {
             SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-            Shot(0.003f);
+            Shot(150.0f); // ←ここ、speedは 150.0f にすると視認しやすいです
             state = Enemy1State::Floating;
             base_location = location;
             float_timer = 0.0f;
         }
+
         break;
     }
 
@@ -231,14 +231,33 @@ void Enemy1::Draw(const Vector2D& screen_offset) const
 }
 
 void Enemy1::Finalize() {}
+//
+//void Enemy1::Shot(float speed)
+//{
+//    if (!player) return;
+//    Vector2D dir = player->GetLocation() - location;
+//    dir.Normalize();
+//    auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
+//    if (shot) shot->SetVelocity(dir * speed);
+//}
 
 void Enemy1::Shot(float speed)
 {
-    if (!player) return;
-    Vector2D dir = player->GetLocation() - location;
-    dir.Normalize();
-    auto shot = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet1>(location);
-    if (shot) shot->SetVelocity(dir * speed);
+    const int bullet_count = 3;
+    const float angles[bullet_count] = { -15.0f, 0.0f, 15.0f }; // 発射角（度）
+
+    for (int i = 0; i < bullet_count; ++i)
+    {
+        float angle_rad = angles[i] * DX_PI / 180.0f;
+        Vector2D dir(sinf(angle_rad), cosf(angle_rad)); // Y方向が下
+
+        auto bullet = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);
+        if (bullet)
+        {
+            bullet->SetVelocity(dir * speed);
+            bullet->SetWaveParameters(30.0f, 5.0f); // 振幅30px、周波数5
+        }
+    }
 }
 
 //void Enemy1::SetPattern(Enemy1Pattern new_pattern)

@@ -2,13 +2,13 @@
 #include "../CharacterBase.h"
 #include <algorithm>
 
-const int BULLET_MAX = 100; // ©‹@‚ª”­Ë‚·‚é’e‚ÌÅ‘å”
-const int PLAYER_SHIELD_MAX = 8; // ©‹@‚ÌƒV[ƒ‹ƒh‚ÌÅ‘å’l
-const int WEAPON_LV_MAX = 10; // •ŠíƒŒƒxƒ‹‚ÌÅ‘å’l
-const int PLAYER_SPEED_MAX = 450; // ©‹@‚Ì‘¬‚³‚ÌÅ‘å’l
-const float SHOT_INTERVAL = 0.07f; // 0.25•b‚²‚Æ‚ÉŒ‚‚Â
-const float BEAM_TIME = 5.0f; // 0.25•b‚²‚Æ‚ÉŒ‚‚Â
-const float beam_duration = 5.0f; // 5•bŠÔ
+const int BULLET_MAX = 100; // ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Ë‚ï¿½ï¿½ï¿½eï¿½ÌÅ‘å”
+const int PLAYER_SHIELD_MAX = 8; // ï¿½ï¿½ï¿½@ï¿½ÌƒVï¿½[ï¿½ï¿½ï¿½hï¿½ÌÅ‘ï¿½l
+const int WEAPON_LV_MAX = 10; // ï¿½ï¿½ï¿½íƒŒï¿½xï¿½ï¿½ï¿½ÌÅ‘ï¿½l
+const int PLAYER_SPEED_MAX = 450; // ï¿½ï¿½ï¿½@ï¿½Ì‘ï¿½ï¿½ï¿½ï¿½ÌÅ‘ï¿½l
+const float SHOT_INTERVAL = 0.07f; // 0.25ï¿½bï¿½ï¿½ï¿½Æ‚ÉŒï¿½ï¿½ï¿½
+const float BEAM_TIME = 5.0f; // 0.25ï¿½bï¿½ï¿½ï¿½Æ‚ÉŒï¿½ï¿½ï¿½
+const float beam_duration = 5.0f; // 5ï¿½bï¿½ï¿½
 
 enum
 {
@@ -28,9 +28,9 @@ class Player : public CharacterBase
 private:
 	enum class PlayerAnimState
 	{
-		Neutral,   // ³–Ê
-		TiltLeft,  // ¶ŒX‚«
-		TiltRight  // ‰EŒX‚«
+		Neutral,   // ï¿½ï¿½ï¿½ï¿½
+		TiltLeft,  // ï¿½ï¿½ï¿½Xï¿½ï¿½
+		TiltRight  // ï¿½Eï¿½Xï¿½ï¿½
 	};
 
 
@@ -57,9 +57,11 @@ private:
 	float damage_timer = 0.0f;
 	float shield_damage_timer = 0.0f;
 	bool is_shield_damage = false;
-	// ’Ç‰ÁFƒV[ƒ‹ƒh‚ÌØ‚è‘Ö‚¦’¼Œã1ƒtƒŒ[ƒ€ƒXƒLƒbƒv—pƒtƒ‰ƒO
+	// ï¿½Ç‰ï¿½ï¿½Fï¿½Vï¿½[ï¿½ï¿½ï¿½hï¿½ÌØ‚ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Xï¿½Lï¿½bï¿½vï¿½pï¿½tï¿½ï¿½ï¿½O
 	bool just_switched_to_second = false;
-	int powerd = 2;
+
+	int powerd = 3;
+
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;
@@ -67,8 +69,8 @@ private:
 	bool shield_secand = false;
 
 	bool is_dead_animation_playing = false;
-	float dead_animation_timer = 0.0f;    // ‰‰oÄ¶—pƒ^ƒCƒ}[
-	const float dead_animation_duration = 1.5f; // —áF2•bŠÔ‚Ì€‚Ì‰‰o
+	float dead_animation_timer = 0.0f;    // ï¿½ï¿½ï¿½oï¿½Äï¿½ï¿½pï¿½^ï¿½Cï¿½}ï¿½[
+	const float dead_animation_duration = 1.5f; // ï¿½ï¿½F2ï¿½bï¿½Ô‚Ìï¿½ï¿½Ì‰ï¿½ï¿½o
 
 private:
 	float charge = 0.0f;
@@ -88,7 +90,7 @@ private:
 
 	bool shot_stop = false;
 
-	// ‰æ‘œŒn
+	// ï¿½æ‘œï¿½n
 	std::vector<int> player_image_right;
 	std::vector<int> player_image_left;
 	std::vector<int> attack_player_image_right;
@@ -110,7 +112,7 @@ private:
 	int attack = NULL;
 	int defence = NULL;
 
-	float last_explosion_time = -999.0f; // ÅŒã‚É”š”­‚ğÄ¶‚µ‚½ŠÔ
+	float last_explosion_time = -999.0f; // ï¿½ÅŒï¿½É”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	float invincible_time = 0.0f;
 
 	bool game_over_player = false;
@@ -128,36 +130,36 @@ public:
 	~Player();
 
 public:
-	// ‰Šú‰»ˆ—
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void Initialize() override;
 
 	/// <summary>
-	/// XVˆ—
+	/// ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½
 	/// </summary>
-	/// <param name="delata_second">‚PƒtƒŒ[ƒ€“–‚½‚è‚ÌŠÔ</param>
+	/// <param name="delata_second">ï¿½Pï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½</param>
 	void Update(float delta_second) override;
 
 	/// <summary>
-	/// •`‰æˆ—
+	/// ï¿½`ï¿½æˆï¿½ï¿½
 	/// </summary>
 	/// <param name="screen_offset"></param>
 	void Draw(const Vector2D& screen_offset)const override;
 
-	// I—¹ˆ—
+	// ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void Finalize() override;
 
 public:
 	/// <summary>
-	/// ƒqƒbƒgˆ—
+	/// ï¿½qï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	/// </summary>
-	/// <param name="hit_object">“–‚½‚Á‚½‘Šè</param>
+	/// <param name="hit_object">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</param>
 	void OnHitCollision(GameObjectBase* hit_object) override;
 
 private:
 	/// <summary>
-	/// ˆÚ“®ˆ—
+	/// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½
 	/// </summary>
-	/// <param name="delta_second">‚PƒtƒŒ[ƒ€“–‚½‚è‚ÌŠÔ</param>
+	/// <param name="delta_second">ï¿½Pï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½</param>
 	void Movement(float delta_second) override;
 
 	void Shot(float delta_second);
@@ -190,7 +192,7 @@ public:
 	void SetLocation(const Vector2D& pos) { location = pos; }
 	void SetMobility(bool enable) { is_mobility = enable; }
 
-	void ForceNeutralAnim(bool enable); // ‹­§ƒjƒ…[ƒgƒ‰ƒ‹—p
+	void ForceNeutralAnim(bool enable); // ï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½p
 
 	void SetCanChangeType(bool enable);
 

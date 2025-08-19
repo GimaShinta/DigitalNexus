@@ -14,7 +14,7 @@ EnemyBullet2::~EnemyBullet2()
 void EnemyBullet2::Initialize()
 {
 	z_layer = 4;
-	box_size = 12;
+	box_size = 10;
 
 	// 当たり判定のオブジェクト設定
 	collision.is_blocking = true;
@@ -31,7 +31,7 @@ void EnemyBullet2::Initialize()
 	wave_frequency = 4.0f;  // 初期周波数
 
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-	image = rm->GetImages("Resource/Image/Object/Enemy/Enemy_Bullet/Blue/standard/anime81.png", 6, 6, 1, 24, 24)[0];
+	image = rm->GetImages("Resource/Image/Object/Enemy/Enemy_Bullet/Orange/standard/anime12.png", 4, 4, 1, 16, 16)[0];
 
 }
 

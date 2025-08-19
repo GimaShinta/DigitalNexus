@@ -30,7 +30,7 @@ void Exp::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
-    images = rm->GetImages("Resource/Image/Effect/pipo-gate01c.png", 15, 5, 3, 480, 480);
+    images = rm->GetImages("Resource/Image/Effect/Exp/pipo-nazoobj03b_480.png", 30, 5, 6, 480, 480);
     image = images[0];
 }
 
@@ -87,7 +87,7 @@ void Exp::Update(float delta)
         return;
     }
 
-    std::vector<int> animation_num = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+    std::vector<int> animation_num = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 };
     //フレームレートで時間を計測
     animation_time += delta;
     //8秒経ったら画像を切り替える
@@ -112,7 +112,7 @@ void Exp::Update(float delta)
 // 描画処理
 void Exp::Draw(const Vector2D& offset) const
 {
-    DrawRotaGraph(location.x, location.y, 0.07f, 0.0f, image, TRUE);
+    DrawRotaGraph(location.x, location.y, 0.7f, 0.0f, image, TRUE);
 }
 
 // 衝突処理

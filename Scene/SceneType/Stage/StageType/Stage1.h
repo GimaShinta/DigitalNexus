@@ -8,6 +8,7 @@ private:
 	class Zako* zako = nullptr;             // 雑魚敵その1
 	class EnemyShot1* e_shot1 = nullptr;      // 敵のショットタイプ1
 	class Boss1* boss = nullptr;
+	class Enemy4* enemy4 = nullptr;
 
 	float enemy_spawn_timer = 0.0f;     // 敵出現タイマー
 	bool zako_spawned = false;         // Zakoがすでに出現したかどうか
@@ -40,9 +41,19 @@ private:
 	float entry_effect_timer = 0.0f;
 
 	bool debug_boss_only = false; // ★ デバッグ用: ボスだけ出す
+	bool enemy4_spawned = false;  // 中ボス風ザコ（Enemy4）出現済みフラグ
 	//bool spawned_enemy1 = false;
 
 	bool spawned_enemy1_wave3 = false;
+
+	// === 追加: Enemy2 連続出現用（Wave2） ===
+	bool  e2_line_enabled = false;   // LineRise グループ出現を動かすフラグ
+	float e2_group_next = 10.2f;   // 次のグループ開始時刻（stage_timer基準）
+	int   e2_group_id = 0;       // 何グループ目か
+
+	float e2_single_next = 11.2f;   // Zako3Like 単発の次時刻（stage_timer基準）
+	float e2_group_interval = 3.5f;  // グループ間隔
+	float e2_single_interval = 1.6f; // 単発の間隔
 
 
 public:
