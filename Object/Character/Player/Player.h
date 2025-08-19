@@ -2,13 +2,13 @@
 #include "../CharacterBase.h"
 #include <algorithm>
 
-const int BULLET_MAX = 100; // ���@�����˂���e�̍ő吔
-const int PLAYER_SHIELD_MAX = 8; // ���@�̃V�[���h�̍ő�l
-const int WEAPON_LV_MAX = 10; // ���탌�x���̍ő�l
-const int PLAYER_SPEED_MAX = 450; // ���@�̑����̍ő�l
-const float SHOT_INTERVAL = 0.07f; // 0.25�b���ƂɌ���
-const float BEAM_TIME = 5.0f; // 0.25�b���ƂɌ���
-const float beam_duration = 5.0f; // 5�b��
+const int BULLET_MAX = 100; // 自機が発射する弾の最大数
+const int PLAYER_SHIELD_MAX = 8; // 自機のシールドの最大値
+const int WEAPON_LV_MAX = 10; // 武器レベルの最大値
+const int PLAYER_SPEED_MAX = 450; // 自機の速さの最大値
+const float SHOT_INTERVAL = 0.07f; // 0.25秒ごとに撃つ
+const float BEAM_TIME = 5.0f; // 0.25秒ごとに撃つ
+const float beam_duration = 5.0f; // 5秒間
 
 enum
 {
@@ -28,9 +28,9 @@ class Player : public CharacterBase
 private:
 	enum class PlayerAnimState
 	{
-		Neutral,   // ����
-		TiltLeft,  // ���X��
-		TiltRight  // �E�X��
+		Neutral,   // 正面
+		TiltLeft,  // 左傾き
+		TiltRight  // 右傾き
 	};
 
 
@@ -57,11 +57,9 @@ private:
 	float damage_timer = 0.0f;
 	float shield_damage_timer = 0.0f;
 	bool is_shield_damage = false;
-	// �ǉ��F�V�[���h�̐؂�ւ�����1�t���[���X�L�b�v�p�t���O
+	// 追加：シールドの切り替え直後1フレームスキップ用フラグ
 	bool just_switched_to_second = false;
-
 	int powerd = 3;
-
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;
@@ -69,8 +67,8 @@ private:
 	bool shield_secand = false;
 
 	bool is_dead_animation_playing = false;
-	float dead_animation_timer = 0.0f;    // ���o�Đ��p�^�C�}�[
-	const float dead_animation_duration = 1.5f; // ��F2�b�Ԃ̎��̉��o
+	float dead_animation_timer = 0.0f;    // 演出再生用タイマー
+	const float dead_animation_duration = 1.5f; // 例：2秒間の死の演出
 
 private:
 	float charge = 0.0f;
@@ -90,7 +88,7 @@ private:
 
 	bool shot_stop = false;
 
-	// �摜�n
+	// 画像系
 	std::vector<int> player_image_right;
 	std::vector<int> player_image_left;
 	std::vector<int> attack_player_image_right;
@@ -112,7 +110,7 @@ private:
 	int attack = NULL;
 	int defence = NULL;
 
-	float last_explosion_time = -999.0f; // �Ō�ɔ������Đ���������
+	float last_explosion_time = -999.0f; // 最後に爆発を再生した時間
 	float invincible_time = 0.0f;
 
 	bool game_over_player = false;
@@ -130,36 +128,36 @@ public:
 	~Player();
 
 public:
-	// ����������
+	// 初期化処理
 	void Initialize() override;
 
 	/// <summary>
-	/// �X�V����
+	/// 更新処理
 	/// </summary>
-	/// <param name="delata_second">�P�t���[��������̎���</param>
+	/// <param name="delata_second">１フレーム当たりの時間</param>
 	void Update(float delta_second) override;
 
 	/// <summary>
-	/// �`�揈��
+	/// 描画処理
 	/// </summary>
 	/// <param name="screen_offset"></param>
 	void Draw(const Vector2D& screen_offset)const override;
 
-	// �I��������
+	// 終了時処理
 	void Finalize() override;
 
 public:
 	/// <summary>
-	/// �q�b�g������
+	/// ヒット時処理
 	/// </summary>
-	/// <param name="hit_object">������������</param>
+	/// <param name="hit_object">当たった相手</param>
 	void OnHitCollision(GameObjectBase* hit_object) override;
 
 private:
 	/// <summary>
-	/// �ړ�����
+	/// 移動処理
 	/// </summary>
-	/// <param name="delta_second">�P�t���[��������̎���</param>
+	/// <param name="delta_second">１フレーム当たりの時間</param>
 	void Movement(float delta_second) override;
 
 	void Shot(float delta_second);
@@ -192,7 +190,7 @@ public:
 	void SetLocation(const Vector2D& pos) { location = pos; }
 	void SetMobility(bool enable) { is_mobility = enable; }
 
-	void ForceNeutralAnim(bool enable); // �����j���[�g�����p
+	void ForceNeutralAnim(bool enable); // 強制ニュートラル用
 
 	void SetCanChangeType(bool enable);
 
