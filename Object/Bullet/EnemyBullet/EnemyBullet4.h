@@ -1,7 +1,7 @@
 #pragma once
-#include "../../GameObjectBase.h"
+#include "EnemyBulletBase.h"
 class EnemyBullet4 :
-	public GameObjectBase
+	public EnemyBulletBase
 {
 private:
 	Vector2D suck_center;

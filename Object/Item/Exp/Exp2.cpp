@@ -22,7 +22,7 @@ void Exp2::Initialize()
     collision.hit_object_type.push_back(eObjectType::ePlayer); // プレイヤーと衝突判定
 
     box_size = 6.0f;             // 経験値アイテムのサイズ（半径）
-    z_layer = 1;                 // 描画レイヤー（前面に表示）
+    z_layer = 2;                 // 描画レイヤー（前面に表示）
 
     is_mobility = true;          // 当たり判定で移動判定有効
     is_attracting = false;       // 吸収モードOFFで開始
@@ -112,7 +112,7 @@ void Exp2::Update(float delta)
 // 描画処理
 void Exp2::Draw(const Vector2D& offset) const
 {
-    DrawRotaGraph(location.x, location.y, 0.7f, 0.0f, image, TRUE);
+    DrawRotaGraph(location.x, location.y, 1.5f, 0.0f, image, TRUE);
 }
 
 // 衝突処理

@@ -30,7 +30,7 @@ void Exp::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
-    images = rm->GetImages("Resource/Image/Effect/Exp/pipo-nazoobj03b_480.png", 30, 5, 6, 480, 480);
+    images = rm->GetImages("Resource/Image/Effect/Exp/exp_s/pipo-nazoobj03b_192.png", 30, 5, 6, 192, 192);
     image = images[0];
 }
 
@@ -112,7 +112,7 @@ void Exp::Update(float delta)
 // •`‰æˆ—
 void Exp::Draw(const Vector2D& offset) const
 {
-    DrawRotaGraph(location.x, location.y, 0.7f, 0.0f, image, TRUE);
+    DrawRotaGraph(location.x, location.y, 1.5f, 0.0f, image, TRUE);
 }
 
 // Õ“Ëˆ—

@@ -1,7 +1,7 @@
 #pragma once
-#include "../../GameObjectBase.h"
+#include "EnemyBulletBase.h"
 class EnemyBullet6 :
-    public GameObjectBase
+    public EnemyBulletBase
 {
 private:
 	enum Phase { MoveIn, Stop, Homing, Straight };

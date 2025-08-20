@@ -1,7 +1,7 @@
 #pragma once
-#include "../../GameObjectBase.h"
+#include "EnemyBulletBase.h"
 class EnemyBullet3 :
-    public GameObjectBase
+    public EnemyBulletBase
 {
 private:
 	int attack_pattrn = 0;

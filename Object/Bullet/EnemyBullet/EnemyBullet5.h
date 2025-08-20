@@ -1,6 +1,6 @@
 #pragma once
-#include "../../GameObjectBase.h"
-class EnemyBullet5 : public GameObjectBase
+#include "EnemyBulletBase.h"
+class EnemyBullet5 : public EnemyBulletBase
 {
 private:
 	Vector2D base_velocity = { 0.0f, 0.0f };  // 進行方向（通常は真下など）
