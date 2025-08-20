@@ -7,6 +7,7 @@
 #include "../../../Object/GameObjectManager.h"
 #include "../../../Object/Bullet/EnemyBullet/EnemyBullet1.h"
 
+
 Enemy2::Enemy2() {}
 Enemy2::~Enemy2() {}
 
@@ -94,8 +95,15 @@ void Enemy2::SetAppearParams(const Vector2D& s, const Vector2D& e, float time, b
 
 void Enemy2::ShootToPlayer(float speed)
 {
+    // 到達時に1発だけ撃つ（Enemy3/Zako3相当）
+    SEManager* am = Singleton<SEManager>::GetInstance();
+ 
     GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
     GameObjectBase* shot = gm->CreateObject<EnemyBullet1>(location);
+
+    am->PlaySE(SE_NAME::EnemyShot);
+    am->ChangeSEVolume(SE_NAME::EnemyShot, 90);
+
     if (shot && player)
     {
         Vector2D dir = player->GetLocation() - location;
@@ -106,7 +114,6 @@ void Enemy2::ShootToPlayer(float speed)
 
 void Enemy2::Shot(float /*delta_second*/)
 {
-    // 到達時に1発だけ撃つ（Enemy3/Zako3相当）
     ShootToPlayer(0.003f);
 }
 
@@ -203,6 +210,8 @@ void Enemy2::Update(float delta_second)
         SEManager* sm = Singleton<SEManager>::GetInstance();
         EffectManager* manager = Singleton<EffectManager>::GetInstance();
         sm->PlaySE(SE_NAME::Destroy);
+        sm->PlaySE(SE_NAME::Dead1);
+        Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 80);
         int anim_id = manager->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
         manager->SetScale(anim_id, 0.5f);
         Singleton<ScoreData>::GetInstance()->AddScore(500);

@@ -7,7 +7,7 @@
 #include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
 
-Player::Player() : is_shot(false), life(4), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
 {
 }
 
@@ -415,6 +415,15 @@ void Player::Shot(float delta_second)
 			EffectManager* em =  Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 0.6f);
+	
+			am->PlaySE(SE_NAME::Code);
+			am->ChangeSEVolume(SE_NAME::Code, 32);
+			am->PlaySE(SE_NAME::Code2);
+			am->ChangeSEVolume(SE_NAME::Code2, 50);
+			am->PlaySE(SE_NAME::Robo1);
+			am->ChangeSEVolume(SE_NAME::Robo1, 60);
+			am->PlaySE(SE_NAME::Noise);
+			am->ChangeSEVolume(SE_NAME::Noise, 50);
 		}
 		else
 		{
@@ -432,6 +441,15 @@ void Player::Shot(float delta_second)
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 0.6f);
+
+			am->PlaySE(SE_NAME::Code);
+			am->ChangeSEVolume(SE_NAME::Code, 30);
+			am->PlaySE(SE_NAME::Code2);
+			am->ChangeSEVolume(SE_NAME::Code2, 50);
+			am->PlaySE(SE_NAME::Robo3);
+			am->ChangeSEVolume(SE_NAME::Robo3, 60);
+			am->PlaySE(SE_NAME::Noise);
+			am->ChangeSEVolume(SE_NAME::Noise, 50);
 		}
 	}
 

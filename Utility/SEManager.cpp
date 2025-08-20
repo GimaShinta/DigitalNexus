@@ -20,6 +20,13 @@ void SEManager::LoadSE()
 	se_handles[SE_NAME::Get] = rm->GetSounds("Resource/sound/se/effect/audiostock_890909.mp3");
 	se_handles[SE_NAME::Get2] = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
 	se_handles[SE_NAME::PlayerBeam] = rm->GetSounds("Resource/sound/se/effect/audiostock_1244545.mp3");
+	se_handles[SE_NAME::Robo1] = rm->GetSounds("Resource/sound/se/effect/robo_se.mp3");
+	se_handles[SE_NAME::Robo2] = rm->GetSounds("Resource/sound/se/effect/robo2_se.mp3");
+	se_handles[SE_NAME::Robo3] = rm->GetSounds("Resource/sound/se/effect/robo3_se.mp3");
+	se_handles[SE_NAME::Code] = rm->GetSounds("Resource/sound/se/effect/code_se.mp3");
+	se_handles[SE_NAME::Code2] = rm->GetSounds("Resource/sound/se/effect/code2_se.mp3");
+	se_handles[SE_NAME::Noise] = rm->GetSounds("Resource/sound/se/effect/noise_se.mp3");
+	se_handles[SE_NAME::Dead1] = rm->GetSounds("Resource/sound/se/effect/dead_se.mp3");
 }
 
 // SE�̍폜

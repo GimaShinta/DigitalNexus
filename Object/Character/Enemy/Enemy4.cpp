@@ -197,6 +197,8 @@ void Enemy4::UpdateRetreat(float dt) {
 void Enemy4::UpdateDead(float /*dt*/) {
     Singleton<EffectManager>::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.06f, false);
     Singleton<SEManager>::GetInstance()->PlaySE(SE_NAME::Destroy);
+    Singleton<SEManager>::GetInstance()->PlaySE(SE_NAME::Dead1);
+    Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 80);
     Singleton<ScoreData>::GetInstance()->AddScore(1500);
     is_destroy = true;
 }

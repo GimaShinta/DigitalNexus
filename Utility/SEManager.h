@@ -17,7 +17,14 @@ enum class SE_NAME
 	EnemyBeam,
 	Get,
 	Get2,
-	PlayerBeam
+	PlayerBeam,
+	Robo1,
+	Robo2,
+	Robo3,
+	Code,
+	Code2,
+	Noise,
+	Dead1
 	// •K—v‚É‰ž‚¶‚Ä’Ç‰Á
 };
 
