@@ -22,6 +22,7 @@ public:
 
 private:
     void Shot(float delta_second);
+    static constexpr int BOSS2_MAX_HP = 4000; // © ’Ç‰ÁiInitialize‚Ì4000‚Æˆê’vj
 
     bool is_alive = true;
     float shot_timer = 0.0f;
