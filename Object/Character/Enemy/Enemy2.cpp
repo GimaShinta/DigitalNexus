@@ -233,6 +233,8 @@ void Enemy2::Update(float delta_second)
 void Enemy2::Draw(const Vector2D& screen_offset) const
 {
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
     DrawRotaGraph(
         static_cast<int>(location.x - screen_offset.x),
         static_cast<int>(location.y - screen_offset.y),

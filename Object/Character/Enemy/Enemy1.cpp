@@ -227,9 +227,13 @@ void Enemy1::Update(float delta_second) {
 
 void Enemy1::Draw(const Vector2D& screen_offset) const
 {
+
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
     DrawRotaGraph(location.x, location.y, scale, 0.0f, image, TRUE);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 }
 
 void Enemy1::Finalize() {}

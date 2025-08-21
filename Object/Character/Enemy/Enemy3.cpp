@@ -339,6 +339,8 @@ void Enemy3::Update(float delta_second)
 void Enemy3::Draw(const Vector2D& screen_offset) const
 {
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
     DrawRotaGraph(location.x, location.y, scale, rotation, image, TRUE);
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }

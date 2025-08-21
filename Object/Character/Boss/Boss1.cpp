@@ -416,6 +416,8 @@ void Boss1::Draw(const Vector2D& screen_offset) const
         if (draw_alpha < 180) draw_alpha = 180;
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, draw_alpha);
+        if (player && player->GetNowType() == PlayerType::OmegaCode)
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
         DrawRotaGraph((int)location.x, (int)location.y, 3.5f, 0.0f, image, TRUE);
 
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
