@@ -454,9 +454,10 @@ void Boss3::Draw(const Vector2D& screen_offset) const
 	float notch_x = x + current_bar_width / 3;
 	DrawBox(notch_x - 1, y - 2, notch_x + 1, y + bar_height + 2, GetColor(255, 255, 0), TRUE);
 
-	// ボスからプレイヤーまでの直線
-	if(player)
-		DrawLine(location.x, location.y, player->GetLocation().x, player->GetLocation().y, GetColor(255, 255, 255), TRUE);
+	//// ボスからプレイヤーまでの直線
+	//if(player)
+	//	DrawLine(location.x, location.y, player->GetLocation().x, player->GetLocation().y, GetColor(255, 255, 255), TRUE);
+
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
@@ -754,6 +755,10 @@ void Boss3::Shot(float delta_second)
 
 void Boss3::DrawBoss3(const Vector2D position) const
 {
+
+	if (player && player->GetNowType() == PlayerType::OmegaCode && is_crashing == false)
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
+
 	// 本体
 	DrawRotaGraph(position.x, position.y, image_size, angle, Boss3_image[2], TRUE);
 

@@ -20,7 +20,7 @@ void Player::Initialize()
 {
 	z_layer = 5;
 	velocity = 0;
-	box_size = 10;
+	box_size = 4;
 
 
 	// 当たり判定のオブジェクト設定
@@ -320,33 +320,17 @@ void Player::Movement(float delta_second)
 	if (force_neutral_anim)
 	{
 		anim_state = PlayerAnimState::Neutral;
-		if (now_type == PlayerType::AlphaCode)
-			box_size = Vector2D(10.0f, 10.0f);
-		else
-			box_size = Vector2D(12.0f, 25.0f);
 	}
 	else
 	{
 		if (input_dir.x > 0.1f) {
 			anim_state = PlayerAnimState::TiltRight;
-			if (now_type == PlayerType::AlphaCode)
-				box_size = Vector2D(7.0f, 10.0f);
-			else
-				box_size = Vector2D(9.0f, 25.0f);
 		}
 		else if (input_dir.x < -0.1f) {
 			anim_state = PlayerAnimState::TiltLeft;
-			if (now_type == PlayerType::AlphaCode)
-				box_size = Vector2D(7.0f, 10.0f);
-			else
-				box_size = Vector2D(9.0f, 25.0f);
 		}
 		else {
 			anim_state = PlayerAnimState::Neutral;
-			if (now_type == PlayerType::AlphaCode)
-				box_size = Vector2D(10.0f, 10.0f);
-			else
-				box_size = Vector2D(12.0f, 25.0f);
 		}
 	}
 
@@ -410,7 +394,7 @@ void Player::Shot(float delta_second)
 
 			nozzle_type = defence_nozzles;
 
-			shot_interval = 0.15f;
+			shot_interval = 0.10f;
 
 			EffectManager* em =  Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
@@ -754,11 +738,11 @@ void Player::GenarateBullet()
 			}
 			else // powerd >= 3
 			{
-				angle_infos.push_back({ 0.0f, { -10.0f, 0.0f, +10.0f } });  // 中央3発
-				angle_infos.push_back({ -10.0f, { -5.0f, +5.0f } });      // 左30°
-				angle_infos.push_back({ 10.0f, { -5.0f, +5.0f } });      // 右30°
-				angle_infos.push_back({ -20.0f, { 0.0f } });                // 左60° 1発
-				angle_infos.push_back({ 20.0f, { 0.0f } });                // 右60° 1発
+				angle_infos.push_back({ 0.0f, { -15.0f, 0.0f, +15.0f } });  // 中央3発
+				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } });      // 左30°
+				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } });      // 右30°
+				angle_infos.push_back({ -30.0f, { 0.0f } });                // 左60° 1発
+				angle_infos.push_back({ 30.0f, { 0.0f } });                // 右60° 1発
 			}
 
 			for (const auto& info : angle_infos)
