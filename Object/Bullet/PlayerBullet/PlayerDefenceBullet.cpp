@@ -25,7 +25,8 @@ void PlayerDefenceBullet::Initialize()
 	is_mobility = true;
 
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-	image = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88)[0];
+	//image = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88)[0];
+	image = rm->GetImages("Resource/Image/Object/Enemy/Enemy_Bullet/Orange/transparent/anime111.png", 4, 4, 1, 24, 32)[0];
 
 }
 
@@ -44,7 +45,7 @@ void PlayerDefenceBullet::SetDirection(float degree)
 
 void PlayerDefenceBullet::Draw(const Vector2D& screen_offset) const
 {
-	DrawRotaGraphF(location.x, location.y, 1.0f, angle_deg * DX_PI / 180.0f, image, TRUE);
+	DrawRotaGraphF(location.x, location.y, 1.5f, DX_PI / 1.0f, image, TRUE);
 }
 
 void PlayerDefenceBullet::OnHitCollision(GameObjectBase* hit_object)

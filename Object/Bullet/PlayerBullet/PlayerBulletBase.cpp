@@ -26,7 +26,7 @@ void PlayerBulletBase::Update(float delta_second)
 
 void PlayerBulletBase::Draw(const Vector2D& screen_offset) const
 {
-	DrawRotaGraph(location.x, location.y, 1.1f, 0.0f, image, TRUE);
+	DrawRotaGraph(location.x, location.y, 1.5f, 0.0f, image, TRUE);
 }
 
 void PlayerBulletBase::Finalize()
