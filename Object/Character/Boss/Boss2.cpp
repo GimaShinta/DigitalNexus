@@ -108,10 +108,12 @@ void Boss2::Update(float delta_second)
     __super::Update(delta_second);
 }
 
+// Boss2.cpp
 void Boss2::Draw(const Vector2D& screen_offset) const
 {
     if (image == -1) return;
 
+    // 本体
     float scale = 4.5f;
     DrawRotaGraph(location.x, location.y, scale, 0.0f, image, TRUE);
 
@@ -121,6 +123,34 @@ void Boss2::Draw(const Vector2D& screen_offset) const
         DrawCircle((int)location.x, (int)location.y, 60, GetColor(255, 255, 255), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
+
+    // ===== HPバー（Boss1準拠の簡易版） =====
+    float hp_ratio = (float)hp / (float)BOSS2_MAX_HP;
+    if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+
+    const int bar_width = 640;
+    const int bar_height = 6;
+    const int bar_x = (D_WIN_MAX_X - bar_width) / 2;
+    const int bar_y = 20;
+
+    float wave_offset = sinf(GetNowCount() * 0.01f) * 1.0f;
+
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);                  // 透明度
+    DrawBox(bar_x, bar_y + wave_offset,
+            bar_x + bar_width, bar_y + bar_height + wave_offset,
+            GetColor(50, 50, 50), TRUE);                        // 背景
+
+    DrawBox(bar_x, bar_y + wave_offset,
+            bar_x + (int)(bar_width * hp_ratio),
+            bar_y + bar_height + wave_offset,
+            GetColor(240, 80, 80), TRUE);                       // 本体
+
+    DrawBox(bar_x, bar_y + wave_offset,
+            bar_x + bar_width, bar_y + bar_height + wave_offset,
+            GetColor(180, 180, 180), FALSE);                    // 枠
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void Boss2::Finalize()
