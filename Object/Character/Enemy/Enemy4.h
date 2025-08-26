@@ -4,9 +4,9 @@
 #include <vector>
 
 enum class Enemy4Pattern {
-    Entrance,   // 画面手前から落ちる（スケール縮小＋フェードイン）
-    Battle,     // 不規則に動きながら激しめ弾幕
-    Retreat,   // 退場
+    Entrance,
+    Battle,
+    Retreat,
     Dead
 };
 
@@ -21,68 +21,66 @@ public:
     void Finalize() override;
 
     void SetPlayer(Player* p) { player = p; }
-
-    // ★ 追加API：退場開始を外部から指示
     void ForceRetreat();
 
 private:
     // 内部更新
     void UpdateEntrance(float dt);
     void UpdateBattle(float dt);
+    void UpdateRetreat(float dt);
     void UpdateDead(float dt);
-    void UpdateRetreat(float dt);   // ★ 追加
 
-    // 攻撃
-    void ShotFanBurst();      // 下方向広角を連射（3連）
-    void ShotFastSpiral();    // 高速スパイラル
-    void ShotAllRange();      // 全方位リング
-    void ShotCrossFan();      // 十字＋扇の合わせ技
+    // 4Way 系のみ（視認性重視）
+    void Shot4WayAim();             // 狙い基準の4Way
+    void Shot4WayWide();            // ちょい広め4Way
+    void Shot4WayStaggeredBurst();  // 交互オフセットの小バースト4Way
 
-    // 落下演出：0..1 サチュレート / イージング
-    static inline float Saturate(float t) {
-        return (t < 0.0f) ? 0.0f : (t > 1.0f ? 1.0f : t);
-    }
-    static inline float EaseOutCubic(float t01) {
-        float u = 1.0f - t01;
-        return 1.0f - u * u * u;
-    }
+
+    // ユーティリティ
+    static inline float Saturate(float t) { return t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t); }
+    static inline float EaseOutCubic(float t01) { float u = 1.0f - t01; return 1.0f - u * u * u; }
     static inline float Deg2Rad(float d) { return d * (DX_PI / 180.0f); }
+    bool CanShoot() const;        // 画面内に居る＆十分フェードイン済み？
 
-    // 表示
+    // 表示/状態
     std::vector<int> images;
     int   image_index = 0;
     float anim_time = 0.0f;
 
-    // パターン管理
     Enemy4Pattern pattern = Enemy4Pattern::Entrance;
     float pattern_timer = 0.0f;
 
-    // 落下演出
     Vector2D enter_start = 0.0f;
     Vector2D target_pos = 0.0f;
-    float    enter_time = 1.6f;   // 1.6秒で収束
-    float    scale_from = 2.0f;   // かなり大きく
-    float    scale_to = 1.2f;   // 大きめをキープ
-    float    scale_draw = 1.2f;   // 現在スケール
-    int      alpha = 0;      // フェードイン
+    float    enter_time = 1.6f;
+    float    scale_from = 4.0f;
+    float    scale_to = 3.0f;
+    float    scale_draw = 3.0f;
+    int      alpha = 0;
 
-    // バトル中の徘徊
+    // 徘徊
     Vector2D wander_target = 0.0f;
     float    wander_timer = 0.0f;
-    float    next_wander = 1.2f;  // 1.0?1.8秒で更新（可変）
+    float    next_wander = 1.2f;
     float    noise_t = 0.0f;
 
     // 攻撃
     float    shot_timer = 0.0f;
-    int      attack_mode = 0;      // 0..3 パターン
+    int      attack_mode = 0; // 0..2 の 3Wayパターンを回す
 
-    bool is_alive = false;
+    bool     is_alive = false;
 
-    // 追加（public内）
+    // 被弾（Beamの継続ダメージ調整）
     void OnHitCollision(GameObjectBase* hit_object) override;
-
-    // 追加（privateでもOK）
     float beam_damage_timer = 0.0f;
 
-    
+    // 難易度
+    bool easy_mode = false;
+
+    // 可視化補助：発射フラッシュ（短時間）
+    mutable float shot_flash_t = 0.0f;
+
+public:
+    void SetEasyMode(bool on);
+    bool IsCleared() const;
 };
