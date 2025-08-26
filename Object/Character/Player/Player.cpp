@@ -420,7 +420,7 @@ void Player::Shot(float delta_second)
 
 			nozzle_type = attack_nozzles;
 
-			shot_interval = 0.07f;
+			shot_interval = 0.08f;
 
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
@@ -696,24 +696,24 @@ void Player::GenarateBullet()
 			// è„ï˚å¸Ç…ê∂ê¨
 			if (powerd <= 1)
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 15, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 15, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
 			}
 			else if (powerd == 2)
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 40, location.y));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 15, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 15, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 40, location.y));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 38, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 38, location.y + D_OBJECT_SIZE));
 			}
 			else
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 65, location.y + D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 40, location.y));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 15, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 15, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 40, location.y));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 65, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 63, location.y + (D_OBJECT_SIZE * 2)));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 38, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 38, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 63, location.y + (D_OBJECT_SIZE * 2)));
 			}
 		}
 		else
