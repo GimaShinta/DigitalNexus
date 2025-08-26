@@ -56,6 +56,29 @@ private:
 	float e2_single_interval = 1.6f; // 単発の間隔
 
 
+	// 既存の private: 節のどこか（他メンバの下でもOK）に追記
+// ===== 初心者向けフロー・スケジューラ =====
+	float intro_delay_sec = 6.0f;   // 最初の敵は6秒後に出現（早出しバグ封じ）
+	float wave1_duration_sec = 18.0f;  // Wave1 の最大持続
+	float miniboss_timeout_sec = 16.0f;  // 中ボスの強制退場まで
+
+	bool  wave1_started = false;
+	bool  wave1_done = false;
+
+	bool  miniboss_spawned = false;
+	bool  miniboss_done = false;
+	float miniboss_start_t = 0.0f;
+
+	bool  postwave_started = false;
+	bool  postwave_done = false;
+
+	// Wave1 内部
+	int   wave1_batch = 0;     // 0..2（3バッチ）
+	int   wave1_count = 0;     // バッチ内の出現カウント
+	float wave1_next_at = 0.0f;  // 次の出現予定時刻（stage_timer基準）
+
+
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage1(Player* player);     // プレイヤー情報を引数に取るステージ初期化

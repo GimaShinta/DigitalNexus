@@ -352,304 +352,181 @@ void Stage1::DrawScrollBackground() const
 //}
 
 
-void Stage1::EnemyAppearance(float delta_second)
+void Stage1::EnemyAppearance(float dt)
 {
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-    enemy_spawn_timer += delta_second;
 
-    if (debug_boss_only)
-    {
-        if (!boss_spawned)
-        {
-            const float CENTER_X = D_WIN_MAX_X / 2;
-            boss = objm->CreateObject<Boss1>(Vector2D(CENTER_X, -200));
-            boss->SetPattern(BossPattern::Entrance);
-            boss->SetPlayer(player);
+    // デバッグ：ボスのみ
+    if (debug_boss_only) {
+        if (!boss_spawned) {
+            const float CX = D_WIN_MAX_X * 0.5f;
+            boss = objm->CreateObject<Boss1>(Vector2D(CX, -200));
+            if (boss) {
+                boss->SetPattern(BossPattern::Entrance);
+                boss->SetPlayer(player);
+            }
             boss_spawned = true;
         }
         return;
     }
-    if (boss != nullptr) return;
 
-    const float CENTER_X = D_WIN_MAX_X / 2;
-    const float CENTER_Y = D_WIN_MAX_Y / 2;
+    // 6秒までは一切スポーンしない（「早く出る」バグ封じ）
+    if (stage_timer < intro_delay_sec) return;
 
-    // ==== Wave1 : Enemy1 波状突入 ====
-    if (stage_timer < 10.0f)
-    {
-        const int enemy_count = 6;
-        const float spacing_x = 100.0f;
-        const float appear_y = -80.0f;
-        const float target_y = 150.0f;
+    const float CX = D_WIN_MAX_X * 0.5f;
+    const float appear_y = -80.0f;
 
-        if (!spawning)
-        {
-            spawning = true;
-            spawn_index = 0;
-            spawn_delay_timer = 0.0f;
+    // ─────────────────────────────────────────
+    // Wave1：Enemy1 を 3バッチ × 6体（やさしめ）
+    // 0.30秒おきに1体 → 2秒休み → 次バッチ
+    // ─────────────────────────────────────────
+    if (!wave1_done) {
+        if (!wave1_started) {
+            wave1_started = true;
+            wave1_batch = 0;
+            wave1_count = 0;
+            wave1_next_at = stage_timer;  // すぐ最初の1体を出す
         }
 
-        if (spawning)
-        {
-            spawn_delay_timer -= delta_second;
-            if (spawn_delay_timer <= 0.0f && spawn_index < enemy_count)
-            {
-                float offset_x = (spawn_index - (enemy_count - 1) / 2.0f) * spacing_x;
-                Vector2D start_pos(CENTER_X + offset_x, appear_y - (spawn_index % 2) * 50);
-                Vector2D target_pos(CENTER_X + offset_x, target_y + (spawn_index % 2) * 40);
+        if (stage_timer >= wave1_next_at && wave1_batch < 3) {
+            const int   ENEMY_PER_BATCH = 6;
+            const float spacing_x = 90.0f;
+            const float target_y = 160.0f + wave1_batch * 28.0f; // バッチ毎に少し下げる
+            const float appear_time = 1.0f; // ゆっくり降りる
 
-                auto zako = objm->CreateObject<Enemy1>(start_pos);
-                if (zako)
-                {
-                    float appear_time = 0.8f + GetRand(10) * 0.05f;
-                    zako->SetAppearParams(start_pos, target_pos, appear_time);
-                    zako->SetPlayer(player);
-                }
-                spawn_index++;
-                spawn_delay_timer = 0.4f;
+            float base_x = CX - (spacing_x * (ENEMY_PER_BATCH - 1) * 0.5f);
+            int i = wave1_count;
+
+            Vector2D start_pos(base_x + i * spacing_x, appear_y);
+            Vector2D target_pos(base_x + i * spacing_x, target_y);
+
+            auto e1 = objm->CreateObject<Enemy1>(start_pos);
+            if (e1) {
+                e1->SetAppearParams(start_pos, target_pos, appear_time);
+                e1->SetPlayer(player);
             }
-            if (spawn_index >= enemy_count) spawning = false;
+
+            wave1_count++;
+            if (wave1_count < ENEMY_PER_BATCH) {
+                wave1_next_at = stage_timer + 0.30f;  // 0.30秒おき
+            }
+            else {
+                wave1_batch++;
+                wave1_count = 0;
+                wave1_next_at = stage_timer + 2.0f;   // バッチ間は2秒休み
+            }
         }
+
+        if (wave1_batch >= 3 || stage_timer >= intro_delay_sec + wave1_duration_sec) {
+            wave1_done = true;
+        }
+
+        if (!wave1_done) return; // Wave1 継続中
     }
-    // ==== Wave2 : Enemy2 連続 ====
-    else if (stage_timer < 25.0f)
-    {
-        if (!e2_line_enabled) {
-            e2_line_enabled = true;
+
+    // ─────────────────────────────────────────
+    // 中ボス（Enemy4 Easy）
+    // 倒される or 16秒経過で強制退場して次へ
+    // ─────────────────────────────────────────
+    if (!miniboss_done) {
+        if (!miniboss_spawned) {
+            auto e4 = objm->CreateObject<Enemy4>(Vector2D(CX, -240));
+            if (e4) {
+                e4->SetPlayer(player);
+                e4->SetEasyMode(true);  // ← ここが今回のポイント
+            }
+            enemy4 = e4;
+            miniboss_spawned = true;
+            miniboss_start_t = stage_timer;
+            return; // 生成フレームは終了
         }
 
-        enum class ClusterSide { Left, Right, Center };
-        enum class LayoutPattern { SnakeHigh, StairsLow };
-
-        auto pickCluster = [&](int group_id)->ClusterSide {
-            switch (group_id % 6) {
-            case 0: return ClusterSide::Center;
-            case 1: return ClusterSide::Left;
-            case 2: return ClusterSide::Right;
-            case 3: return ClusterSide::Center;
-            case 4: return ClusterSide::Right;
-            default:return ClusterSide::Left;
-            }
-            };
-        auto pickPattern = [&](int group_id)->LayoutPattern {
-            switch (group_id % 4) {
-            case 2:  return LayoutPattern::StairsLow;
-            default: return LayoutPattern::SnakeHigh;
-            }
-            };
-
-        const float ANCHOR_LEFT = CENTER_X - 100.0f;
-        const float ANCHOR_RIGHT = CENTER_X + 100.0f;
-        const float ANCHOR_CENTER = CENTER_X;
-
-        if (e2_line_enabled && stage_timer >= e2_group_next) {
-            const int   group_size = 9;
-            const float line_interval = 0.14f;
-            const float appear_time = 1.00f;
-            const float spacing_x = 50.0f;
-            const float appear_y = D_WIN_MAX_Y + 100.0f;
-
-            ClusterSide   side = pickCluster(e2_group_id);
-            LayoutPattern pattern = pickPattern(e2_group_id);
-
-            const float base_target_y =
-                (pattern == LayoutPattern::SnakeHigh) ? (D_WIN_MAX_Y / 2.0f - 120.0f)
-                : (D_WIN_MAX_Y / 2.0f + 40.0f);
-
-            float anchor_x =
-                (side == ClusterSide::Left) ? ANCHOR_LEFT :
-                (side == ClusterSide::Right) ? ANCHOR_RIGHT : ANCHOR_CENTER;
-
-            float base_x = anchor_x - (spacing_x * (group_size - 1) * 0.5f);
-
-            auto patternOffset = [&](int i)->Vector2D {
-                float c = i - (group_size - 1) * 0.5f;
-                switch (pattern) {
-                case LayoutPattern::SnakeHigh: {
-                    float ox = 18.0f * sinf(c * 0.9f);
-                    float oy = -10.0f * i + 48.0f * sinf(c * 0.9f + DX_PI / 3);
-                    return Vector2D(ox, oy);
-                }
-                case LayoutPattern::StairsLow: {
-                    float ox = 0.0f;
-                    float oy = +28.0f * i;
-                    return Vector2D(ox, oy);
-                }
-                }
-                return Vector2D(0, 0);
-                };
-
-            for (int i = 0; i < group_size; ++i) {
-                Vector2D ofs = patternOffset(i);
-                float x = base_x + i * spacing_x + ofs.x;
-
-                Vector2D s(x, appear_y + i * 20.0f);
-                Vector2D t(x, base_target_y + ofs.y);
-
-                auto e2 = objm->CreateObject<Enemy2>(s);
-                if (e2) {
-                    e2->SetMode(Enemy2Mode::LineRise);
-                    e2->SetLineParams(i, group_size, line_interval);
-                    e2->SetAppearParams(s, t, appear_time, true);
-                    e2->SetPlayer(player);
-                }
-            }
-
-            float group_finish = stage_timer + (group_size - 1) * line_interval + appear_time;
-            e2_single_next = group_finish + 0.15f;
-            e2_group_next = group_finish + 0.45f;
-
-            e2_group_id++;
-        }
-
-        if (e2_line_enabled && stage_timer >= e2_single_next) {
-            ClusterSide   side_for_single = pickCluster(e2_group_id > 0 ? (e2_group_id - 1) : 0);
-            LayoutPattern pattern_for_single = pickPattern(e2_group_id > 0 ? (e2_group_id - 1) : 0);
-
-            float anchor_x =
-                (side_for_single == ClusterSide::Left) ? ANCHOR_LEFT :
-                (side_for_single == ClusterSide::Right) ? ANCHOR_RIGHT : ANCHOR_CENTER;
-
-            float x = anchor_x;
-            float single_y = (pattern_for_single == LayoutPattern::SnakeHigh)
-                ? (D_WIN_MAX_Y / 2.0f - 125.0f)
-                : (D_WIN_MAX_Y / 2.0f + 45.0f);
-
-            Vector2D s(x, D_WIN_MAX_Y + 100.0f);
-            Vector2D t(x, single_y);
-
-            auto e2 = objm->CreateObject<Enemy2>(s);
-            if (e2) {
-                e2->SetMode(Enemy2Mode::Zako3Like);
-                e2->SetAppearParams(s, t, 1.00f, true);
-                e2->SetPlayer(player);
-            }
-            e2_single_next = stage_timer + e2_single_interval;
-        }
-
-        if (!zako_spawned)
-        {
-            zako_spawned = true;
-
-            const int   enemy_count = 9;
-            const float spacing_x = 50.0f;
-            const float appear_y = D_WIN_MAX_Y + 100.0f;
-            const float target_y0 = (D_WIN_MAX_Y / 2.0f) - 120.0f;
-
-            float base_x = ANCHOR_CENTER - (spacing_x * (enemy_count - 1) * 0.5f);
-
-            auto snakeOffset = [&](int i)->Vector2D {
-                float c = i - (enemy_count - 1) * 0.5f;
-                float ox = 18.0f * sinf(c * 0.9f);
-                float oy = -10.0f * i + 48.0f * sinf(c * 0.9f + DX_PI / 3);
-                return Vector2D(ox, oy);
-                };
-
-            for (int i = 0; i < enemy_count; ++i) {
-                Vector2D ofs = snakeOffset(i);
-                float x = base_x + i * spacing_x + ofs.x;
-
-                Vector2D start_pos(x, appear_y + i * 20.0f);
-                Vector2D target_pos(x, target_y0 + ofs.y);
-
-                auto e2 = objm->CreateObject<Enemy2>(start_pos);
-                if (e2) {
-                    e2->SetAppearParams(start_pos, target_pos, 1.00f, true);
-                    e2->SetPlayer(player);
-                }
-            }
-        }
-    }
-    // ==== Enemy4（中ボス風ザコ）====
-else if (stage_timer < 37.0f)
-{
-    if (!enemy4_spawned && stage_timer >= 25.0f)
-    {
-        auto e4 = objm->CreateObject<Enemy4>(Vector2D(CENTER_X, -220.0f));
-        if (e4)
-        {
-            e4->SetPlayer(player);
-            enemy4 = e4;                  // ★ 参照を保持
-        }
-        enemy4_spawned = true;
-    }
-}
-    // ==== Wave3 : Enemy3 複合 ====
-    else if (stage_timer < 44.0f)
-    {
-        // ★ Wave3 突入時点で中ボスを退場させる
+        bool timeout = (stage_timer - miniboss_start_t) >= miniboss_timeout_sec;
         if (enemy4) {
-            enemy4->ForceRetreat();           // ★ 1回呼べばOK（冪等実装にする）
-            enemy4 = nullptr;                 // 参照はクリアしておく
+            if (enemy4->IsCleared()) {
+                miniboss_done = true;
+                enemy4 = nullptr;
+            }
+            else if (timeout) {
+                enemy4->ForceRetreat();
+                miniboss_done = true;
+            }
+        }
+        else if (timeout) {
+            miniboss_done = true; // 念のため
         }
 
-        if (!spawning_left && enemy_spawn_timer >= 1.5f)
-        {
+        if (!miniboss_done) return; // 中ボス中は他出現なし
+    }
+
+    // ─────────────────────────────────────────
+    // Post-Wave：Enemy2 を左右から少数（各5体）
+    // ─────────────────────────────────────────
+    if (!postwave_done) {
+        if (!postwave_started) {
+            postwave_started = true;
             spawn_index_left = 0;
             spawn_index_right = 0;
             spawn_delay_timer_left = 0.0f;
-            spawn_delay_timer_right = 0.8f;
-            spawning_left = spawning_right = true;
-            enemy_spawn_timer = 0.0f;
+            spawn_delay_timer_right = 0.0f;
         }
 
-        if (spawning_left)
-        {
-            spawn_delay_timer_left -= delta_second;
-            if (spawn_delay_timer_left <= 0.0f)
-            {
-                float x = -80.0f;
-                float y = CENTER_Y - 80 + spawn_index_left * 80;
-
-                auto e3 = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                e3->SetMode(ZakoMode::Zako2);
-                e3->SetAppearParams(Vector2D(x, y), Vector2D(D_WIN_MAX_X + 80.0f, y + 50), 2.0f, true);
-                e3->SetPlayer(player);
-
+        // 左列
+        if (spawn_index_left < 5) {
+            spawn_delay_timer_left -= dt;
+            if (spawn_delay_timer_left <= 0.0f) {
+                float x = CX - 140.0f - spawn_index_left * 14.0f;
+                Vector2D s(x, D_WIN_MAX_Y + 80.0f);
+                Vector2D t(x, D_WIN_MAX_Y * 0.40f);
+                auto e2 = objm->CreateObject<Enemy2>(s);
+                if (e2) {
+                    e2->SetMode(Enemy2Mode::Zako3Like);
+                    e2->SetAppearParams(s, t, 1.1f, true);
+                    e2->SetPlayer(player);
+                }
                 spawn_index_left++;
-                if (spawn_index_left >= 3) spawning_left = false;
-                else spawn_delay_timer_left = 1.0f;
+                spawn_delay_timer_left = 0.25f; // ゆっくり
             }
         }
 
-        if (spawning_right)
-        {
-            spawn_delay_timer_right -= delta_second;
-            if (spawn_delay_timer_right <= 0.0f)
-            {
-                float x = CENTER_X - 100 + spawn_index_right * 100;
-                float y = D_WIN_MAX_Y + 100.0f;
-
-                auto e3 = objm->CreateObject<Enemy3>(Vector2D(x, y));
-                e3->SetMode(ZakoMode::Zako7);
-                e3->SetAppearParams(Vector2D(x, y), Vector2D(x, CENTER_Y - 100), 2.2f, true);
-                e3->SetPlayer(player);
-
+        // 右列
+        if (spawn_index_right < 5) {
+            spawn_delay_timer_right -= dt;
+            if (spawn_delay_timer_right <= 0.0f) {
+                float x = CX + 140.0f + spawn_index_right * 14.0f;
+                Vector2D s(x, D_WIN_MAX_Y + 80.0f);
+                Vector2D t(x, D_WIN_MAX_Y * 0.48f);
+                auto e2 = objm->CreateObject<Enemy2>(s);
+                if (e2) {
+                    e2->SetMode(Enemy2Mode::Zako3Like);
+                    e2->SetAppearParams(s, t, 1.1f, false);
+                    e2->SetPlayer(player);
+                }
                 spawn_index_right++;
-                if (spawn_index_right >= 3) spawning_right = false;
-                else spawn_delay_timer_right = 1.2f;
+                spawn_delay_timer_right = 0.25f;
             }
         }
-    }
-    // ==== アイテム休憩 ====
-    else if (stage_timer < 45.0f)
-    {
-        if (!spawned_enemy1)
-        {
-            spawned_enemy1 = true;
-           // objm->CreateObject<PowerUp>(Vector2D(CENTER_X - 80, CENTER_Y))->SetPlayer(player);
-            objm->CreateObject<Shield>(Vector2D(CENTER_X + 80, CENTER_Y))->SetPlayer(player);
+
+        // 出し切りチェック
+        if (spawn_index_left >= 5 && spawn_index_right >= 5) {
+            postwave_done = true;
         }
+
+        if (!postwave_done) return;
     }
-    // ==== Boss ====
-    else if (stage_timer > 50.0f && !boss_spawned)
-    {
-        boss = objm->CreateObject<Boss1>(Vector2D(CENTER_X, -200));
-        boss->SetPattern(BossPattern::Entrance);
-        boss->SetPlayer(player);
-        boss_spawned = true;
+
+    // ─────────────────────────────────────────
+    // ボス出現（従来どおり）
+    // ─────────────────────────────────────────
+    if (boss == nullptr) {
+        boss = objm->CreateObject<Boss1>(Vector2D(CX, -200));
+        if (boss) {
+            boss->SetPattern(BossPattern::Entrance);
+            boss->SetPlayer(player);
+        }
     }
 }
+
 
 
 //敵出現処理
