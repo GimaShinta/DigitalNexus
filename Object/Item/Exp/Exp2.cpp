@@ -30,7 +30,7 @@ void Exp2::Initialize()
 
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
-    images = rm->GetImages("Resource/Image/Effect/Exp/pipo-nazoobj03c_480.png", 30, 5, 6, 480, 480);
+    images = rm->GetImages("Resource/Image/Effect/Exp/exp_s/pipo-nazoobj03a_192.png", 30, 5, 6, 192, 192);
     image = images[0];
 }
 
@@ -47,7 +47,7 @@ void Exp2::Update(float delta)
 
     // 距離の2乗で吸収開始を判定
     float dist_sq = to_player.x * to_player.x + to_player.y * to_player.y;
-    float attract_range_sq = attract_range * attract_range;
+    float attract_range_sq = attract_range2 * attract_range2;
 
     if (!is_attracting && dist_sq < attract_range_sq)
     {
@@ -60,7 +60,7 @@ void Exp2::Update(float delta)
         // 吸収モード中：加速してプレイヤーに向かう
         to_player.Normalize();
 
-        speed += acceleration * delta;   // 徐々に加速
+        speed += acceleration2 * delta;   // 徐々に加速
 
         if (speed > max_speed)
         {
@@ -131,7 +131,7 @@ void Exp2::OnHitCollision(GameObjectBase* hit_object)
 
         if (player && !player->GetBeamOn())  // ビーム中でなければ加算
         {
-            player->AddCharge(1.0f);  // 調整可能
+            player->AddCharge2(0.1f);  // 調整可能
         }
         Singleton<ScoreData>::GetInstance()->AddScore(100);
         this->SetDestroy(); // 吸収 → 削除

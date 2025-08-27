@@ -244,6 +244,8 @@ void Boss4::Update(float delta_second)
 
 	if (generate2 == true)
 	{
+		beam_damage_timer += delta;
+
 		if (damage_timer >= 0.05f)
 		{
 			damage_timer = 0.0f;
@@ -445,17 +447,15 @@ void Boss4::OnHitCollision(GameObjectBase* hit_object)
 	{
 		if (generate2 == true)
 		{
-			beam_damage_timer += delta;
-
 			if (beam_damage_timer >= 0.05f)
 			{
 				if (is_weakness == true)
 				{
-					hp -= 50;
+					hp -= 200;
 				}
 				else
 				{
-					hp -= 10;
+					hp -= 100;
 				}
 				beam_damage_timer = 0;
 

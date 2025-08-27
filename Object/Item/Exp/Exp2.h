@@ -34,4 +34,5 @@ public:
     /// <param name="ヒットオブジェクト"></param>
     void OnHitCollision(GameObjectBase* hit_object) override;
 
+    bool IsExp() const override { return true; }
 };

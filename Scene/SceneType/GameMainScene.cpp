@@ -731,13 +731,28 @@ void GameMainScene::DrawUI()
 
         DrawStringToHandle(x + 10, y + 2, "CHARGE", text_color, font_orbitron);
 
-        float rate = Clamp(player->GetChargeRate(), 0.0f, 1.0f);
+        float rate = 0.0f;
+        if(player->GetNowType() == PlayerType::AlphaCode)
+            rate = Clamp(player->GetChargeRate(), 0.0f, 1.0f);
+        else
+            rate = Clamp(player->GetCharge2Rate(), 0.0f, 1.0f);
+
         int bar_x = x + 10, bar_y = y + 25;
         int bar_w = 180, bar_h = 12;
 
-        int fill_color = player->CanUseSpecial()
-            ? GetTypeColor(0, flash, 255, flash, 80, 80)
-            : GetTypeColor(0, 255, 255, 255, 160, 160);
+        int fill_color = 0;
+        if (player->GetNowType() == PlayerType::AlphaCode)
+        {
+            fill_color = player->CanUseSpecial()
+                ? GetTypeColor(0, flash, 255, flash, 80, 80)
+                : GetTypeColor(0, 255, 255, 255, 160, 160);
+        }
+        else
+        {
+            fill_color = player->CanUseSpecial2()
+                ? GetTypeColor(0, flash, 255, flash, 80, 80)
+                : GetTypeColor(0, 255, 255, 255, 160, 160);
+        }
 
         DrawBox(bar_x, bar_y, bar_x + bar_w, bar_y + bar_h, base_bar_color, TRUE);
         DrawBox(bar_x, bar_y, bar_x + static_cast<int>(bar_w * rate), bar_y + bar_h, fill_color, TRUE);

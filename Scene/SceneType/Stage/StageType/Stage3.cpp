@@ -96,6 +96,8 @@ void Stage3::Draw()
 
         // オブジェクト描画の前に必ずブレンドモードを戻す
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        objm->DrawExp();
+        objm->DrawPlayer();
         objm->DrawWithoutBoss();      // プレイヤー・ザコなど
     }
     else
@@ -110,13 +112,19 @@ void Stage3::Draw()
 
         DrawFrontGrid();  // 前面グリッド
 
+        objm->DrawExp();
+
         // 通常戦闘中：生成済み & 墜落していない → グリッドの前に描画
         if (boss != nullptr && boss->GetGenerate())
         {
             objm->DrawBoss();
         }
+
         // オブジェクト描画の前に必ずブレンドモードを戻す
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        objm->DrawPlayer();
+
         objm->DrawWithoutBoss();      // プレイヤー・ザコなど
         em->Draw();       // 後にアニメーション
     }

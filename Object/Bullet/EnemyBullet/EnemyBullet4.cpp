@@ -148,6 +148,9 @@ void EnemyBullet4::OnHitCollision(GameObjectBase* hit_object)
 	if (hit_object->GetCollision().object_type == eObjectType::ePlayer ||
 		hit_object->GetCollision().object_type == eObjectType::eDefenceShot)
 	{
+		if (player)
+			DropItems();
+
 		is_destroy = true;
 	}
 }

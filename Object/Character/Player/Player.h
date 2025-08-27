@@ -48,6 +48,7 @@ private:
 	float shot_timer = 0.0f;
 	bool on_hit = false;
 	bool beam_on = false;
+	bool recovery_on = false;
 	bool stop = false;
 	bool is_damage = false;
 	bool shot_flip = false;
@@ -74,6 +75,10 @@ private:
 	float charge = 0.0f;
 	const float charge_max = 100.0f;
 	bool charge_ready = false;
+
+	float charge2 = 10.0f;
+	const float charge_max2 = 100.0f;
+	bool charge2_ready = false;
 
 	float nozzle_time = 0.0f;
 	int nozzle_count = 0;
@@ -171,14 +176,19 @@ private:
 public:
 	bool GetIsAlive() const;
 	bool GetBeamOn() const;
+	bool GetRecoveryOn() const;
 	bool GetShotFlip() const;
 	void SetBeamOn();
 
 public:
 	void AddCharge(float value);
+	void AddCharge2(float value);
 	bool CanUseSpecial() const;
+	bool CanUseSpecial2() const;
 	void UseSpecial();
+	void UseSpecial2();
 	float GetChargeRate() const;
+	float GetCharge2Rate() const;
 	int GetPowerd() const;
 	bool GetShieldOn() const;
 	int GetLife() const;
@@ -194,6 +204,8 @@ public:
 
 	void SetCanChangeType(bool enable);
 
+	bool IsPlayer() const override { return true; }
+
 private:
 	bool force_neutral_anim = false;
 
@@ -202,6 +214,7 @@ private:
 	{
 		return (a < b) ? a : b;
 	}
+
 
 };
 

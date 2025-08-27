@@ -267,12 +267,34 @@ void GameObjectManager::DrawBoss() const
 	}
 }
 
-
 void GameObjectManager::DrawWithoutBoss() const
 {
 	for (GameObjectBase* obj : game_object)
 	{
-		if (obj && !obj->IsBoss())
+		// ボス・プレイヤー・経験値は除外して描画
+		if (obj && !obj->IsBoss() && !obj->IsPlayer() && !obj->IsExp())
+		{
+			obj->Draw(screen_offset);
+		}
+	}
+}
+
+void GameObjectManager::DrawPlayer() const
+{
+	for (GameObjectBase* obj : game_object)
+	{
+		if (obj && obj->IsPlayer()) // プレイヤー判定
+		{
+			obj->Draw(screen_offset);
+		}
+	}
+}
+
+void GameObjectManager::DrawExp() const
+{
+	for (GameObjectBase* obj : game_object)
+	{
+		if (obj && obj->IsExp())
 		{
 			obj->Draw(screen_offset);
 		}

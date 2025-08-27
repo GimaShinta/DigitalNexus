@@ -472,16 +472,26 @@ void Player::Shot(float delta_second)
 	{
 		if (stop == false)
 		{
-			beam_on = true;
-			stop = true;
-			beam_timer = 0.0f;
-			invincible_time = 5.0f;
-			UseSpecial();  // ゲージ消費
-			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
-			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
-			beam->SetPlayer(this);
-			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
-			Singleton<ShakeManager>::GetInstance()->StartShake(5.0, 8, 8);
+			if (now_type == PlayerType::AlphaCode)
+			{
+				beam_on = true;
+				stop = true;
+				beam_timer = 0.0f;
+				invincible_time = 5.0f;
+				UseSpecial();  // ゲージ消費
+				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+				PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
+				beam->SetPlayer(this);
+				SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+				Singleton<ShakeManager>::GetInstance()->StartShake(5.0, 8, 8);
+			}
+			else
+			{
+				recovery_on = true;
+				stop = true;
+				beam_timer = 0.0f;
+				UseSpecial2();
+			}
 		}
 	}
 #else
@@ -503,6 +513,8 @@ void Player::Shot(float delta_second)
 		}
 	}
 #endif
+
+
 
 	// ５秒経ったらビームの再起
 	if (beam_timer >= 5.0f)
@@ -696,24 +708,24 @@ void Player::GenarateBullet()
 			// 上方向に生成
 			if (powerd <= 1)
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 12, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 12, location.y - D_OBJECT_SIZE));
 			}
 			else if (powerd == 2)
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 38, location.y + D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 38, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 37, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 12, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 12, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 37, location.y + D_OBJECT_SIZE));
 			}
 			else
 			{
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 63, location.y + (D_OBJECT_SIZE * 2)));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 38, location.y + D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 13, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 13, location.y - D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 38, location.y + D_OBJECT_SIZE));
-				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 63, location.y + (D_OBJECT_SIZE * 2)));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 62, location.y + (D_OBJECT_SIZE * 2)));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 37, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 12, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 12, location.y - D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x - 37, location.y + D_OBJECT_SIZE));
+				objm->CreateObject<PlayerAttackBullet>(Vector2D(location.x + 62, location.y + (D_OBJECT_SIZE * 2)));
 			}
 		}
 		else
@@ -768,6 +780,11 @@ bool Player::GetBeamOn() const
 	return beam_on;
 }
 
+bool Player::GetRecoveryOn() const
+{
+	return recovery_on;
+}
+
 bool Player::GetShotFlip() const
 {
 	return shot_flip;
@@ -791,9 +808,27 @@ void Player::AddCharge(float value)
 	}
 }
 
+void Player::AddCharge2(float value)
+{
+	// ビーム中は加算しない
+	if (recovery_on) return;
+
+	charge2 += value;
+	if (charge2 >= charge_max2)
+	{
+		charge2 = charge_max2;
+		charge2_ready = true;
+	}
+}
+
 bool Player::CanUseSpecial() const
 {
 	return charge_ready;
+}
+
+bool Player::CanUseSpecial2() const
+{
+	return charge2_ready;
 }
 
 void Player::UseSpecial()
@@ -802,11 +837,24 @@ void Player::UseSpecial()
 	charge_ready = false;
 }
 
+void Player::UseSpecial2()
+{
+	charge2 = 0.0f;
+	charge2_ready = false;
+}
+
 float Player::GetChargeRate() const
 {
 	// 発動中は常にMAX表示
 	if (beam_on) return 1.0f;
 	return charge / charge_max;
+}
+
+float Player::GetCharge2Rate() const
+{
+	// 発動中は常にMAX表示
+	if (recovery_on) return 1.0f;
+	return charge2 / charge_max2;
 }
 
 int Player::GetPowerd() const

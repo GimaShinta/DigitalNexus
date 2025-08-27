@@ -93,6 +93,8 @@ public:
 	void SetDestroy();	// スクロール量の設定
 
 	virtual bool IsBoss() const { return false; };
+	virtual bool IsPlayer() const { return false; };
+	virtual bool IsExp() const { return false; };
 
 
 	Vector2D& GetBoxSize();                             // オブジェクトの大きさを取得する
