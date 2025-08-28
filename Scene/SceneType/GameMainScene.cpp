@@ -83,7 +83,7 @@ eSceneType GameMainScene::Update(float delta_second)
 
     // ポーズ機能
     if (input->GetButtonDown(XINPUT_BUTTON_START) ||
-        input->GetKeyDown(KEY_INPUT_P)) 
+        input->GetKeyDown(KEY_INPUT_P) && (current_stage && !current_stage->IsOver()))
     {
         isPaused = !isPaused;
         m_selectedIndex = 0;
@@ -181,7 +181,7 @@ eSceneType GameMainScene::Update(float delta_second)
         eSceneType type = UpdateGameplay(delta_second);
         return type;
     }
-    else {
+    else if(isPaused) {
         eSceneType type = UpdatePauseMenu(delta_second);
         return type;
     }
