@@ -230,6 +230,7 @@ void Boss1::ShotSpiral(float delta_second)
             Vector2D vel(cos(rad) * 300.0f, sin(rad) * 300.0f);
             auto bullet = objm->CreateObject<EnemyBullet3>(location);
             bullet->SetVelocity(vel);
+            bullet->SetPlayer(player);
         }
     }
     angle += 15.0f;
@@ -245,6 +246,7 @@ void Boss1::ShotAllRange()
         Vector2D vel(cos(rad) * 280.0f, sin(rad) * 280.0f);
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
@@ -258,6 +260,7 @@ void Boss1::ShotCrossShot()
         Vector2D vel(cos(rad) * 350.0f, sin(rad) * 350.0f);
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
@@ -279,6 +282,7 @@ void Boss1::ShotFanWide()
 
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
 
     // Œ‚‚Â‚½‚Ñ‚É”hŽè‚ÈSE
@@ -299,6 +303,7 @@ void Boss1::ShotWaveBullets()
 
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
 
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
@@ -314,6 +319,7 @@ void Boss1::ShotTripleSpread()
         Vector2D vel(dir * 120.0f, 400.0f); // ¶E’†‰›E‰E
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
@@ -329,6 +335,7 @@ void Boss1::ShotFastSpiral(float delta_second)
         Vector2D vel(cos(rad) * 380.0f, sin(rad) * 380.0f);
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
+        bullet->SetPlayer(player);
     }
     angle += 25.0f; // ‚‘¬‰ñ“]
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
