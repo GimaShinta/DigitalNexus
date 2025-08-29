@@ -129,6 +129,48 @@ void Stage4::Draw()
     // -------- ステージ演出：Neural Grid --------
     StageLabel();
 
+    // === Boss Entrance: Ultra-Short Glitch Intro (~1.6s) ===
+    if (boss) {
+        static const void* prev = nullptr; static float intro = 0.0f, t = 0.0f; static int ph = 0;
+        if ((const void*)boss != prev) { prev = (const void*)boss; intro = 1.6f; t = 0.0f; ph = 0; } // 出現検知で起動
+        if (intro > 0.0f) {
+            intro -= delta_draw; t += delta_draw; if (t > 0.045f) { t = 0.0f; ph = (ph + 1) & 3; } // 4相点滅
+            int a = (int)((ph == 0 ? 140 : (ph == 1 ? 100 : (ph == 2 ? 70 : 0))) * (intro / 1.6f));
+            if (a > 0) { // 全画面フラッシュ（白⇔赤）
+                int col = (ph & 1) ? GetColor(255, 60, 60) : GetColor(255, 255, 255);
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
+                DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, col, TRUE);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+            }
+            // ノイズ矩形＋スキャンライン（軽量）
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 60);
+            for (int i = 0; i < 18; ++i) {
+                int w = 24 + rand() % 96, h = 6 + rand() % 28, x = rand() % (D_WIN_MAX_X - w), y = rand() % (D_WIN_MAX_Y - h);
+                DrawBox(x, y, x + w, y + h, GetColor(255, 60 + rand() % 60, 60 + rand() % 60), TRUE);
+            }
+            for (int i = 0; i < 6; ++i) { int y = rand() % D_WIN_MAX_Y; DrawBox(0, y, D_WIN_MAX_X, y + 1, GetColor(255, 255, 255), TRUE); }
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+    }
+
+    // === Hero Finish Flash (first 2s of crash) ===
+    if (boss && boss->GetIsCrashing()) {
+        static float crash_t = 0.0f; if (crash_t < 2.0f) crash_t += delta_draw;
+        if (crash_t < 2.0f) {
+            float k = 1.0f - (crash_t / 2.0f); // 1→0
+            int a1 = (int)(220 * k); // 白→減衰
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, a1);
+            DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE);
+            // 白の上にネオンブルー薄被せ（クールな“勝利”色）
+            int a2 = (int)(120 * k);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, a2);
+            DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(120, 180, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+    }
+
+
+
     // クリア時の演出
     if (is_clear)
     {
@@ -161,7 +203,8 @@ StageBase* Stage4::GetNextStage(Player* player)
 void Stage4::DrawScrollBackground() const
 {
     static float time = 0.0f;
-    time += scroll_timer;
+    time += scroll_timer * 1.3f;   // ← 1.2～1.6 の範囲で好み調整
+
 
     // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
     static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
@@ -192,6 +235,10 @@ void Stage4::DrawScrollBackground() const
     Vector2D offset_front = camera_offset * 1.5f; // 前面グリッド（手前）
     Vector2D offset_noise = camera_offset * 1.2f; // ノイズ（最前面）
 
+    // 墜落中は微揺れで重さを出す（±2px程度）
+    if (boss && boss->GetIsCrashing()) camera_offset += Vector2D((rand() % 5 - 2), (rand() % 5 - 2)) * 0.15f;
+
+
     // === 背景色（赤みグレー） ===
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(30, 10, 10), TRUE);
 
@@ -205,7 +252,8 @@ void Stage4::DrawScrollBackground() const
     }
     for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
     {
-        int sy = y - static_cast<int>(bg_scroll_offset_layer1) % grid_size_back;
+        int sy = y - static_cast<int>(bg_scroll_offset_layer1 * 3.0f) % grid_size_back;
+
         sy -= static_cast<int>(offset_back.y);
         DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(100, 0, 0));
     }
@@ -220,7 +268,8 @@ void Stage4::DrawScrollBackground() const
     }
     for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
     {
-        int sy = y - static_cast<int>(bg_scroll_offset_layer2) % grid_size_front;
+        int sy = y - static_cast<int>(bg_scroll_offset_layer2 * 3.0f) % grid_size_front;
+
         sy -= static_cast<int>(offset_front.y);
         DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(255, 40, 40), TRUE);
     }
@@ -239,6 +288,61 @@ void Stage4::DrawScrollBackground() const
             DrawBox(nx, ny, nx + 3, ny + 3, GetColor(255, 100, 50), TRUE);
         }
     }
+
+    // --- Final Phase 判定（墜落中だけ激しく） ---
+    bool is_final = (boss && boss->GetIsCrashing());
+
+    // （任意）微シェイクで重さを出す：±2px程度
+    if (is_final) camera_offset += Vector2D((rand() % 5 - 2), (rand() % 5 - 2)) * 0.15f;
+
+    // 強度パラメータ（通常→最終で上げる）
+    float speed_scale = is_final ? 1.6f : 1.0f;  // 脈動速度
+    float radius_boost = is_final ? 40.0f : 0.0f; // 半径押し広げ
+    int   alpha_boost = is_final ? 60 : 0;    // 透明度ブースト
+
+
+    // === Core Rings (short & classy) ===
+    if (boss) {
+        static float ring_t = 0.0f;
+        ring_t += delta_draw;  // Update()で保存済みの delta を再利用
+        int cx = D_WIN_MAX_X / 2, cy = D_WIN_MAX_Y / 2;
+        if (boss) { const Vector2D p = boss->GetLocation(); cx = (int)p.x; cy = (int)p.y; }
+
+        for (int i = 0; i < 3; ++i) {
+            float r = 120.0f + i * 90.0f + fmodf(ring_t * 80.0f, 90.0f);
+            int a = 60 + i * 40;
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
+            DrawCircleAA((float)cx, (float)cy, r, 64, GetColor(255, 40, 40), FALSE);
+        }
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    }
+    // === Pachinko Flash: HARD STROBE (first 2s only) ===
+    if (boss && boss->GetIsCrashing()) {
+        static float crash_time = 0.0f;  // クラッシュ経過時間
+        crash_time += delta_draw;
+
+        if (crash_time < 2.0f) { // ← 最初の2秒だけ
+            static float t = 0.0f;
+            static int phase = 0;
+            t += delta_draw;
+            if (t > 0.04f) { t = 0.0f; phase = (phase + 1) % 8; } // 約25fpsで切替
+
+            int a = 0, col = 0;
+            if (phase == 0 || phase == 2) { a = 220; col = GetColor(255, 255, 255); }
+            else if (phase == 1 || phase == 3) { a = 160; col = GetColor(255, 60, 60); }
+            else if (phase == 4) { a = 100; col = GetColor(255, 255, 255); }
+            else if (phase == 5) { a = 80;  col = GetColor(255, 60, 60); }
+            // phase6/7 は消灯
+
+            if (a > 0) {
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
+                DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, col, TRUE);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+            }
+        }
+    }
+
+
 
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }

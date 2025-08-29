@@ -263,13 +263,13 @@ void Boss4::Update(float delta_second)
 	100.0f,  // 左奥（ゆっくり）
 	100.0f,  // 左手前
 	100.0f,  // 右手前
-	15.0f,   // 右奥（ゆっくり）
+	60.0f,   // 右奥（ゆっくり）
 
-	15.0f,   // 砲（ゆっくり）
-	10.0f,   // 砲（ゆっくり）
-	10.0f ,  // 砲（ゆっくり）
-	10.0f  , // 砲（ゆっくり）
-	10.0f   ,// 砲（ゆっくり）
+	60.0f,   // 砲（ゆっくり）
+	40.0f,   // 砲（ゆっくり）
+	40.0f ,  // 砲（ゆっくり）
+	40.0f  , // 砲（ゆっくり）
+	40.0f   ,// 砲（ゆっくり）
 	100.0f   ,// 砲（ゆっくり）
 	};
 
@@ -497,6 +497,8 @@ void Boss4::Movement(float delta_second)
 	float_offset.y = sinf(move_time * float_speed_y) * float_amplitude_y;
 	float_offset.x = cosf(move_time * float_speed_x) * float_amplitude_x;
 
+
+
 	if (!generate)
 	{
 		generate = true;
@@ -513,6 +515,79 @@ void Boss4::Movement(float delta_second)
 		float distance_y = base_position.y - location.y;
 		float base_x = D_WIN_MAX_X / 2;
 		base_position.x = generate_base_position.x - 150.0f;
+
+		// --- Lane Spring Glide（別実装：バネ＋減衰） ---
+// 目的：瞬間移動しない / 中央へ戻らない / 書き方を変える
+		{
+			// ① ステート（staticで保持）
+			static bool  active = false;         // レーン制御の有効化
+			static float target_x = 0.0f;        // 目標レーンX
+			static float smoothed_x = 0.0f;      // 実際に使う滑らかX
+			static float vx = 0.0f;              // 速度（x）
+			static float cd = 0.0f;              // 次のレーン変更までのクールダウン
+
+			// ② 条件：戦闘中のみ有効（生成完了後、墜落で無効）
+			if (!generate2 || is_crashing) {
+				active = false; vx = 0.0f; cd = 0.0f;
+				// 通常処理に任せる：ここでは上書きしない
+			}
+			else {
+				// 初回起動時に“現在位置を初期化”
+				if (!active) {
+					smoothed_x = base_position.x;
+					target_x = smoothed_x;
+					vx = 0.0f;
+					cd = 0.0f;
+					active = true;
+				}
+
+				// ③ たまにレーン変更（左右±OFFを小さめ）
+				// ※ 幅を狭く：±140px（好みで 120～160）
+				const float center = (float)D_WIN_MAX_X * 0.5f;
+				const float OFFSET = 140.0f;
+				const float lanes[3] = { center - OFFSET, center, center + OFFSET };
+
+				// クールダウン管理（3.0～4.5秒）
+				cd -= delta_second;
+				if (cd <= 0.0f) {
+					target_x = lanes[rand() % 3];
+					cd = 3.0f + (rand() % 150) * 0.01f;
+				}
+
+				// ④ 物理風スムージング（臨界減衰＋速度制限）
+				// dtスパイク対策
+				float dt = delta_second; if (dt > 0.033f) dt = 0.033f;
+
+				// バネ定数/減衰係数（臨界減衰: c = 2*sqrt(k)）
+				const float k = 28.0f;                   // バネ強さ（上げるとキビキビ）
+				const float c = 2.0f * sqrtf(k);         // 臨界減衰
+				// 加速度 a = -k*(x - target) - c*vx
+				float a = -k * (smoothed_x - target_x) - c * vx;
+
+				// 最大速度・最大加速度で“瞬間移動”防止
+				const float MAX_V = 520.0f;              // px/s（360～600 推奨）
+				const float MAX_A = 2400.0f;             // px/s^2
+				if (a > MAX_A) a = MAX_A;
+				if (a < -MAX_A) a = -MAX_A;
+
+				vx += a * dt;
+				if (vx > MAX_V) vx = MAX_V;
+				if (vx < -MAX_V) vx = -MAX_V;
+
+				smoothed_x += vx * dt;
+
+				// ⑤ 実適用：ここで常に上書き → 中央へ戻されない
+				base_position.x = smoothed_x;
+
+				// ⑥ 端の安全マージン
+				if (base_position.x < 20.0f) { base_position.x = 20.0f; smoothed_x = 20.0f; vx = 0.0f; }
+				if (base_position.x > (float)D_WIN_MAX_X - 20.0f) {
+					base_position.x = (float)D_WIN_MAX_X - 20.0f; smoothed_x = base_position.x; vx = 0.0f;
+				}
+			}
+		}
+		// --- Lane Spring Glide end ---
+
 
 		if (fabs(distance_y) > 1.0f)
 		{
@@ -645,6 +720,9 @@ void Boss4::Shot(float delta_second)
 
 void Boss4::DrawBoss4(const Vector2D position) const
 {
+
+
+
 	DrawRotaGraph(part_positions[7].x, part_positions[7].y, image_size, angle, boss4_image[8], TRUE);
 	DrawRotaGraph(part_positions[8].x, part_positions[8].y, image_size, angle, boss4_image[9], TRUE);
 	// 本体
@@ -682,6 +760,8 @@ void Boss4::DrawBoss4(const Vector2D position) const
 				FALSE);
 		}
 	}
+
+
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0); // ブレンド無効化
 }
 

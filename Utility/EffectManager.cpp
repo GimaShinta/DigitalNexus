@@ -21,8 +21,12 @@ void EffectManager::LoadAllEffects()
 	effect_images[EffectName::eChenge] = charge_2;
 	//effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/pipo-gate01a.png", 15, 5, 3, 480, 480);
 	//effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/pipo-gate01b.png", 15, 5, 3, 480, 480);
-	effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect021_480.png", 20, 5, 4, 480, 480);
-	effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect023_480.png", 20, 5, 4, 480, 480);
+	//effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect021_480.png", 20, 5, 4, 480, 480);
+	//effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/Exp/pipo-mapeffect023_480.png", 20, 5, 4, 480, 480);
+
+	effect_images[EffectName::eAttackType] = rm->GetImages("Resource/Image/Effect/pipo-btleffect212_192_red.png", 20, 5, 4, 192, 192);
+	effect_images[EffectName::eDefenceType] = rm->GetImages("Resource/Image/Effect/pipo-btleffect212_192_bright_blue.png", 20, 5, 4, 192, 192);
+
 }
 
 // エフェクトの再生

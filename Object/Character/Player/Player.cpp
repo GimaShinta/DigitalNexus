@@ -398,7 +398,7 @@ void Player::Shot(float delta_second)
 
 			EffectManager* em =  Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 0.6f);
+			em->SetScale(effe_id, 1.0f);
 	
 			am->PlaySE(SE_NAME::Code);
 			am->ChangeSEVolume(SE_NAME::Code, 32);
@@ -424,7 +424,7 @@ void Player::Shot(float delta_second)
 
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
 			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 0.6f);
+			em->SetScale(effe_id, 1.0f);
 
 			am->PlaySE(SE_NAME::Code);
 			am->ChangeSEVolume(SE_NAME::Code, 30);
