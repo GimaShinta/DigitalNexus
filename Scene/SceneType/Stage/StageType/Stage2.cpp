@@ -4,83 +4,112 @@
 #include "../../../../Object/Character/Enemy/Enemy2.h"
 #include "../../../../Object/Character/Boss/Boss1.h"
 #include "../../../../Object/Character/Boss/Boss2.h"
+#include "../../../../Utility/EffectManager.h"
+#include "../../../../Object/GameObjectManager.h"
+#include <cmath>
 
 Stage2::Stage2(Player* player)
     : StageBase(player)
-{
-}
+{}
 
 Stage2::~Stage2()
-{
-}
+{}
 
 // 初期化処理
 void Stage2::Initialize()
 {
-    // ステージIDの設定
+    // ステージID
     stage_id = StageID::Stage2;
 
+    // タイマー類
+    stage_timer = 0.0f;
+    enemy_spawn_timer = 0.0f;
+    scene_timer = 0.0f;
+
+    // 遷移ノイズ
+    entry_effect_playing = true;
+    entry_effect_timer = 0.0f;
+
+    // 背景
+    bg_scroll_offset_layer1 = 0.0f;
+    bg_scroll_offset_layer2 = 0.0f;
+
+    // ラベル
+    warning_label_state = WarningLabelState::SlideIn;
+    warning_label_timer = 0.0f;
+    warning_label_band_height = 0.0f;
+
+    // フォント
     font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
     font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
+
+    // ★ ボス登場演出 初期値
+    boss_appear_state = BossAppearState::Waiting;
+    boss_appear_timer = 0.0f;
+    flash_request = false;
+    flash_timer = 0.0f;
+    bg_speed_scale = 4.0f;
 }
 
-// 終了時処理
+// 終了処理
 void Stage2::Finalize()
 {
-    if (font_orbitron != -1) {
-        DeleteFontToHandle(font_orbitron);
-        font_orbitron = -1;
+    if (font_orbitron != -1)
+    {
+        DeleteFontToHandle(font_orbitron); font_orbitron = -1;
     }
-    if (font_warning != -1) {
-        DeleteFontToHandle(font_warning);
-        font_warning = -1;
+    if (font_warning != -1)
+    {
+        DeleteFontToHandle(font_warning);  font_warning = -1;
     }
 }
 
-// 更新処理
+// 更新
 void Stage2::Update(float delta_second)
 {
-    // オブジェクトとエフェクトの更新処理
+    // オブジェクト更新
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     objm->Update(delta_second);
 
+    // エフェクト更新
     EffectManager* manager = Singleton<EffectManager>::GetInstance();
     manager->Update(delta_second);
 
-    // ステージ管理用タイマー
+    // ステージ経過
     stage_timer += delta_second;
 
-    // 敵の出現
+    // 敵出現（演出フロー込み）
     EnemyAppearance(delta_second);
 
     // クリア判定
     UpdateGameStatus(delta_second);
 
-    // スクロールの更新処理
+    // 背景スクロール更新（加速スケール対応）
     UpdateBackgroundScroll(delta_second);
 
-    // 登場時のステージラベルの更新処理
+    // ステージ導入ラベル更新
     UpdateRabel(delta_second);
 }
 
-// 描画処理
+// 描画
 void Stage2::Draw()
 {
-    // 背景スクロールの描画
+    // 背景
     DrawScrollBackground();
 
-    // オブジェクトの描画処理
-    GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-    objm->Draw();
+    // オブジェクト
+    Singleton<GameObjectManager>::GetInstance()->Draw();
 
-    // エフェクトの描画処理
-    EffectManager* em = Singleton<EffectManager>::GetInstance();
-    em->Draw();
+    // エフェクト
+    Singleton<EffectManager>::GetInstance()->Draw();
 
-    // -------- ステージ演出：Neural Grid --------
+    // ステージ演出ラベル（WARNING含む）
     StageLabel();
 
-    // 遷移された瞬間のノイズの描画
+    // ★ 全画面フラッシュ（必要時）
+    DrawFullScreenFlash();
+
+    // 遷移ノイズ（既存）
     if (entry_effect_playing)
     {
         float t = entry_effect_timer / 1.0f;
@@ -99,309 +128,166 @@ void Stage2::Draw()
         }
 
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha / 3);
-        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE); // フラッシュ効果
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE); // フラッシュ
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
-
-    //// ゲームオーバー時の演出
-    //if (is_over)
-    //{
-    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
-    //    DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-    //    SetFontSize(32);
-    //    DrawString(D_WIN_MAX_X / 2 - 100.0f, D_WIN_MAX_Y / 2, "GAME OVER", GetColor(255, 255, 255), TRUE);
-    //    SetFontSize(16);
-    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-    //}
 }
 
-// 次のステージを取得
+// 次のステージ
 StageBase* Stage2::GetNextStage(Player* player)
 {
     return new Stage3(player);
 }
 
+// ===== 背景：視差スクロール付きのニューログリッド =====
 void Stage2::DrawScrollBackground() const
 {
+    // 背景色
     DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(20, 20, 40), TRUE);
 
-    // === カメラふんわりオフセット（プレイヤー位置に応じて） ===
-    static Vector2D camera_offset(0, 0);               // 描画用のふんわりオフセット
-    static Vector2D camera_target_offset_prev(0, 0);   // 前回のターゲット位置（死亡後用）
+    // カメラふんわりオフセット
+    static Vector2D camera_offset(0, 0);
+    static Vector2D camera_target_offset_prev(0, 0);
 
     Vector2D screen_center(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2);
+    Vector2D camera_target_offset = camera_target_offset_prev;
 
-    Vector2D camera_target_offset = camera_target_offset_prev; // デフォルトは前回値を使う
-
-    // プレイヤーが存在していれば追従（位置を更新）
     if (player != nullptr)
     {
         Vector2D player_pos = player->GetLocation();
         camera_target_offset = (player_pos - screen_center) * 0.05f;
         camera_target_offset_prev = camera_target_offset;
     }
-    else
-    {
-        // 死亡後も offset_prev を変えない → 固定視点
-        camera_target_offset = camera_target_offset_prev;
-    }
-
-    // オフセットをなめらかに反映
     camera_offset += (camera_target_offset - camera_offset) * 0.1f;
 
-    // レイヤーごとの視差倍率
-    Vector2D layer1_offset = camera_offset * 0.3f; // 奥（背景グリッド）
-    Vector2D layer2_offset = camera_offset * 1.5f; // 手前（前景ライン）
+    // 視差
+    Vector2D layer1_offset = camera_offset * 0.3f; // 奥
+    Vector2D layer2_offset = camera_offset * 1.5f; // 手前
 
-    // === 背景グリッドレイヤー（奥） ===
+    // === 背景グリッド（奥） ===
     const int grid_size_back = 40;
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
-    for (int x = 0; x < D_WIN_MAX_X; x += grid_size_back)
+    for (int x = -grid_size_back; x < D_WIN_MAX_X + grid_size_back; x += grid_size_back)
     {
-        int draw_x = x - static_cast<int>(layer1_offset.x);
-        DrawLine(draw_x, 0, draw_x, D_WIN_MAX_Y, GetColor(0, 100, 255));
+        int xx = x + (int)layer1_offset.x + (int)bg_scroll_offset_layer1 % grid_size_back;
+        DrawLine(xx, 0, xx, D_WIN_MAX_Y, GetColor(30, 60, 120));
     }
     for (int y = -grid_size_back; y < D_WIN_MAX_Y + grid_size_back; y += grid_size_back)
     {
-        int sy = y - static_cast<int>(bg_scroll_offset_layer1) % grid_size_back;
-        sy -= static_cast<int>(layer1_offset.y);
-        DrawLine(0, sy, D_WIN_MAX_X, sy, GetColor(0, 100, 255));
+        int yy = y + (int)layer1_offset.y + (int)bg_scroll_offset_layer1 % grid_size_back;
+        DrawLine(0, yy, D_WIN_MAX_X, yy, GetColor(30, 60, 120));
     }
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-    // === 前景グリッドレイヤー（手前） ===
-    const int grid_size_front = 80;
-    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
-    for (int x = 0; x < D_WIN_MAX_X; x += grid_size_front)
+    // === 前景ライン（手前） ===
+    SetDrawBlendMode(DX_BLENDMODE_ADD, 180);
+    const int band_h = 4;
+    for (int y = -band_h; y < D_WIN_MAX_Y + band_h; y += 28)
     {
-        int draw_x = x - static_cast<int>(layer2_offset.x);
-        DrawBox(draw_x - 1, 0, draw_x + 1, D_WIN_MAX_Y, GetColor(180, 0, 255), TRUE);
+        int yy = y + (int)layer2_offset.y + (int)bg_scroll_offset_layer2 % 28;
+        DrawBox(0, yy, D_WIN_MAX_X, yy + band_h, GetColor(180, 0, 255), TRUE);
     }
-    for (int y = -grid_size_front; y < D_WIN_MAX_Y + grid_size_front; y += grid_size_front)
-    {
-        int sy = y - static_cast<int>(bg_scroll_offset_layer2) % grid_size_front;
-        sy -= static_cast<int>(layer2_offset.y);
-        DrawBox(0, sy - 1, D_WIN_MAX_X, sy + 1, GetColor(180, 0, 255), TRUE);
-    }
-
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 
-// ステージ管理用タイマーを使って敵を生成
+// 敵の出現（演出フロー込み）
 void Stage2::EnemyAppearance(float delta_second)
 {
     enemy_spawn_timer += delta_second;
-    const float spawn_interval = 1.0f;
-    GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+    boss_appear_timer += delta_second;
 
-    //// --- 0～10秒：お山フォーメーション（3レーン、重複抑制） ---
-    //if (stage_timer < 20.0f)
-    //{
-    //    static int previous_lane = -1;  // 前回のレーン記録用
-
-    //    if (enemy_spawn_timer >= spawn_interval)
-    //    {
-    //        enemy_spawn_timer = 0.0f;
-
-    //        // 前回と違うレーンを選ぶ
-    //        int lane;
-    //        do
-    //        {
-    //            lane = std::rand() % 3;  // 0:左, 1:中央, 2:右
-    //        } while (lane == previous_lane);
-    //        previous_lane = lane;
-
-    //        float base_x;
-    //        if (lane == 0)      base_x = 400.0f;
-    //        else if (lane == 1) base_x = 640.0f;
-    //        else                base_x = 900.0f;
-
-    //        float base_y = 0.0f;
-    //        float offset_x = 50.0f;
-    //        float offset_y = 30.0f;
-
-    //        Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
-    //        zako_top->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_top->SetPlayer(player);
-
-    //        Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y - 70));
-    //        zako_left->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_left->SetPlayer(player);
-
-    //        Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y - 70));
-    //        zako_right->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_right->SetPlayer(player);
-    //    }
-    //}
-
-    //// --- 10?15秒：右下がり ＼ の階段状に3体を順番に出現（1回限り） ---
-    //if (stage_timer >= 10.0f && stage_timer < 15.0f && !spawned_stair_done)
-    //{
-    //    stair_timer += delta_second;
-
-    //    const float stair_spawn_interval = 0.6f;  // 出現間隔（秒）
-
-    //    if (stair_index < 3 && stair_timer >= stair_spawn_interval)
-    //    {
-    //        stair_timer = 0.0f;
-
-    //        float base_x = 1000.0f;
-    //        float base_y = 40.0f;
-    //        float offset_x = 30.0f;
-    //        float offset_y = 60.0f;
-
-    //        float x = base_x + stair_index * offset_x;
-    //        float y = base_y + stair_index * offset_y;
-
-    //        Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
-    //        if (zako != nullptr)
-    //        {
-    //            zako->SetPattern(Enemy1Pattern::LeftMove);
-    //            zako->SetPlayer(player);
-    //        }
-
-    //        stair_index++;
-    //    }
-
-    //    if (stair_index >= 3)
-    //    {
-    //        spawned_stair_done = true;
-    //    }
-    //}
-
-    //// --- 15?20秒：右上がり ／ の階段状に3体を順番に出現（1回限り） ---
-
-
-    //if (stage_timer >= 15.0f && stage_timer < 20.0f && !spawned_slash_done)
-    //{
-    //    slash_timer += delta_second;
-
-    //    const float slash_spawn_interval = 0.6f;  // 出現間隔（秒）
-
-    //    if (slash_index < 3 && slash_timer >= slash_spawn_interval)
-    //    {
-    //        slash_timer = 0.0f;
-
-    //        float base_x = 270.0f;
-    //        float base_y = 200.0f;
-    //        float offset_x = 40.0f;
-    //        float offset_y = -50.0f;
-
-    //        float x = base_x + slash_index * offset_x;
-    //        float y = base_y + slash_index * offset_y;
-
-    //        Enemy1* zako = objm->CreateObject<Enemy1>(Vector2D(x, y));
-    //        zako->SetPattern(Enemy1Pattern::RightMove);
-    //        zako->SetPlayer(player);
-
-    //        slash_index++;
-    //    }
-
-    //    if (slash_index >= 3)
-    //    {
-    //        spawned_slash_done = true;
-    //    }
-    //}
-
-    //// --- 20～40秒：Zako5を2体だけ1回出現 ---
-    //if (stage_timer >= 20.0f && stage_timer < 40.0f && !enemy2_spawned)
-    //{
-    //    enemy_spawn_timer = 0.0f;
-    //    enemy2_spawned = true;
-
-    //    Enemy2* left = objm->CreateObject<Enemy2>(Vector2D(360.0f, 300.0f));
-    //    left->EnableRectangularLoopMove(false);
-    //    left->SetPlayer(player);
-
-    //    Enemy2* right = objm->CreateObject<Enemy2>(Vector2D(920.0f, 300.0f));
-    //    right->EnableRectangularLoopMove(false);
-    //    right->SetPlayer(player);
-    //}
-
-    //// --- 40～60秒：お山フォーメーション（ランダム位置） ---
-    //if (stage_timer >= 42.0f && stage_timer < 55.0f)
-    //{
-    //    if (enemy_spawn_timer >= spawn_interval)
-    //    {
-    //        enemy_spawn_timer = 0.0f;
-
-    //        float base_x = 320.0f + std::rand() % 640;
-    //        float base_y = 0.0f;
-    //        float offset_x = 40.0f;
-    //        float offset_y = 30.0f;
-
-    //        Enemy1* zako_top = objm->CreateObject<Enemy1>(Vector2D(base_x, base_y - offset_y));
-    //        zako_top->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_top->SetPlayer(player);
-
-    //        Enemy1* zako_left = objm->CreateObject<Enemy1>(Vector2D(base_x - offset_x, base_y + offset_y));
-    //        zako_left->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_left->SetPlayer(player);
-
-    //        Enemy1* zako_right = objm->CreateObject<Enemy1>(Vector2D(base_x + offset_x, base_y + offset_y));
-    //        zako_right->SetPattern(Enemy1Pattern::MoveStraight);
-    //        zako_right->SetPlayer(player);
-    //    }
-    //}
-
-    // --- 60?110秒：Boss2出現（1回のみ） ---
-    if (!stage2boss2_spawned && stage_timer >= 5.0f)
+    switch (boss_appear_state)
     {
-        stage2boss2_spawned = true;
+        case BossAppearState::Waiting:
+            // ★ 5.0秒で警告へ（元はここで即スポーンしていた）:contentReference[oaicite:4]{index=4}
+            if (stage_timer >= 5.0f)
+            {
+                boss_appear_state = BossAppearState::Warning;
+                boss_appear_timer = 0.0f;
+                bg_speed_scale = 1.2f; // 少し加速
+                // TODO: サイレンSEなど
+            }
+            break;
 
-        GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-        boss2 = objm->CreateObject<Boss2>(Vector2D(640.0f, 240.0f)); // 真ん中固定
-        boss2->Initialize();
-        boss2->SetPlayer(player);
+        case BossAppearState::Warning:
+            // 2.0秒ほど警告表示 → スポーンへ
+            if (boss_appear_timer >= 2.0f)
+            {
+                boss_appear_state = BossAppearState::Spawning;
+                boss_appear_timer = 0.0f;
+                bg_speed_scale = 2.0f; // さらに加速
+
+                if (!stage2boss2_spawned)
+                {
+                    stage2boss2_spawned = true;
+                    GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+                    boss2 = objm->CreateObject<Boss2>(Vector2D(640.0f, 240.0f));
+                    boss2->Initialize();
+                    boss2->SetPlayer(player);
+                }
+
+                // 登場瞬間の白フラッシュ
+                flash_request = true;
+            }
+            break;
+
+        case BossAppearState::Spawning:
+            // Boss2 のイントロ（ズーム＋パーツ集結）が終わったら戦闘へ
+            if (boss2 != nullptr && !boss2->IsIntroActive()) // ★ Boss2側アクセサで判定:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
+            {
+                boss_appear_state = BossAppearState::Active;
+                boss_appear_timer = 0.0f;
+                bg_speed_scale = 1.0f; // 平常に戻す
+                flash_request = true;  // 戦闘開始フラッシュ
+                // TODO: BGM切り替え
+            }
+            break;
+
+        case BossAppearState::Active:
+            // 通常進行
+            break;
     }
-
 }
 
-// クリア判定
+// クリア・ゲームオーバーの判定
 void Stage2::UpdateGameStatus(float delta_second)
 {
-    // 遷移の際のノイズの表示on
+    // 遷移ノイズ
     if (entry_effect_playing)
     {
         entry_effect_timer += delta_second;
-        if (entry_effect_timer >= 1.0f) // 1秒間表示
-        {
-            entry_effect_playing = false;
-        }
+        if (entry_effect_timer >= 1.0f) entry_effect_playing = false;
     }
 
+    // タイムアウトでクリア（任意）
     if (stage_timer >= 120.0f)
-
     {
         is_clear = true;
     }
 
-    // ボスが倒れたらクリア
-    if ((boss2 != nullptr && boss2->GetIsAlive() == false) && is_over == false)
+    // ボス撃破でクリア
+    if ((boss2 != nullptr && boss2->GetIsAlive() == false) && !is_over)
     {
         boss2->SetDestroy();
         is_clear = true;
     }
-
-    // ボスが倒れたらクリア
-    if (boss != nullptr && boss->GetIsAlive() == false && is_over == false)
+    if (boss != nullptr && boss->GetIsAlive() == false && !is_over)
     {
         boss->SetDestroy();
         is_clear = true;
     }
 
-    // プレイヤーが倒れたらゲームオーバー
-    if (player != nullptr && player->GetGameOver() && is_clear == false)
+    // プレイヤー死亡でゲームオーバー
+    if (player != nullptr && player->GetGameOver() && !is_clear)
     {
         is_over = true;
         is_finished = true;
     }
 
-    // ステージ終了時の動き
-    if (is_clear == true)
+    // ステージ終了処理
+    if (is_clear)
     {
-        // 少し待機したら終了
         scene_timer += delta_second;
-
         if (scene_timer >= 2.0f)
         {
             is_finished = true;
@@ -409,60 +295,200 @@ void Stage2::UpdateGameStatus(float delta_second)
     }
 }
 
+// ステージ導入ラベル（描画）
 void Stage2::StageLabel() const
 {
-    if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
+    // ★ WARNING中は専用表示
+    if (boss_appear_state == BossAppearState::Warning)
     {
-        int y_top = static_cast<int>(360 - warning_label_band_height);
-        int y_bottom = static_cast<int>(360 + warning_label_band_height);
+        const float blink = (sinf(GetNowCount() * 0.03f) * 0.5f + 0.5f); // 0?1
+        int bandAlpha = (int)(140 + 80 * blink);
 
-        // パルスライティング（明滅ライン）
-        float pulse = (sinf(stage_timer * 6.0f) + 1.0f) * 0.5f; // 0.0?1.0
-        int pulse_alpha = static_cast<int>(pulse * 180);
+        int band_h = 240;
+        int band_top = (D_WIN_MAX_Y - band_h) / 2;
+        int band_bottom = band_top + band_h;
 
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse_alpha);
-        DrawLine(0, y_top, 1280, y_top, GetColor(120, 220, 255));
-        DrawLine(0, y_bottom, 1280, y_bottom, GetColor(120, 220, 255));
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, bandAlpha);
+        DrawBox(0, band_top, D_WIN_MAX_X, band_bottom, GetColor(30, 0, 20), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 180);
+        DrawLine(0, band_top, D_WIN_MAX_X, band_top, GetColor(255, 80, 120));
+        DrawLine(0, band_bottom, D_WIN_MAX_X, band_bottom, GetColor(255, 80, 120));
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-        // グリッチ風のランダムスキャンライン（ちらつき演出）
-        for (int i = 0; i < 8; ++i)
-        {
-            int glitch_y = y_top + rand() % (2 * static_cast<int>(warning_label_band_height));
-            int glitch_len = 50 + rand() % 100;
-            int glitch_x = rand() % (1280 - glitch_len);
+        const char* s1 = "!! WARNING !!";
+        int w1 = (font_warning != -1) ? GetDrawStringWidthToHandle(s1, (int)strlen(s1), font_warning) : 0;
+        int cx = D_WIN_MAX_X / 2;
 
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100 + rand() % 100);
-            DrawBox(glitch_x, glitch_y, glitch_x + glitch_len, glitch_y + 2, GetColor(200, 255, 255), TRUE);
+        if (font_warning != -1)
+        {
+            SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+            DrawStringToHandle(cx - w1 / 2, band_top + 60, s1, GetColor(255, 120, 160), font_warning);
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
-        if (
-            warning_label_state == WarningLabelState::Displaying ||
-            warning_label_state == WarningLabelState::SlideOut
-            )
+
+        // グリッチ・ノイズ
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
+        for (int i = 0; i < 8; ++i)
         {
-            int center_x = D_WIN_MAX_X / 2;
+            int gx = GetRand(D_WIN_MAX_X - 40);
+            int gy = band_top + GetRand(band_h - 6);
+            int gw = 40 + GetRand(180);
+            int gh = 4 + GetRand(8);
+            DrawBox(gx, gy, gx + gw, gy + gh, GetColor(255, 60, 140), TRUE);
+        }
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        return;
+    }
 
-            // スライドイン
-            float slide_in_t = warning_label_timer / 0.5f;
-            if (slide_in_t > 1.0f) slide_in_t = 1.0f;
-            float slide_in = 1.0f - powf(1.0f - slide_in_t, 3.0f);
+    // ===== 既存の Stage 2 ラベル（SlideIn/Displaying/SlideOut） =====:contentReference[oaicite:7]{index=7}
+    if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
+    {
+        int bandAlpha = 190;
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, bandAlpha);
 
-            // スライドアウト（右→左）
-            float slide_out_t = slide_out_timer / 0.5f;
-            if (slide_out_t > 1.0f) slide_out_t = 1.0f;
-            float slide_out = 1.0f + slide_out_t;  // ? 左へ流す補正
+        int band_top = (D_WIN_MAX_Y - (int)warning_label_band_height) / 2;
+        int band_bottom = (D_WIN_MAX_Y + (int)warning_label_band_height) / 2;
 
-            float t = (warning_label_state == WarningLabelState::Displaying) ? slide_in : slide_out;
+        // 1) 中央帯
+        DrawBox(0, band_top, D_WIN_MAX_X, band_bottom, GetColor(12, 12, 20), TRUE);
 
-            int stage_name_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
-            int sub_text_x = static_cast<int>((1.0f - t) * 1280 + t * (center_x - 150));
+        // 2) 薄い罫線
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 140);
+        DrawLine(0, band_top, D_WIN_MAX_X, band_top, GetColor(60, 150, 255));
+        DrawLine(0, band_bottom, D_WIN_MAX_X, band_bottom, GetColor(60, 150, 255));
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-            DrawStringToHandle(stage_name_x, 320,
-                "Memory Forge", GetColor(255, 255, 255), font_warning);
+        // 3) テキスト（Stage 2 / DIGITAL NEXUS）
+        if (font_warning != -1)
+        {
+            const char* s1 = "STAGE 2";
+            const char* s2 = "DIGITAL NEXUS";
+            int w1 = GetDrawStringWidthToHandle(s1, (int)strlen(s1), font_warning);
+            int w2 = GetDrawStringWidthToHandle(s2, (int)strlen(s2), font_orbitron);
+            int cx = D_WIN_MAX_X / 2;
 
-            DrawStringToHandle(sub_text_x, 370,
-                "Eliminate all hostile units.", GetColor(120, 255, 255), font_orbitron);
+            SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+            DrawStringToHandle(cx - w1 / 2, band_top + 16, s1, GetColor(180, 200, 255), font_warning);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 230);
+            DrawStringToHandle(cx - w2 / 2, band_top + 16 + 60, s2, GetColor(200, 220, 255), font_orbitron);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+
+        // 4) パルスライン
+        int pulseY1 = band_top + (int)(sinf(GetNowCount() * 0.05f) * 3.0f) + 4;
+        int pulseY2 = band_bottom + (int)(cosf(GetNowCount() * 0.05f) * 3.0f) - 4;
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 100);
+        DrawLine(0, pulseY1, D_WIN_MAX_X, pulseY1, GetColor(60, 150, 255));
+        DrawLine(0, pulseY2, D_WIN_MAX_X, pulseY2, GetColor(60, 150, 255));
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // 5) 軽いグリッチ（帯に走る横ノイズ）
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
+        for (int i = 0; i < 6; ++i)
+        {
+            int gx = GetRand(D_WIN_MAX_X - 40);
+            int gy = band_top + GetRand((int)warning_label_band_height - 6);
+            int gw = 40 + GetRand(160);
+            int gh = 4 + GetRand(6);
+            DrawBox(gx, gy, gx + gw, gy + gh, GetColor(180, 0, 255), TRUE);
+        }
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    }
+}
+
+// ===== 追加：内部更新 =====
+void Stage2::UpdateBackgroundScroll(float delta_second)
+{
+    // 奥レイヤ：緩やかに
+    bg_scroll_offset_layer1 += 20.0f * bg_speed_scale * delta_second;
+    // 手前レイヤ：速く
+    bg_scroll_offset_layer2 += 80.0f * bg_speed_scale * delta_second;
+
+    // 値が大きくなり過ぎないよう適当にラップ
+    if (bg_scroll_offset_layer1 > 10000.0f) bg_scroll_offset_layer1 -= 10000.0f;
+    if (bg_scroll_offset_layer2 > 10000.0f) bg_scroll_offset_layer2 -= 10000.0f;
+}
+
+void Stage2::UpdateRabel(float delta_second)
+{
+    // ラベルのスライド／表示／退場アニメ（既存）
+    const float slideDur = 0.45f;
+    const float showDur = 1.10f;
+
+    switch (warning_label_state)
+    {
+        case WarningLabelState::SlideIn:
+            warning_label_timer += delta_second;
+            // 0→1 で帯が伸びる
+            {
+                float t = warning_label_timer / slideDur;
+                if (t > 1.0f) t = 1.0f;
+                // 0→240px くらいまで伸ばす
+                warning_label_band_height = 240.0f * t;
+                if (warning_label_timer >= slideDur)
+                {
+                    warning_label_timer = 0.0f;
+                    warning_label_state = WarningLabelState::Displaying;
+                }
+            }
+            break;
+
+        case WarningLabelState::Displaying:
+            warning_label_timer += delta_second;
+            // 高さは一定
+            if (warning_label_timer >= showDur)
+            {
+                warning_label_timer = 0.0f;
+                warning_label_state = WarningLabelState::SlideOut;
+            }
+            break;
+
+        case WarningLabelState::SlideOut:
+            warning_label_timer += delta_second;
+            {
+                float t = warning_label_timer / slideDur;
+                if (t > 1.0f) t = 1.0f;
+                // 240→0 に縮む
+                warning_label_band_height = 240.0f * (1.0f - t);
+                if (warning_label_timer >= slideDur)
+                {
+                    warning_label_timer = 0.0f;
+                    warning_label_state = WarningLabelState::None;
+                    warning_label_band_height = 0.0f;
+                }
+            }
+            break;
+
+        case WarningLabelState::None:
+        default:
+            // 何もしない
+            break;
+    }
+}
+
+// ★ 追加：全画面フラッシュ（白→減衰）
+void Stage2::DrawFullScreenFlash()
+{
+    // フラッシュ要求が出たらタイマ起動
+    if (flash_request)
+    {
+        flash_request = false;
+        flash_timer = 0.25f; // 250msの白フラッシュ
+    }
+
+    if (flash_timer > 0.0f)
+    {
+        // ここはフレーム時間を渡せるなら delta を使ってOK
+        float decay = 1.0f / 60.0f; // 60fps想定の簡易減衰
+        flash_timer -= decay;
+        if (flash_timer < 0.0f) flash_timer = 0.0f;
+
+        int alpha = (int)(255.0f * (flash_timer / 0.25f));
+        if (alpha > 0)
+        {
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+            DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
     }
 }
