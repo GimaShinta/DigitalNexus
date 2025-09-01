@@ -74,13 +74,14 @@ void Player::Initialize()
 /// <param name="delata_second">1フレーム当たりの時間</param>
 void Player::Update(float delta_second)
 {
-	// 移動処理
-	Movement(delta_second);
 	// ダメージを受けたら
 	Damage(delta_second);
 
 	if (is_dead_animation_playing)
 	{
+		collision.object_type = eObjectType::eNone;
+		collision.hit_object_type.clear();
+
 		dead_animation_timer += delta_second;
 
 		if (dead_animation_timer >= dead_animation_duration)
@@ -101,6 +102,9 @@ void Player::Update(float delta_second)
 	}
 	else
 	{
+		// 移動処理
+		Movement(delta_second);
+
 		// 打てる状態だったら打つ
 		if (shot_stop == false)
 		{
@@ -135,21 +139,22 @@ void Player::Update(float delta_second)
 
 		// 部品のアニメーション
 		BuhinAnim(delta_second);
+
+		if (invincible_time > 0.0f)
+		{
+			invincible_time -= delta_second;
+			collision.object_type = eObjectType::eNone;
+			collision.hit_object_type.clear();
+		}
+		else
+		{
+			// 自分のオブジェクトタイプ
+			collision.object_type = eObjectType::ePlayer;
+			// 当たる相手のオブジェクトタイプ
+			collision.hit_object_type = { eObjectType::eEnemy, eObjectType::eExp, eObjectType::ePowerUp };
+		}
 	}
 
-	if (invincible_time > 0.0f)
-	{
-		invincible_time -= delta_second;
-		collision.object_type = eObjectType::eNone;
-		collision.hit_object_type.clear();
-	}
-	else
-	{
-		// 自分のオブジェクトタイプ
-		collision.object_type = eObjectType::ePlayer;
-		// 当たる相手のオブジェクトタイプ
-		collision.hit_object_type = { eObjectType::eEnemy, eObjectType::eExp, eObjectType::ePowerUp };
-	}
 
 	// 親クラスの更新処理を呼び出す
 	__super::Update(delta_second);

@@ -1049,6 +1049,11 @@ void GameMainScene::DrawUI()
         DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, color, TRUE);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
+
+
+    DrawFormatString(0, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_hun, TRUE);
+    DrawFormatString(30, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_byou, TRUE);
+    DrawFormatString(60, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_miri, TRUE);
 }
 
 // 警告演出の更新処理
@@ -1216,7 +1221,20 @@ eSceneType GameMainScene::UpdateGameplay(float delta)
     // タイマー更新（黒フェードやUI用）
     black_in_timer += delta;
     line_effect_timer += delta;
+    game_timer_miri += delta * 60;
+    game_timer += delta;
     eSceneType scene_type = GetNowSceneType();
+
+    if (game_timer_miri >= 60.0f)
+    {
+        game_timer_miri = 0.0f;
+        game_timer_byou++;
+    }
+    else if (game_timer_byou >= 60.0f)
+    {
+        game_timer_byou = 0.0f;
+        game_timer_hun++;
+    }
 
     // エフェクト更新
     if (auto* effectMgr = Singleton<EffectManager>::GetInstance()) {
@@ -1339,7 +1357,7 @@ eSceneType GameMainScene::UpdateGameOverState(float delta)
 {
     gameover_timer += delta;
 
-    if (gameover_timer > 5.0f)
+    if (gameover_timer > 10.0f)
     {
 
         retry = true;

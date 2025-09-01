@@ -105,7 +105,10 @@ private:
 	int gameover_alpha = 0; // 赤フィルター＆文字のアルファ
 	int gameover_text_alpha = 0; // 赤フィルター＆文字のアルファ
 
-	float scene_timer = 0.0f;
+	float game_timer_miri = 0.0f;
+	float game_timer_byou = 0.0f;
+	float game_timer_hun = 0.0f;
+	float game_timer = 0.0f;
 	bool retry = false;
 
 	PlayerType ui_current_type = PlayerType::AlphaCode;
