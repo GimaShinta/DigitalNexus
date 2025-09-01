@@ -63,6 +63,18 @@ void EnemyBullet5::Finalize()
 
 void EnemyBullet5::OnHitCollision(GameObjectBase* hit_object)
 {
+	if (hit_object->GetCollision().object_type == eObjectType::eDefenceShot)
+	{
+		if (player)
+			DropItems();
+
+		is_destroy = true;
+	}
+
+	if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
+	{
+		is_destroy = true;
+	}
 }
 
 void EnemyBullet5::SetWaveParameters(const Vector2D& base_velocity, float amplitude, float frequency, bool reverse)

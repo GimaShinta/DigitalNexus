@@ -99,7 +99,8 @@ void Enemy2::ShootToPlayer(float speed)
     SEManager* am = Singleton<SEManager>::GetInstance();
  
     GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
-    GameObjectBase* shot = gm->CreateObject<EnemyBullet1>(location);
+    EnemyBullet1* shot = gm->CreateObject<EnemyBullet1>(location);
+    shot->SetPlayer(player);
 
     am->PlaySE(SE_NAME::EnemyShot);
     am->ChangeSEVolume(SE_NAME::EnemyShot, 90);

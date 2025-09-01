@@ -234,6 +234,7 @@ void Enemy4::Shot4WayAim() {
         Vector2D dir(cosf(ang), sinf(ang));
         if (auto* b = gm->CreateObject<EnemyBullet2>(location)) {
             b->SetVelocity(dir * speed);
+            b->SetPlayer(player);
         }
     }
     se->PlaySE(SE_NAME::EnemyShot);
@@ -259,6 +260,7 @@ void Enemy4::Shot4WayWide() {
         Vector2D dir(cosf(ang), sinf(ang));
         if (auto* b = gm->CreateObject<EnemyBullet2>(location)) {
             b->SetVelocity(dir * speed);
+            b->SetPlayer(player);
         }
     }
     se->PlaySE(SE_NAME::EnemyShot);
@@ -287,6 +289,7 @@ void Enemy4::Shot4WayStaggeredBurst() {
         Vector2D dir(cosf(ang), sinf(ang));
         if (auto* b = gm->CreateObject<EnemyBullet2>(location)) {
             b->SetVelocity(dir * speed);
+            b->SetPlayer(player);
         }
     }
     se->PlaySE(SE_NAME::EnemyShot);

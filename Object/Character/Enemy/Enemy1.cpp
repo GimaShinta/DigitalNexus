@@ -258,6 +258,7 @@ void Enemy1::Shot(float speed)
         Vector2D dir(sinf(angle_rad), cosf(angle_rad)); // Y•ûŒü‚ª‰º
 
         auto bullet = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);
+        bullet->SetPlayer(player);
         if (bullet)
         {
             bullet->SetVelocity(dir * speed);

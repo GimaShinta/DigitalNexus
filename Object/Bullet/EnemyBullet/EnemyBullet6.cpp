@@ -116,6 +116,18 @@ void EnemyBullet6::Finalize()
 
 void EnemyBullet6::OnHitCollision(GameObjectBase* hit_object)
 {
+	if (hit_object->GetCollision().object_type == eObjectType::eDefenceShot)
+	{
+		if (player)
+			DropItems();
+
+		is_destroy = true;
+	}
+
+	if (hit_object->GetCollision().object_type == eObjectType::ePlayer)
+	{
+		is_destroy = true;
+	}
 }
 
 void EnemyBullet6::SetPlayer(Player* p)
