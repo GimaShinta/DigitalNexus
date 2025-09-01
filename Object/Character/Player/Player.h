@@ -60,7 +60,7 @@ private:
 	bool is_shield_damage = false;
 	// 追加：シールドの切り替え直後1フレームスキップ用フラグ
 	bool just_switched_to_second = false;
-	int powerd = 2;
+	int powerd = 1;
 	bool powerd_on = false;
 	float powerd_time = 0.0f;
 	bool is_alive = true;
@@ -76,7 +76,7 @@ private:
 	const float charge_max = 100.0f;
 	bool charge_ready = false;
 
-	float charge2 = 10.0f;
+	float charge2 = 0.0f;
 	const float charge_max2 = 100.0f;
 	bool charge2_ready = false;
 

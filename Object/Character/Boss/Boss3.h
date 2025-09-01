@@ -1,11 +1,11 @@
 #pragma once
-#include "../Enemy/EnemyBase.h"
+#include "../CharacterBase.h"
 //#include "../../Shot/EnemyShot/EnemyShot3.h"
 #include "../../Beam/EnemyBeam.h"
 
 const int MAX_ATTACK_PATTRN = 8;
 
-class Boss3 : public EnemyBase
+class Boss3 : public CharacterBase
 {
 private:
 	int se_beam;
@@ -108,11 +108,6 @@ private:
 	float beam_damage_timer = 0.0f;
 	bool on_hit = false;
 
-	bool beam_on = false;
-	std::vector<EnemyBeam*> beams;
-
-	bool ikkai_bakuhatu = false;
-
 public:
 	Boss3();
 	~Boss3();
@@ -184,50 +179,29 @@ public:
 	//	return (value < min) ? min : (value > max) ? max : value;
 	//}
 
+	class Player* player = nullptr;
+
+public:
+	void SetPlayer(Player* p) { player = p; }
+
 private:
 	void Attack(float delta_second);
 
-	void Pattrn1(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn1_2(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location1, const Vector2D& generate_location2, float delta_second);
-	void Pattrn2(float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattern3(int bullet_count, float initial_speed, float spread_angle, float shot_interval, float attack_duration, const Vector2D& generate_location, float delta_second);
-	void Pattern4(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second, float range_amplitude);
-	void Pattrn4_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second, float range_amplitude, float range_width);
-	void Pattrn5(int total_bullet_count,
-		float spawn_interval,
-		float initial_speed,
-		float stop_duration,
-		float homing_speed,
-		float duration_limit,
-		const Vector2D& generate_location_left,
-		const Vector2D& generate_location_right,
-		float delta_second);
-	void Pattrn6(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn6_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn7(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn4(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn4_2(int bullet_num, float speed, float spiral_interval, float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn5(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
+	void Pattrn5_2(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
+	void Pattrn6(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change);
 	void Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn8(int bullet_num, float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second, bool image_change);
-	void Pattrn8_2(float fan_angle_range, float bullet_speed, float fan_interval, float fan_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn9(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
-		float spiral_duration_limit, const Vector2D& generate_location, float delta_second);
-	void Pattrn9_2(float speed, float spiral_interval, float min_angle, float max_angle, float angle_step,
-		float spiral_duration_limit,
-		const Vector2D& generate_location_left, const Vector2D& generate_location_right,
-		float delta_second);
-
-
-
-
-
-	//void Pattrn5(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
-	//void Pattrn5_2(float spiral_interval, float spiral_duration_limit, float spiral_speed, const Vector2D& generate_location, float delta_second);
-	//void Pattrn8(float wave_interval, float wave_duration_limit, const Vector2D& generate_location, float delta_second);
-	//void Pattrn9(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
-	//void Pattrn9_2(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
-	//void Pattrn10(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
-	//void Pattrn10_2(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
-	//void Pattrn11(float offsets_x);
+	void Pattrn8(float wave_interval, float wave_duration_limit, const Vector2D& generate_location, float delta_second);
+	void Pattrn9(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
+	void Pattrn9_2(int shot_count, float radius, float angular_speed, float bullet_speed, const Vector2D& generate_location, float delta_second);
+	void Pattrn10(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
+	void Pattrn10_2(int shot_count, float radius, float angular_speed, float center_speed, float duration_limit, const Vector2D& center_location, float delta_second);
+	void Pattrn11(float offsets_x);
 	void Pattrn12();
-	//void Pattrn13(float delta_second);
+	void Pattrn13(float delta_second);
 };
 
