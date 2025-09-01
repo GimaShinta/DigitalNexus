@@ -263,13 +263,13 @@ void Boss4::Update(float delta_second)
 	100.0f,  // 左奥（ゆっくり）
 	100.0f,  // 左手前
 	100.0f,  // 右手前
-	60.0f,   // 右奥（ゆっくり）
+	40.0f,   // 右奥（ゆっくり）
 
-	60.0f,   // 砲（ゆっくり）
 	40.0f,   // 砲（ゆっくり）
-	40.0f ,  // 砲（ゆっくり）
-	40.0f  , // 砲（ゆっくり）
-	40.0f   ,// 砲（ゆっくり）
+	20.0f,   // 砲（ゆっくり）
+	20.0f ,  // 砲（ゆっくり）
+	20.0f  , // 砲（ゆっくり）
+	20.0f   ,// 砲（ゆっくり）
 	100.0f   ,// 砲（ゆっくり）
 	};
 
@@ -311,6 +311,22 @@ void Boss4::Update(float delta_second)
 				ripples[i].active = false;
 			}
 		}
+	}
+
+
+	// --- 既存の Update の最後あたりに追記 ---
+// Jet アニメーション
+	std::vector<int> jet_num = { 2, 3, 4, 8, 9, 10, 11, 12, 16, 17, 16, 12, 11, 10, 9, 8, 4, 3, 2 };
+	jet_timer += delta_second;
+	if (jet_timer >= 0.01f)
+	{
+		jet_timer = 0.0f;
+		jet_count++;
+		if (jet_count >= jet_num.size())
+		{
+			jet_count = 0;
+		}
+		jet = boss4_jet[jet_num[jet_count]];
 	}
 
 
@@ -721,6 +737,21 @@ void Boss4::Shot(float delta_second)
 void Boss4::DrawBoss4(const Vector2D position) const
 {
 
+	// ── ジェット描画 ──
+	if (!is_crashing) {
+		const float jetAngle = DX_PI; // 180°回転で上向き
+
+		DrawRotaGraph((int)(position.x - 70), (int)(position.y - 150),
+			image_size, jetAngle, jet, TRUE);
+
+		DrawRotaGraph((int)(position.x + 70), (int)(position.y - 150),
+			image_size, jetAngle, jet, TRUE);
+	}
+
+
+	// ★ジェットのアンカー座標（見た目に合わせて微調整可）
+	Vector2D baseL(-70.0f, 150.0f);
+	Vector2D baseR(70.0f, 150.0f);
 
 
 	DrawRotaGraph(part_positions[7].x, part_positions[7].y, image_size, angle, boss4_image[8], TRUE);
@@ -737,6 +768,8 @@ void Boss4::DrawBoss4(const Vector2D position) const
 	DrawRotaGraph(part_positions[4].x, part_positions[4].y, image_size, angle, boss4_image[5], TRUE); // 右奥
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255); // アルファブレンドON
+
+
 
 	if (is_crashing == false)
 	{
@@ -759,6 +792,7 @@ void Boss4::DrawBoss4(const Vector2D position) const
 				GetColor(150, 255, 150),
 				FALSE);
 		}
+
 	}
 
 
@@ -1000,6 +1034,7 @@ void Boss4::Pattrn4(int bullet_num, float speed, float spiral_interval, float sp
 			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
 
 			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
+			e_shot4->SetPlayer(player);
 			e_shot4->SetVelocity(velocity);
 			e_shot4->SetAttackPattrn(1);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
@@ -1040,6 +1075,7 @@ void Boss4::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float 
 
 			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 65.0f, generate_location.y));
 			e_shot4->SetVelocity(velocity);
+			e_shot4->SetPlayer(player);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1053,6 +1089,7 @@ void Boss4::Pattrn4_2(int bullet_num, float speed, float spiral_interval, float 
 			Vector2D velocity(cos(rad) * speed, sin(rad) * speed);
 
 			EnemyBullet3* e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 65.0f, generate_location.y));
+			e_shot4->SetPlayer(player);
 			e_shot4->SetVelocity(velocity);
 		}
 	}
@@ -1100,6 +1137,7 @@ void Boss4::Pattrn5(float spiral_interval, float spiral_duration_limit, float sp
 			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(generate_location);
 			shot->SetVelocity(velocity);
 			shot->SetAttackPattrn(2);
+			shot->SetPlayer(player);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1146,6 +1184,7 @@ void Boss4::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 20.0f, generate_location.y));
 			shot->SetVelocity(velocity);
 			shot->SetAttackPattrn(2);
+			shot->SetPlayer(player);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1161,6 +1200,7 @@ void Boss4::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 
 			EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 20.0f, generate_location.y));
 			shot->SetVelocity(velocity);
+			shot->SetPlayer(player);
 			shot->SetAttackPattrn(2);
 		}
 #else
@@ -1176,6 +1216,7 @@ void Boss4::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 
 			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x + 20.0f, generate_location.y - 50.0f));
 			shot->SetVelocity(velocity);
+			shot->SetPlayer(player);
 		}
 
 		// 左側（反時計回り、上方向のみ）
@@ -1188,6 +1229,7 @@ void Boss4::Pattrn5_2(float spiral_interval, float spiral_duration_limit, float 
 
 			EnemyShot4* shot = objm->CreateObject<EnemyShot4>(Vector2D(generate_location.x - 20.0f, generate_location.y - 50.0f));
 			shot->SetVelocity(velocity);
+			shot->SetPlayer(player);
 		}
 
 
@@ -1244,6 +1286,7 @@ void Boss4::Pattrn6(float fan_angle_range, float bullet_speed, float fan_interva
 
 		e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x, generate_location.y - 15.0f));
 		e_shot4->SetVelocity(velocity);
+		e_shot4->SetPlayer(player);
 		//e_shot4->SetAttackPattrn(1);
 		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
@@ -1290,6 +1333,7 @@ void Boss4::Pattrn6_2(float fan_angle_range, float bullet_speed, float fan_inter
 		e_shot4->SetVelocity(velocity);
 		e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 65.0f, generate_location.y));
 		e_shot4->SetVelocity(velocity);
+		e_shot4->SetPlayer(player);
 		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1341,6 +1385,7 @@ void Boss4::Pattrn7(int bullet_num, float fan_angle_range, float bullet_speed, f
 
 			e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
 			e_shot4->SetVelocity(velocity);
+			e_shot4->SetPlayer(player);
 			if (image_change == true)
 			{
 				e_shot4->SetAttackPattrn(1);
@@ -1393,6 +1438,7 @@ void Boss4::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 
 			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x + 65.0f, generate_location.y));
 			e_shot4->SetVelocity(velocity);
+			e_shot4->SetPlayer(player);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1408,6 +1454,7 @@ void Boss4::Pattrn7_2(float fan_angle_range, float bullet_speed, float fan_inter
 
 			e_shot4 = objm->CreateObject<EnemyBullet3>(Vector2D(generate_location.x - 65.0f, generate_location.y));
 			e_shot4->SetVelocity(velocity);
+			e_shot4->SetPlayer(player);
 		}
 	}
 
@@ -1449,12 +1496,14 @@ void Boss4::Pattrn8(float wave_interval, float wave_duration_limit, const Vector
 		e_shot5->SetWaveReflected(false);
 		e_shot5->SetVelocity(Vector2D(0, 200));
 		e_shot5->SetWaveParameters(600.0f, 0.7f);
+		e_shot5->SetPlayer(player);
 
 		// 左側
 		e_shot5 = objm->CreateObject<EnemyBullet4>(Vector2D(e_lo.x - 50, e_lo.y));
 		e_shot5->SetWaveReflected(true);
 		e_shot5->SetVelocity(Vector2D(0, 200));
 		e_shot5->SetWaveParameters(600.0f, 0.7f);
+		e_shot5->SetPlayer(player);
 		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
 
@@ -1481,6 +1530,7 @@ void Boss4::Pattrn8(float wave_interval, float wave_duration_limit, const Vector
 		e_shot5 = objm->CreateObject<EnemyShot5>(origin);
 		e_shot5->SetVelocity(Vector2D(cosf(rad), sinf(rad)) * spread_speed);
 		e_shot5->SetSuckCenter(boss_center); // 吸い込み先をセット！
+		e_shot5->SetPlayer(player);
 	}
 #endif
 
@@ -1522,6 +1572,7 @@ void Boss4::Pattrn9(int shot_count, float radius, float angular_speed, float bul
 			e_shot4 = objm->CreateObject<EnemyBullet3>(generate_location);
 			SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 			SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+			e_shot4->SetPlayer(player);
 
 			if (e_shot4)
 			{
@@ -1609,6 +1660,7 @@ void Boss4::Pattrn9_2(int shot_count, float radius, float angular_speed, float b
 					shots_left.push_back(e_shot4);
 					e_shot4->SetVelocity(Vector2D(0, 0));
 					//e_shot4->SetAttackPattrn(1);
+					e_shot4->SetPlayer(player);
 				}
 			}
 			else
@@ -1617,6 +1669,7 @@ void Boss4::Pattrn9_2(int shot_count, float radius, float angular_speed, float b
 				e_shot4 = objm->CreateObject<EnemyBullet3>(right_center);
 				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+				e_shot4->SetPlayer(player);
 
 				if (e_shot4)
 				{
@@ -1723,6 +1776,7 @@ void Boss4::Pattrn10(int shot_count, float radius, float angular_speed, float ce
 				EnemyBullet3* shot = objm->CreateObject<EnemyBullet3>(center_pos);
 				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+				shot->SetPlayer(player);
 
 				if (shot)
 				{
@@ -1798,6 +1852,7 @@ void Boss4::Pattrn10_2(int shot_count, float radius, float angular_speed, float 
 
 				// 左側の弾
 				EnemyBullet3* shot_L = objm->CreateObject<EnemyBullet3>(center_pos_L);
+				shot_L->SetPlayer(player);
 				if (shot_L)
 				{
 					shot_L->SetVelocity(Vector2D(0, 0));
@@ -1808,7 +1863,7 @@ void Boss4::Pattrn10_2(int shot_count, float radius, float angular_speed, float 
 				EnemyBullet3* shot_R = objm->CreateObject<EnemyBullet3>(center_pos_R);
 				SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
-
+				shot_R->SetPlayer(player);
 				if (shot_R)
 				{
 					shot_R->SetVelocity(Vector2D(0, 0));
