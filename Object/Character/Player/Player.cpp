@@ -495,7 +495,8 @@ void Player::Shot(float delta_second)
 				recovery_on = true;
 				stop = true;
 				can_change_type_now = false;
-				beam_timer = 0.0f;
+				beam_timer = 5.0f;
+				powerd++;
 				UseSpecial2();
 			}
 		}
@@ -528,6 +529,7 @@ void Player::Shot(float delta_second)
 		stop = false;
 		beam_on = false;
 		can_change_type_now = true;
+		recovery_on = false;
 	}
 	else
 	{
