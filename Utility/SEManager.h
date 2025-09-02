@@ -5,6 +5,10 @@
 enum class SE_NAME
 {
 	Shot,
+	Shot2,
+	Shot3,
+	Kira,
+	Kirikae,
 	Reaction,
 	Explosion,
 	Bakuhatu,
@@ -12,6 +16,7 @@ enum class SE_NAME
 	Kill,
 	Destroy,
 	Hit,
+	Hit2,
 	EnemyShot,
 	Hamon,
 	EnemyBeam,

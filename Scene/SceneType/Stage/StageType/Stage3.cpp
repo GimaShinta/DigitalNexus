@@ -22,6 +22,11 @@ void Stage3::Initialize()
 
     font_orbitron = CreateFontToHandle("Orbitron", 22, 6, DX_FONTTYPE_ANTIALIASING);
     font_warning = CreateFontToHandle("Orbitron", 48, 6, DX_FONTTYPE_ANTIALIASING);
+
+    SEManager* am = Singleton<SEManager>::GetInstance();
+    am->PlaySE(SE_NAME::Kirikae);      
+    am->ChangeSEVolume(SE_NAME::Kirikae, 70);
+
 }
 
 // èIóπéûèàóù

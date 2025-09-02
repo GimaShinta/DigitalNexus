@@ -45,7 +45,7 @@ void PlayerAttackBullet::OnHitCollision(GameObjectBase* hit_object)
 		if (GetRand(2) == 1)
 		{
 			sm->PlaySE(SE_NAME::Hit);
-			sm->ChangeSEVolume(SE_NAME::Hit, 50);
+			sm->ChangeSEVolume(SE_NAME::Hit, 65);
 			//PlaySoundMem(hit_se, DX_PLAYTYPE_BACK);
 			random_x *= -1;
 		}

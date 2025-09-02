@@ -64,8 +64,8 @@ void PlayerDefenceBullet::OnHitCollision(GameObjectBase* hit_object)
 		float random_x = static_cast<float>(GetRand(20));
 		if (GetRand(2) == 1)
 		{
-			sm->PlaySE(SE_NAME::Hit);
-			sm->ChangeSEVolume(SE_NAME::Hit, 50);
+			sm->PlaySE(SE_NAME::Hit2);
+			sm->ChangeSEVolume(SE_NAME::Hit2, 60);
 			random_x *= -1;
 		}
 		float random_y = static_cast<float>(GetRand(15));

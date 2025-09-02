@@ -458,8 +458,7 @@ void Player::Shot(float delta_second)
 				is_shot_anim = true;
 				is_shot = true;
 				shot_timer = 0.0f;
-				am->PlaySE(SE_NAME::Shot);
-				am->ChangeSEVolume(SE_NAME::Shot, 60);
+				PlayShotSE();
 			}
 			GenarateBullet();
 		}
@@ -532,6 +531,26 @@ void Player::Shot(float delta_second)
 		beam_timer += delta_second;
 	}
 }
+
+// Player.cpp （ファイル末尾のほう、他メンバ関数定義と同じ階層に追加）
+void Player::PlayShotSE()
+{
+	SEManager* am = Singleton<SEManager>::GetInstance();
+
+	// ★必要に応じてSE名を入れ替えてください★
+	// 例）Alpha=Shot、Omega=Shot2（Shot2が無ければ別名に変更）
+	if (now_type == PlayerType::AlphaCode)
+	{
+		am->PlaySE(SE_NAME::Shot2);
+		am->ChangeSEVolume(SE_NAME::Shot2, 100);
+	}
+	else // OmegaCode
+	{
+		am->PlaySE(SE_NAME::Shot);      // ← ここを手元のSE名に
+		am->ChangeSEVolume(SE_NAME::Shot, 60);
+	}
+}
+
 
 void Player::Damage(float delta_second)
 {

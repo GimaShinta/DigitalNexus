@@ -9,8 +9,13 @@ void SEManager::LoadSE()
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 
 	se_handles[SE_NAME::Shot] = rm->GetSounds("Resource/sound/se/shot/shot_02.mp3");
+	se_handles[SE_NAME::Shot2] = rm->GetSounds("Resource/sound/se/shot/shot_04.mp3");
+	se_handles[SE_NAME::Shot3] = rm->GetSounds("Resource/sound/se/shot/shot_05.mp3");
+	se_handles[SE_NAME::Kira] = rm->GetSounds("Resource/sound/se/shot/kirakira.mp3");
+	se_handles[SE_NAME::Kirikae] = rm->GetSounds("Resource/sound/se/effect/kirikae.mp3");
 	se_handles[SE_NAME::Destroy] = rm->GetSounds("Resource/sound/se/se_effect/kill_4.mp3");
 	se_handles[SE_NAME::Hit] = rm->GetSounds("Resource/sound/se/se_effect/hit_se.mp3");
+	se_handles[SE_NAME::Hit2] = rm->GetSounds("Resource/sound/se/se_effect/hit04.mp3");
 	se_handles[SE_NAME::Bakuhatu] = rm->GetSounds("Resource/sound/se/battle/bakuhatu_b.mp3");
 	se_handles[SE_NAME::Kill] = rm->GetSounds("Resource/sound/se/boss_se/boss_kill.mp3");
 	se_handles[SE_NAME::Bakuhatu_End] = rm->GetSounds("Resource/sound/se/boss_se/bakuhatu_end.mp3");
