@@ -383,7 +383,7 @@ void Player::Shot(float delta_second)
 	shot_timer += delta_second;
 
 	// プレイヤータイプの変更
-	if (can_change_type &&
+	if (can_change_type && can_change_type_now &&
 		(input->GetKeyDown(KEY_INPUT_LSHIFT) || 
 		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
 		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER)))
@@ -482,6 +482,7 @@ void Player::Shot(float delta_second)
 				stop = true;
 				beam_timer = 0.0f;
 				invincible_time = 5.0f;
+				can_change_type_now = false;
 				UseSpecial();  // ゲージ消費
 				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
 				PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
@@ -493,6 +494,7 @@ void Player::Shot(float delta_second)
 			{
 				recovery_on = true;
 				stop = true;
+				can_change_type_now = false;
 				beam_timer = 0.0f;
 				UseSpecial2();
 			}
@@ -525,6 +527,7 @@ void Player::Shot(float delta_second)
 	{
 		stop = false;
 		beam_on = false;
+		can_change_type_now = true;
 	}
 	else
 	{
@@ -905,6 +908,10 @@ bool Player::GetGameOver() const
 PlayerType Player::GetNowType() const
 {
 	return now_type;
+}
+void Player::SetNowType(PlayerType nt)
+{
+	now_type = nt;
 }
 void Player::ForceNeutralAnim(bool enable)
 {

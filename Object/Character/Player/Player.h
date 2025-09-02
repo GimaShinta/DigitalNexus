@@ -127,6 +127,7 @@ private:
 	class PlayerDefenceBullet* defence_bullet = nullptr;
 
 	bool can_change_type = true;
+	bool can_change_type_now = true;
 
 public:
 	Player();
@@ -198,6 +199,7 @@ public:
 	void SetShotStop(bool stoping);
 	bool GetGameOver() const;
 	PlayerType GetNowType() const;
+	void SetNowType(PlayerType nt);
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }

@@ -757,7 +757,7 @@ void GameMainScene::DrawUI()
         DrawBox(bar_x, bar_y, bar_x + bar_w, bar_y + bar_h, base_bar_color, TRUE);
         DrawBox(bar_x, bar_y, bar_x + static_cast<int>(bar_w * rate), bar_y + bar_h, fill_color, TRUE);
 
-        if (player->CanUseSpecial() && !player->GetGameOver())
+        if (player->CanUseSpecial() && !player->GetGameOver() && player->GetNowType() == PlayerType::AlphaCode)
         {
             int text_x = x + 140;
             int text_y = y + 30;
@@ -766,7 +766,15 @@ void GameMainScene::DrawUI()
 
             DrawStringToHandle(text_x - 25, text_y + 5, "Press B!!", pulse_color, font_orbitron);
         }
+        else if (player->CanUseSpecial2() && !player->GetGameOver() && player->GetNowType() == PlayerType::OmegaCode)
+        {
+            int text_x = x + 140;
+            int text_y = y + 30;
+            int pulse = (GetNowCount() % 100 > 50) ? 255 : 100;
+            int pulse_color = GetTypeColor(255, pulse, pulse, pulse, 80, 80);
 
+            DrawStringToHandle(text_x - 25, text_y + 5, "Press B!!", pulse_color, font_orbitron);
+        }
         DrawLine(x, y + 60, x + 200, y + 60, line_color);
     }
 
@@ -847,7 +855,17 @@ void GameMainScene::DrawUI()
     }
 
     // ==== SPECIAL READY UI（プレイヤー下に真ん中表示） ====
-    if (player && player->CanUseSpecial())
+    if (player && player->CanUseSpecial() && player->GetNowType() == PlayerType::AlphaCode)
+    {
+        Vector2D pos = player->GetLocation();
+        int ui_x = static_cast<int>(pos.x + offset.x) - 55;
+        int ui_y = static_cast<int>(pos.y + offset.y) + 40;
+        int pulse = static_cast<int>(GetNowCount() % 100) > 50 ? 255 : 100;
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        DrawFormatStringToHandle(ui_x, ui_y, GetColor(255, pulse, pulse), font_orbitron, "Press B!!");
+    }
+    else if (player && player->CanUseSpecial2() && player->GetNowType() == PlayerType::OmegaCode)
     {
         Vector2D pos = player->GetLocation();
         int ui_x = static_cast<int>(pos.x + offset.x) - 55;

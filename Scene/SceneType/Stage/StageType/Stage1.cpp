@@ -968,14 +968,12 @@ void Stage1::StageLabel() const
     }
 }
 
-// プレイヤーの登場処理
 void Stage1::AppearancePlayer(float delta_second)
 {
-    // プレイヤーの登場の動き
     if (is_player_entering)
     {
         player->SetShotStop(true);
-        const float duration = 2.5f; // ゆっくり2.5秒かけて降下
+        const float duration = 2.5f;
         player_entry_timer += delta_second;
 
         float t = player_entry_timer / duration;
@@ -984,11 +982,22 @@ void Stage1::AppearancePlayer(float delta_second)
             t = 1.0f;
             is_player_entering = false;
             player->SetMobility(true);
-            player->ForceNeutralAnim(false); // ← アニメーション許可
+            player->ForceNeutralAnim(false);
             player->SetShotStop(false);
+            player->SetNowType(PlayerType::AlphaCode); // 最終的にAlphaに固定
+        }
+        else
+        {
+            // 演出中だけタイプを強制
+            if (t < 0.2f)
+                player->SetNowType(PlayerType::AlphaCode);
+            else if (t < 0.5f)
+                player->SetNowType(PlayerType::OmegaCode);
+            else
+                player->SetNowType(PlayerType::AlphaCode);
         }
 
-        // 緩やかに下降するイージング（easeOutQuad）
+        // 下降イージング
         float eased = 1.0f - (1.0f - t) * (1.0f - t);
         Vector2D new_pos = entry_start_pos + (entry_end_pos - entry_start_pos) * eased;
         player->SetLocation(new_pos);
