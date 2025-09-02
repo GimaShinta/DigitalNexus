@@ -194,4 +194,7 @@ private:
 	void Pattrn11(float offsets_x);
 	void Pattrn12();
 	void Pattrn13(float delta_second);
+	void Pattrn14(float delta_second);
+	void Pattrn15(float delta_second);
+
 };
