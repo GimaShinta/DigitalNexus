@@ -49,6 +49,8 @@ private:
 	float result_fadeout_timer = 0.0f;
 	bool result_ended = false;
 
+	float game_timer = 0.0f;
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage3(Player* player);     // プレイヤー情報を引数に取るステージ初期化

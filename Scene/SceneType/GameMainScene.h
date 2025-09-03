@@ -109,6 +109,8 @@ private:
 	float game_timer_byou = 0.0f;
 	float game_timer_hun = 0.0f;
 	float game_timer = 0.0f;
+	bool game_timer_stop = false;
+
 	bool retry = false;
 
 	PlayerType ui_current_type = PlayerType::AlphaCode;

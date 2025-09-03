@@ -400,6 +400,7 @@ void Stage4::UpdateGameStatus(float delta_second)
         {
             result_started = true;
             result_timer = 0.0f; // スコア演出タイマーリセット
+            time_stop = true;
         }
     }
 }
@@ -448,7 +449,8 @@ void Stage4::ResultDraw(float delta_second)
     ScoreData* score = Singleton<ScoreData>::GetInstance();
     float base_score = score->GetTotalScore();
     int life_bonus = player->GetLife() * 1000;
-    total_score = base_score + life_bonus;
+    float time_bonus = game_time_byou;
+    total_score = base_score + life_bonus + time_bonus;
 
     // 表示ライン設定
     struct ResultLine {
@@ -459,10 +461,11 @@ void Stage4::ResultDraw(float delta_second)
     };
 
     std::vector<ResultLine> lines = {
-        {  30, -80, "TRUE RESULT", "" },
-        {  70, -20, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
-        { 110,  20, "LIFE BONUS", "LIFE BONUS : %d" },
-        { 160,  80, "FINAL SCORE", "FINAL SCORE : %.0f" },
+        {  30,  -80, "TRUE RESULT", "" },
+        {  70,  -20, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
+        { 110,   20, "LIFE BONUS",  "LIFE BONUS : %d" },
+        { 140,   60, "TIME BONUS",  "TIME BONUS : %d" }, 
+        { 180,  140, "FINAL SCORE", "FINAL SCORE : %.0f" },
     };
 
     // 表示位置（左右揃え用）
@@ -496,6 +499,9 @@ void Stage4::ResultDraw(float delta_second)
             }
             else if (line.label == "LIFE BONUS") {
                 sprintf_s(value_buf, "%d", life_bonus);
+            }
+            else if (line.label == "TIME BONUS") {
+                sprintf_s(value_buf, "%.0f", time_bonus);
             }
             else if (line.label == "FINAL SCORE") {
                 sprintf_s(value_buf, "%.0f", total_score);

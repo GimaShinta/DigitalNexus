@@ -107,6 +107,7 @@ private:
 	float delta = 0.0f;
 	float beam_damage_timer = 0.0f;
 	bool on_hit = false;
+	bool ikkai_bakuhatu = false;
 
 public:
 	Boss3();

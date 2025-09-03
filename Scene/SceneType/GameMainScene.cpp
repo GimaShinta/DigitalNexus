@@ -1069,9 +1069,20 @@ void GameMainScene::DrawUI()
     }
 
 
-    DrawFormatString(0, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_hun, TRUE);
-    DrawFormatString(30, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_byou, TRUE);
-    DrawFormatString(60, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_miri, TRUE);
+    if (game_timer_hun < 10.0f)
+        DrawFormatString(0, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_hun, TRUE);
+    else
+        DrawFormatString(0, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_hun, TRUE);
+
+    if(game_timer_byou < 10.0f)
+        DrawFormatString(40, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_byou, TRUE);
+    else
+        DrawFormatString(40, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_byou, TRUE);
+
+    if(game_timer_miri < 10.0f)
+        DrawFormatString(80, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_miri, TRUE);
+    else
+        DrawFormatString(80, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_miri, TRUE);
 }
 
 // 警告演出の更新処理
@@ -1239,9 +1250,11 @@ eSceneType GameMainScene::UpdateGameplay(float delta)
     // タイマー更新（黒フェードやUI用）
     black_in_timer += delta;
     line_effect_timer += delta;
-    game_timer_miri += delta * 60;
     game_timer += delta;
     eSceneType scene_type = GetNowSceneType();
+
+    if (current_stage && !current_stage->GetGameTimeStop())
+        game_timer_miri += delta * 60;
 
     if (game_timer_miri >= 60.0f)
     {
@@ -1262,6 +1275,7 @@ eSceneType GameMainScene::UpdateGameplay(float delta)
     // ステージ更新
     if (current_stage) {
         current_stage->Update(delta);
+        current_stage->SetGameTime(game_timer_hun, game_timer_byou, game_timer_miri);
     }
 
     // 画面シェイク更新

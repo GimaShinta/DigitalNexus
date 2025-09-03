@@ -269,4 +269,23 @@ public:
         }
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
+
+    float game_time_hun = 0.0f;
+    float game_time_byou = 0.0f;
+    float game_time_miri = 0.0f;
+
+    void SetGameTime(float& time_hun, float& time_byou, float& time_miri)
+    {
+        game_time_hun = time_hun;
+        game_time_byou = time_byou;
+        game_time_miri = time_miri;
+    }
+
+    bool time_stop = false;
+
+    bool GetGameTimeStop() const
+    {
+        return time_stop;
+    }
+
 };
