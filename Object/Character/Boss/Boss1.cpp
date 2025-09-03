@@ -8,6 +8,30 @@
 #include "../../Character/Player/Player.h"
 #include "../../Bullet/EnemyBullet/EnemyBullet3.h"
 
+// ===== Boss1 難易度緩和用チューニング定数 =====
+namespace {
+    // 移動（HP減少時の“速くなる／振れ幅広がる”度合いを控えめに）
+    constexpr float kMoveBaseSpeed = 0.90f;  // 元: 1.2f
+    constexpr float kMoveSpeedScale = 0.30f;  // 元: 0.7f
+    constexpr float kAmpXBase = 110.0f; // 元: 130.0f
+    constexpr float kAmpXScale = 40.0f;  // 元: 70.0f
+    constexpr float kAmpYBase = 20.0f;  // 元: 25.0f
+    constexpr float kAmpYScale = 15.0f;  // 元: 25.0f
+
+    // 攻撃間隔（HPが減っても撃つ間隔が短くなり過ぎないように）
+    // 0.75～1.30秒の範囲で推移（元：0.50～1.10秒）
+    constexpr float kShotIntervalMin = 0.75f;
+    constexpr float kShotIntervalBonus = 0.55f; // 実際は kShotIntervalMin + kShotIntervalBonus * hp_ratio
+
+    // 弾速の全体係数（全パターンを8割速に：視認性UP＆回避しやすく）
+    constexpr float kBulletSpeedScale = 0.80f;
+
+    // HPしきい値（“オーバードライブ”を弱める）
+    constexpr float kPhaseMidRatio = 0.50f;
+    constexpr float kPhaseLowRatio = 0.30f;
+}
+
+
 Boss1::Boss1() {}
 Boss1::~Boss1() {}
 
@@ -100,7 +124,7 @@ void Boss1::Update(float delta_second)
         if (damage_timer >= 0.05f) // 0.05秒ごとに減少
         {
             damage_timer = 0.0f;
-            hp -= 0.2; // 減少量
+            hp -= 5.0f; // 減少量
         }
     }
 
@@ -133,19 +157,20 @@ void Boss1::UpdateHovering(float delta_second)
 {
     move_timer += delta_second;
 
-    // HP割合を算出
-    float hp_ratio = (float)hp / 4000.0f;
+    // ★HP割合：ハードコード(4000/8000)を廃止し、定義値に統一
+    float hp_ratio = static_cast<float>(hp) / static_cast<float>(BOSS1_MAX_HP);
     if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
 
-    // === 移動速度・振れ幅をHPに応じて変化 ===
-    float amplitudeX = 130.0f + (1.0f - hp_ratio) * 70.0f; // HP減少で振れ幅拡大
-    float amplitudeY = 25.0f + (1.0f - hp_ratio) * 25.0f;  // 縦揺れ増加
-    float speed = 1.2f + (1.0f - hp_ratio) * 0.7f;         // HP減少で速くなる
+    // === 移動（難化を控えめに） ===
+    const float amplitudeX = kAmpXBase + (1.0f - hp_ratio) * kAmpXScale;
+    const float amplitudeY = kAmpYBase + (1.0f - hp_ratio) * kAmpYScale;
+    const float speed = kMoveBaseSpeed + (1.0f - hp_ratio) * kMoveSpeedScale;
 
-    location.x = D_WIN_MAX_X / 2 + sin(move_timer * speed) * amplitudeX;
-    location.y = target_pos.y + sin(move_timer * speed * 2.0f) * amplitudeY;
+    location.x = D_WIN_MAX_X / 2 + sinf(move_timer * speed) * amplitudeX;
+    location.y = target_pos.y + sinf(move_timer * speed * 2.0f) * amplitudeY;
 
-    // === 攻撃間隔も変化 ===
+    // === 攻撃間隔（短くなりすぎを抑制） ===
     shot_timer += delta_second;
     static float next_shot_interval = 0.8f;
 
@@ -153,97 +178,141 @@ void Boss1::UpdateHovering(float delta_second)
     {
         static bool overdrive_triggered = false;
 
-        if (hp_ratio < 0.3f)
+        if (hp_ratio < kPhaseLowRatio)
         {
-            if (!overdrive_triggered)
-            {
+            // ★“暴れ過ぎ”を抑える：演出シェイクのみ一度、攻撃はどちらか片方
+            if (!overdrive_triggered) {
                 overdrive_triggered = true;
-                Singleton<ShakeManager>::GetInstance()->StartShake(0.6f, 20.0f, 20.0f);
+                Singleton<ShakeManager>::GetInstance()->StartShake(0.4f, 14.0f, 14.0f);
             }
 
-            // オーバードライブ攻撃（ここから頻繁に撃つように）
-            ShotFastSpiral(delta_second);
-            ShotAllRange();
+            // 交互にどちらか1回だけ（弾の総量を抑える）
+            static bool toggle = false;
+            if (toggle) ShotSpiral(delta_second);
+            else        ShotAllRange();
+            toggle = !toggle;
         }
-        else if (hp_ratio < 0.5f)
+        else if (hp_ratio < kPhaseMidRatio)
         {
-            // 通常とランダムで強攻撃
-            if (GetRand(100) < 30)
-            {
+            // 中間フェーズ：強攻撃の頻度を下げる
+            if (GetRand(100) < 20) {
+                // たまに強め（ただし FastSpiral は使わない）
                 ShotAllRange();
-                ShotFastSpiral(delta_second);
             }
-            else
-            {
-                // 通常攻撃ローテーション
+            else {
+                // 通常ローテ（FastSpiral は除外）
                 switch (attack_mode)
                 {
-                case 0: ShotSpiral(delta_second); break;
-                case 1: ShotAllRange(); break;
-                case 2: ShotCrossShot(); break;
-                case 3: ShotFanWide(); break;
-                case 4: ShotWaveBullets(); break;
-                case 5: ShotTripleSpread(); break;
-                case 6: ShotFastSpiral(delta_second); break;
+                case 0: ShotSpiral(delta_second);   break;
+                case 1: ShotAllRange();             break;
+                case 2: ShotCrossShot();            break;
+                case 3: ShotFanWide();              break;
+                case 4: ShotWaveBullets();          break;
+                case 5: ShotTripleSpread();         break;
                 }
-                attack_mode = (attack_mode + 1) % 7;
+                attack_mode = (attack_mode + 1) % 6; // 0～5 の6種に
             }
         }
         else
         {
-            // 通常攻撃
+            // 高HP帯：通常ローテ（FastSpiral は封印して全体難度を下げる）
             switch (attack_mode)
             {
-            case 0: ShotSpiral(delta_second); break;
-            case 1: ShotAllRange(); break;
-            case 2: ShotCrossShot(); break;
-            case 3: ShotFanWide(); break;
-            case 4: ShotWaveBullets(); break;
-            case 5: ShotTripleSpread(); break;
-            case 6: ShotFastSpiral(delta_second); break;
+            case 0: ShotSpiral(delta_second);   break;
+            case 1: ShotAllRange();             break;
+            case 2: ShotCrossShot();            break;
+            case 3: ShotFanWide();              break;
+            case 4: ShotWaveBullets();          break;
+            case 5: ShotTripleSpread();         break;
             }
-            attack_mode = (attack_mode + 1) % 7;
+            attack_mode = (attack_mode + 1) % 6;
         }
 
-
-        // HPに応じて攻撃間隔を短く
-        next_shot_interval = 0.6f * hp_ratio + 0.5f;
+        // ★攻撃間隔：0.75～1.30秒に調整
+        next_shot_interval = kShotIntervalMin + kShotIntervalBonus * hp_ratio;
         shot_timer = 0.0f;
     }
-
-
 }
-
-
 
 
 void Boss1::ShotSpiral(float delta_second)
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
-    static float angle = 0.0f;
+    static float angle = 0.0f; // 回転角
+    angle += 14.0f;            // 少しゆっくり（視認性↑）
 
-    for (int dir = -1; dir <= 1; dir += 2)
+    const int   strands = 2;                // リボン2本
+    const int   taps = 7;                // 1本あたりの同時発射数（密度）
+    const float step_deg = 360.0f / taps;    // 等間隔
+    const float base_speed = 300.0f * kBulletSpeedScale;
+
+    // ★一定間隔で“穴”を作る（tapsの中で2つ分は撃たない）
+    const int hole_span = 2;   // 2連続で欠け
+    static int hole_head = 0;  // 穴の開始インデックス（回転）
+    hole_head = (hole_head + 1) % taps;
+
+    auto skip_idx = [&](int idx) {
+        for (int k = 0; k < hole_span; ++k) {
+            if (((hole_head + k) % taps) == idx) return true;
+        }
+        return false;
+        };
+
+    for (int s = 0; s < strands; ++s)
     {
-        for (int i = 0; i < 6; i++)
+        float strand_phase = angle + (s * 180.0f / strands); // 互い違い
+
+        for (int i = 0; i < taps; ++i)
         {
-            float rad = (angle + dir * i * 60.0f) * DX_PI / 180.0f;
-            Vector2D vel(cos(rad) * 300.0f, sin(rad) * 300.0f);
+            if (skip_idx(i)) continue; // ★穴：リボンに通路を作る
+
+            float deg = strand_phase + i * step_deg;
+            float rad = deg * DX_PI / 180.0f;
+
+            Vector2D vel(cosf(rad) * base_speed, sinf(rad) * base_speed);
             auto bullet = objm->CreateObject<EnemyBullet3>(location);
             bullet->SetVelocity(vel);
             bullet->SetPlayer(player);
         }
     }
-    angle += 15.0f;
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
+
 
 void Boss1::ShotAllRange()
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
-    for (int i = 0; i < 24; i++)
+
+    // 少し弾数アップ（24 → 28）だが「穴」を作る
+    const int    N = 28;
+    const float  base_speed = 280.0f * kBulletSpeedScale;
+
+    // ★回転するセーフレーン（2カ所・対向）を作る
+    // gap_span：連続して空ける幅（指数ぶん）
+    // gap_phase：ゆっくり回る“穴”の開始位置
+    static float gap_phase = 0.0f;
+    gap_phase += 0.35f;              // 穴の回転速度（ゆっくり）
+    if (gap_phase >= 360.0f) gap_phase -= 360.0f;
+
+    const int   gap_span = 3;      // 穴の太さ（指数3なら実角度は 3*(360/N)）
+    int         gap_start0 = (int)(fmodf(gap_phase, 360.0f) / (360.0f / N));
+    int         gap_start1 = (gap_start0 + N / 2) % N; // 反対側にも穴
+
+    auto is_in_gap = [&](int idx, int start) {
+        for (int k = 0; k < gap_span; ++k) {
+            if (((start + k) % N) == idx) return true;
+        }
+        return false;
+        };
+
+    for (int i = 0; i < N; i++)
     {
-        float rad = (i * 15.0f) * DX_PI / 180.0f;
-        Vector2D vel(cos(rad) * 280.0f, sin(rad) * 280.0f);
+        // 穴（どちらかに該当）なら“撃たない”
+        if (is_in_gap(i, gap_start0) || is_in_gap(i, gap_start1)) continue;
+
+        float rad = (i * (360.0f / N)) * DX_PI / 180.0f;
+        Vector2D vel(cosf(rad) * base_speed, sinf(rad) * base_speed);
+
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
@@ -251,13 +320,15 @@ void Boss1::ShotAllRange()
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
 
+
 void Boss1::ShotCrossShot()
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
     for (int i = 0; i < 4; i++)
     {
         float rad = (i * 90.0f) * DX_PI / 180.0f;
-        Vector2D vel(cos(rad) * 350.0f, sin(rad) * 350.0f);
+        Vector2D vel(cosf(rad) * (350.0f * kBulletSpeedScale),
+            sinf(rad) * (350.0f * kBulletSpeedScale));
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
@@ -269,54 +340,56 @@ void Boss1::ShotFanWide()
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
 
-    // 扇状に下方向へばらまく
-    const int bullet_count = 24;
-    const float start_angle = -60.0f;   // 左下側の角度
-    const float angle_step = 5.0f;      // 角度の広がり幅
+    // 前回より少し弾数アップ（16 → 20）だが、規則的に“欠け”を作る
+    const int   bullet_count = 20;
+    const float start_angle = -70.0f;   // 左端
+    const float angle_step = 7.0f;     // 細かめ
+    const float base_speed = 300.0f * kBulletSpeedScale;
+
+    // ★格子感：周期的に弾を「抜く」
+    // period=3, phase が回っていき、毎回“抜け位置”が少しずつズレる
+    static int phase = 0;
+    const int  period = 3;  // 3発ごとに1つ欠け
+    phase = (phase + 1) % period;
 
     for (int i = 0; i < bullet_count; i++)
     {
-        // 下方向を基準に扇状に広げる
-        float rad = (90.0f + start_angle + i * angle_step) * DX_PI / 180.0f;
-        Vector2D vel(cos(rad) * 300.0f, sin(rad) * 300.0f);
+        if ((i % period) == phase) continue; // 穴：格子のスキマ
 
+        float deg = 90.0f + start_angle + i * angle_step;
+        float rad = deg * DX_PI / 180.0f;
+
+        Vector2D vel(cosf(rad) * base_speed, sinf(rad) * base_speed);
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
     }
-
-    // 撃つたびに派手なSE
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
-
 
 
 void Boss1::ShotWaveBullets()
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
-
-    // 下方向を基準に5方向へ撃つ
     for (int i = 0; i < 5; i++)
     {
-        float rad = (90.0f + ((i * 20.0f) - 40.0f)) * DX_PI / 180.0f; // 下方向基準
-        Vector2D vel(cos(rad) * 250.0f, sin(rad) * 250.0f);
-
+        float rad = (90.0f + ((i * 20.0f) - 40.0f)) * DX_PI / 180.0f;
+        Vector2D vel(cosf(rad) * (250.0f * kBulletSpeedScale),
+            sinf(rad) * (250.0f * kBulletSpeedScale));
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
     }
-
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
-
-
 
 void Boss1::ShotTripleSpread()
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
     for (int dir = -1; dir <= 1; dir++)
     {
-        Vector2D vel(dir * 120.0f, 400.0f); // 左・中央・右
+        Vector2D vel(dir * (120.0f * kBulletSpeedScale),
+            (400.0f * kBulletSpeedScale)); // 左・中央・右
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
@@ -324,20 +397,24 @@ void Boss1::ShotTripleSpread()
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
 
+// （※今回は “全体易化” 方針のため FastSpiral は使わない運用に変更）
+// 使う必要があれば、弾数と回転速度を大幅抑制した下記で置き換え
 void Boss1::ShotFastSpiral(float delta_second)
 {
     auto objm = Singleton<GameObjectManager>::GetInstance();
     static float angle = 0.0f;
 
-    for (int i = 0; i < 12; i++)
+    const int N = 8; // 12 → 8（密度ダウン）
+    for (int i = 0; i < N; i++)
     {
-        float rad = (angle + i * 30.0f) * DX_PI / 180.0f;
-        Vector2D vel(cos(rad) * 380.0f, sin(rad) * 380.0f);
+        float rad = (angle + i * (360.0f / N)) * DX_PI / 180.0f;
+        Vector2D vel(cosf(rad) * (260.0f * kBulletSpeedScale),
+            sinf(rad) * (260.0f * kBulletSpeedScale));
         auto bullet = objm->CreateObject<EnemyBullet3>(location);
         bullet->SetVelocity(vel);
         bullet->SetPlayer(player);
     }
-    angle += 25.0f; // 高速回転
+    angle += 15.0f; // 25 → 15（回転をゆっくり）
     SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
 }
 
@@ -387,9 +464,11 @@ void Boss1::Draw(const Vector2D& screen_offset) const
     if (draw_body)
     {
 
-        // --- HP割合を計算 ---
-        float hp_ratio = (float)hp / 8000.0f;  // 最大HP4000として割合を求める
+        // （Draw 内）HP割合の算出を修正
+        float hp_ratio = static_cast<float>(hp) / static_cast<float>(BOSS1_MAX_HP);
         if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+        if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+
 
         // --- 色変化（HPが減るほど赤寄りになる） ---
         // 緑成分をHP割合で減らす → HP満タン: 緑が多い, HP減少: 赤が強くなる

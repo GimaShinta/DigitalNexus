@@ -22,7 +22,9 @@ void Boss4::Initialize()
 #endif
 
 	// 攻撃パターンの設定
-	attack_pattrn_num = { 11, 4, 6, 5, 7, 8, 9 };
+	//attack_pattrn_num = { 11, 4, 6, 5, 7, 8, 9 };
+	attack_pattrn_num = { 11, 4, 6, 5, 7, 8, 9, 14, 15 };
+
 
 	// 当たり判定のオブジェクト設定
 	collision.is_blocking = true;
@@ -93,6 +95,10 @@ void Boss4::Initialize()
 	ripple_positions[7] = { Vector2D(70,  200), Vector2D(70,  200) };
 	ripple_positions[8] = { Vector2D(-70,  200), Vector2D(70,  200) };
 	ripple_positions[9] = { Vector2D(0,  200), Vector2D(0,  200) };
+
+	ripple_positions[14] = { Vector2D(0, 200),    Vector2D(0, 200) };
+	ripple_positions[15] = { Vector2D(-70, 200),  Vector2D(70, 200) };
+
 }
 
 /// <summary>
@@ -674,9 +680,9 @@ void Boss4::Shot(float delta_second)
 			attack_pattrn = 5;
 #else
 			// HPが減ったら攻撃パターンを変更（オーバーフロー防止に合わせてリセット）
-			if (hp <= 50000 && attack_pattrn_num != std::vector<int>{5, 7})
+			if (hp <= 50000 && attack_pattrn_num != std::vector<int>{5, 7, 14, 15})
 			{
-				attack_pattrn_num = { 5, 7 };
+				attack_pattrn_num = { 5, 7, 14, 15 };
 				attack_count = 0;
 			}
 
@@ -996,6 +1002,13 @@ void Boss4::Attack(float delta_second)
 			Pattrn13(delta_second);
 
 			break;
+		case 14:
+			Pattrn14(delta_second);
+			break;
+		case 15:
+			Pattrn15(delta_second);
+			break;
+
 		default:
 			break;
 		}
@@ -2150,3 +2163,114 @@ void Boss4::Pattrn13(float delta_second)
 		break;
 	}
 }
+
+// ─────────────────────────────────────
+// Pattrn14: StarFlower（回転リングを連発）
+// ─────────────────────────────────────
+void Boss4::Pattrn14(float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float tick = 0.0f;
+	static float life = 0.0f;
+	tick += delta_second;
+	life += delta_second;
+
+		// …弾生成ループの後（SE再生の直前か直後）に追記
+		for (int i = 0; i < 5; ++i) if (!ripples[i].active) {
+			ripples[i].active = true; ripples[i].timer = 0.0f;
+			ripples[i].pos = location + Vector2D(0, 200); break;
+		}
+	// 発射頻度を落とす（0.15秒）
+	if (tick >= 0.12f)
+	{
+		tick = 0.0f;
+
+		const int   N = 10;                  // 1リングの弾数を減らす（18→10）
+		const float speed = 350.0f;              // 弾速も少し控えめ
+		const float base = (float)GetNowCount() * 0.13f;
+
+
+		// リング1枚（次の枚で位相がずれて“星花”に見える）
+		for (int i = 0; i < N; ++i)
+		{
+			float ang = (360.0f / N) * i + base;
+			float rad = ang * DX_PI / 180.0f;
+
+			auto* b = objm->CreateObject<EnemyBullet3>(Vector2D(location.x, location.y + 20.0f));
+			b->SetVelocity(Vector2D(cosf(rad) * speed, sinf(rad) * speed));
+			b->SetPlayer(player);
+			if (i % 3 == 0) b->SetAttackPattrn(1); // 見た目アクセントのみ
+		}
+
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+	}
+
+	// 寿命短めでサクサク切替
+	if (life >= 2.0f) { life = 0.0f; is_shot = false; }
+}
+
+
+// ─────────────────────────────────────
+// Pattrn15: RippleRain（左右砲の蛇扇雨）
+// ─────────────────────────────────────
+void Boss4::Pattrn15(float delta_second)
+{
+	GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
+
+	static float t = 0.0f;       // 発射インターバル
+	static float life = 0.0f;    // パターン寿命
+	static float wob = 0.0f;    // わずかな蛇行
+
+	t += delta_second;
+	life += delta_second;
+	wob += delta_second;
+
+	// …左右 for (auto& p : muzzle) の外側・ volley 生成が終わった直後に追記
+	for (int i = 0; i < 5; ++i) if (!ripples[i].active) {
+		ripples[i].active = true; ripples[i].timer = 0.0f;
+		ripples[i].pos = location + Vector2D(0, 200); break;
+	}
+
+	if (t >= 0.4f) // 少しゆっくり（0.06→0.09）
+	{
+		t = 0.0f;
+
+		Vector2D muzzle[2] = {
+			Vector2D(location.x - 65.0f, location.y + 170.0f),
+			Vector2D(location.x + 65.0f, location.y + 170.0f)
+		};
+
+		const int   M = 5;                   // 列を減らす（7→5）
+		const float rangeDeg = 80.0f;               // 扇の広がりを少し狭く
+		const float speed = 300.0f;
+
+		for (auto& p : muzzle)
+		{
+			// 砲口からプレイヤーへの基準角（これを中心に扇を作る）
+			Vector2D toP = (player ? Vector2D(player->GetLocation().x - p.x, player->GetLocation().y - p.y)
+				: Vector2D(0.0f, 1.0f));
+			float baseRad = atan2f(toP.y, toP.x);
+
+			// 蛇行（±約10度）をゆっくり付与
+			float wobble = 10.0f * sinf(wob * 2.4f) * DX_PI / 180.0f;
+
+			for (int i = 0; i < M; ++i)
+			{
+				float offsetDeg = -rangeDeg * 0.5f + (rangeDeg / (M - 1)) * i;
+				float rad = baseRad + (offsetDeg * DX_PI / 180.0f) + wobble;
+
+				auto* b = objm->CreateObject<EnemyBullet3>(p);
+				b->SetVelocity(Vector2D(cosf(rad) * speed, sinf(rad) * speed));
+				b->SetPlayer(player);
+				if (i % 2 == 0) b->SetAttackPattrn(2); // 視認用の軽い色変化
+			}
+		}
+		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 50);
+	}
+
+	if (life >= 1.6f) { life = 0.0f; is_shot = false; }
+}
+
