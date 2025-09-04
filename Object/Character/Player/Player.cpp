@@ -6,6 +6,8 @@
 #include "../../Bullet/PlayerBullet/PlayerAttackBullet.h"
 #include "../../Bullet/PlayerBullet/PlayerDefenceBullet.h"
 #include "../../Beam/PlayerBeam.h"
+#include "../../Beam/OmegaBom.h"
+
 
 Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
 {
@@ -495,9 +497,15 @@ void Player::Shot(float delta_second)
 				recovery_on = true;
 				stop = true;
 				can_change_type_now = false;
-				beam_timer = 5.0f;
-				powerd++;
-				UseSpecial2();
+				beam_timer = 0.0f;      // ★必ず0.0fで開始（Playerの5秒管理に合わせる）
+				UseSpecial2();          // Ωゲージ消費のみ
+
+				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+				OmegaBom* bom = gm->CreateObject<OmegaBom>(Vector2D(location.x, location.y));
+				bom->SetPlayer(this);
+
+				SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+				Singleton<ShakeManager>::GetInstance()->StartShake(4.0, 6, 6);
 			}
 		}
 	}
@@ -518,12 +526,24 @@ void Player::Shot(float delta_second)
 			beam->SetPlayer(this);
 			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
 		}
+		else
+		{
+			recovery_on = true;
+			stop = true;
+			can_change_type_now = false;
+			beam_timer = 0.0f;          // ★0開始（Playerの5秒管理に合わせる）
+			UseSpecial2();              // Ωゲージ消費
+
+			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+			OmegaBom* bom = gm->CreateObject<OmegaBom>(Vector2D(location.x, location.y));
+			bom->SetPlayer(this);
+			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+		}
 	}
 #endif
 
 
 
-	// ５秒経ったらビームの再起
 	if (beam_timer >= 5.0f)
 	{
 		stop = false;
@@ -535,6 +555,7 @@ void Player::Shot(float delta_second)
 	{
 		beam_timer += delta_second;
 	}
+
 }
 
 // Player.cpp （ファイル末尾のほう、他メンバ関数定義と同じ階層に追加）

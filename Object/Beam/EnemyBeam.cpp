@@ -115,12 +115,16 @@ void EnemyBeam::Update(float delta_second)
             box_size.x = min_thickness;
             collision.hit_object_type.clear();
             collision.hit_object_type.push_back(eObjectType::ePlayer);
-            SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
+            //SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
         }
         else
         {
             collision.hit_object_type.clear();
             Singleton<ShakeManager>::GetInstance()->StartShake(1.5, 3, 3);
+        }
+        if (state_timer >= 0.7f)
+        {
+            SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
         }
         break;
 
@@ -132,6 +136,7 @@ void EnemyBeam::Update(float delta_second)
         {
             float t = beam_time / growth_duration_b;
             box_size.x = min_thickness + (max_thickness - min_thickness) * t;
+            
         }
         else
         {
@@ -352,7 +357,7 @@ void EnemyBeam::SetBoss3(Boss3* p_boss)
     min_thickness = 4.0f;
     max_thickness_d = 48.0f;
     min_thickness_d = 4.0f;
-    growth_duration_b = 1.0f; // ägëÂéûä‘
+    growth_duration_b = 2.5f; // ägëÂéûä‘
     growth_duration_s = 0.2f; // èkè¨éûä‘
 
     beams_t.push_back(beam_ts[9]);
@@ -368,7 +373,7 @@ void EnemyBeam::SetBoss4(Boss4* p_boss)
     min_thickness = 16.0f;
     max_thickness_d = 140.0f;
     min_thickness_d = 16.0f;
-    growth_duration_b = 4.0f;
+    growth_duration_b = 2.4f;
     growth_duration_s = 0.5f;
 
     beams_t.push_back(beam_ts[0]);

@@ -1981,7 +1981,7 @@ void Boss3::Pattrn12()
 
 	if (!beam_on)
 	{
-		PlaySoundMem(se_beam, DX_PLAYTYPE_BACK);
+		//PlaySoundMem(se_beam, DX_PLAYTYPE_BACK);
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
 
 		for (int i = 0; i < 2; ++i)
@@ -1995,7 +1995,7 @@ void Boss3::Pattrn12()
 			beams.push_back(b);
 		}
 		beam_on = true;
-		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
+		//SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
 	}
 
 	for (size_t i = 0; i < beams.size(); ++i)

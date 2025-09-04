@@ -1976,7 +1976,7 @@ void Boss4::Pattrn11(float offsets_x)
 			));
 		b->SetBoss4(this);
 		beam_on = true;
-		SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
+		//SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
 	}
 
 	if (b != nullptr)
