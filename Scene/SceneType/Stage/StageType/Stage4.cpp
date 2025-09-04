@@ -355,7 +355,7 @@ void Stage4::EnemyAppearance(float delta_second)
     if (boss4_spawned) return;
 
 
-    if (stage_timer < 10.0f)
+    if (stage_timer < 9.0f)
     {
     }
     else

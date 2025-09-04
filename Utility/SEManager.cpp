@@ -21,7 +21,7 @@ void SEManager::LoadSE()
 	se_handles[SE_NAME::Bakuhatu_End] = rm->GetSounds("Resource/sound/se/boss_se/bakuhatu_end.mp3");
 	se_handles[SE_NAME::Hamon] = rm->GetSounds("Resource/sound/se/boss_se/hamon.mp3");
 	se_handles[SE_NAME::EnemyShot] = rm->GetSounds("Resource/sound/se/shot/shot_01.mp3");
-	se_handles[SE_NAME::EnemyBeam] = rm->GetSounds("Resource/sound/se/effect/audiostock_1553653.mp3");
+	se_handles[SE_NAME::EnemyBeam] = rm->GetSounds("Resource/sound/se/boss_se/Beam_01.mp3");
 	se_handles[SE_NAME::Get] = rm->GetSounds("Resource/sound/se/effect/audiostock_890909.mp3");
 	se_handles[SE_NAME::Get2] = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
 	se_handles[SE_NAME::PlayerBeam] = rm->GetSounds("Resource/sound/se/effect/audiostock_1244545.mp3");

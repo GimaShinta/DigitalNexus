@@ -31,11 +31,11 @@ void GameMainScene::Initialize()
 
     // BGM読み込み（初回のみ）
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/stage/Magical World.mp3");
+    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/Stage1_Loop.mp3");
     stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
 
    // stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/Stage4_Boss.mp3"); // 任意のファイル
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/Stage4Boss_01.mp3"); // 任意のファイル
     se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       // 警告音SE
 
     se_charge = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
@@ -56,7 +56,7 @@ void GameMainScene::Initialize()
     // ステージ1用BGMを再生
     current_bgm_handle = stage_bgm1;
 
-    ChangeVolumeSoundMem(255 * 60 / 100, current_bgm_handle);
+    ChangeVolumeSoundMem(255 * 80 / 100, current_bgm_handle);
 
     PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
 
@@ -1144,7 +1144,7 @@ void GameMainScene::WarningUpdate(float delta_second)
             warning_state = WarningState::None;
         }
         // ステージ4のBGM再生
-        ChangeVolumeSoundMem(255 * 65 / 100, stage_bgm4);
+        ChangeVolumeSoundMem(255 * 100 / 100, stage_bgm4);
         PlaySoundMem(stage_bgm4, DX_PLAYTYPE_LOOP);
 
         if (player)
