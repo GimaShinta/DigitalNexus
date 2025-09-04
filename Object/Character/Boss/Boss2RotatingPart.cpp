@@ -413,9 +413,9 @@ void Boss2RotatingPart::UpdateHpDrivenPattern()
         switch (hp_phase)
         {
             case 0: ForcePattern(BulletPattern::Spiral);     break; // 高体力：ライト
-            case 1: ForcePattern(BulletPattern::NWay);       break;
-            case 2: ForcePattern(BulletPattern::SemiHoming); break; // 中体力：追尾混ぜ
-            case 3: ForcePattern(BulletPattern::Burst);      break; // 瀕死：密度UP
+            case 1: ForcePattern(BulletPattern::Pendulum);       break;
+            case 2: ForcePattern(BulletPattern::Spiral); break; // 中体力：追尾混ぜ
+            case 3: ForcePattern(BulletPattern::NWay);      break; // 瀕死：密度UP
         }
     }
 }
