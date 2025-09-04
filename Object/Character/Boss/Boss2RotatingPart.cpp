@@ -376,13 +376,14 @@ void Boss2RotatingPart::NextPattern()
     {
         case BulletPattern::Spiral:     pattern = BulletPattern::NWay;       break;
         case BulletPattern::NWay:       pattern = BulletPattern::Ring;       break;
-        case BulletPattern::Ring:       pattern = BulletPattern::Pendulum;   break;
-        case BulletPattern::Pendulum:   pattern = BulletPattern::Burst;      break;
-        case BulletPattern::Burst:      pattern = BulletPattern::SemiHoming; break;
-        case BulletPattern::SemiHoming: pattern = BulletPattern::DecelBurst; break;
-        case BulletPattern::DecelBurst: pattern = BulletPattern::TimedSplit; break;
-        case BulletPattern::TimedSplit: pattern = BulletPattern::Spiral;     break;
-        default:                        pattern = BulletPattern::Spiral;     break;
+        case BulletPattern::Ring:       pattern = BulletPattern::Spiral;     break;
+      //case BulletPattern::Pendulum:   pattern = BulletPattern::Burst;      break;
+      //case BulletPattern::Burst:      pattern = BulletPattern::SemiHoming; break;
+      //case BulletPattern::SemiHoming: pattern = BulletPattern::DecelBurst; break;
+      //case BulletPattern::DecelBurst: pattern = BulletPattern::TimedSplit; break;
+      //case BulletPattern::TimedSplit: pattern = BulletPattern::Spiral;     break;
+        default:   pattern = BulletPattern::Spiral;                          break;
+
     }
     ResetPatternState();
 }
