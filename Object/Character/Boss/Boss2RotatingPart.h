@@ -120,13 +120,14 @@ private:
     float pendulum_time = 0.0f;
 
     // Burst
-    float interval_burst_cool = 1.8f;
-    int   burst_waves = 3;
-    float burst_inner_interval = 0.08f;
-    int   burst_way = 12;
-    float speed_burst = 230.0f;
+    float interval_burst_cool = 2.4f;   // 1.8f -> 2.4f  ”gŠJn‚ÌƒN[ƒ‹ƒ^ƒCƒ€‚ğ’·‚ß‚É
+    int   burst_waves = 2;              // 3   -> 2      ”g”‚ğŒ¸‚ç‚·
+    float burst_inner_interval = 0.12f; // 0.08f -> 0.12f “¯ˆê”g“à‚Ì”­ËŠÔŠu‚ğL‚°‚é
+    int   burst_way = 8;                // 12  -> 8      1”g‚ ‚½‚è‚Ì’e”‚ğŒ¸‚ç‚·
+    float speed_burst = 220.0f;         // 230 -> 220    ‘¬“x‚ğ­‚µ—‚Æ‚µ‚Äˆ³”—Š´‚àŒyŒ¸
     int   burst_left = 0;
     float burst_inner_timer = 0.0f;
+
 
     // ===== NEW: SemiHomingi”¼’Ç”öj =====
     float interval_semihoming = 0.10f;
