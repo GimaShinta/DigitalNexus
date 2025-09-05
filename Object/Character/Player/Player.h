@@ -114,6 +114,7 @@ private:
 	int shield = NULL;
 	int attack = NULL;
 	int defence = NULL;
+	int bottan[2] = {0};
 
 	float last_explosion_time = -999.0f; // 最後に爆発を再生した時間
 	float invincible_time = 0.0f;
@@ -129,6 +130,9 @@ private:
 	bool can_change_type = true;
 	bool can_change_type_now = true;
 
+	int on_count = 0;
+	float bottan_srid = 0.0f;
+	bool bottan_ok = false;
 public:
 	Player();
 	~Player();
@@ -200,6 +204,8 @@ public:
 	bool GetGameOver() const;
 	PlayerType GetNowType() const;
 	void SetNowType(PlayerType nt);
+
+	void ChangeType(PlayerType new_type, bool play_effect);
 
 public:
 	void SetLocation(const Vector2D& pos) { location = pos; }

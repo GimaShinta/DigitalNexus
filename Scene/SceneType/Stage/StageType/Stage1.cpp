@@ -988,13 +988,12 @@ void Stage1::AppearancePlayer(float delta_second)
         }
         else
         {
-            // 演出中だけタイプを強制
             if (t < 0.2f)
-                player->SetNowType(PlayerType::AlphaCode);
+                player->ChangeType(PlayerType::AlphaCode, false);
             else if (t < 0.5f)
-                player->SetNowType(PlayerType::OmegaCode);
+                player->ChangeType(PlayerType::OmegaCode, false);
             else
-                player->SetNowType(PlayerType::AlphaCode);
+                player->ChangeType(PlayerType::AlphaCode, false);
         }
 
         // 下降イージング

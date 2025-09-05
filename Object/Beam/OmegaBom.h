@@ -5,10 +5,11 @@ class OmegaBom : public GameObjectBase
 {
 private:
     class Player* player = nullptr;
-
-    float radius = 300.0f;   // 最初から固定の半径
-    int alpha = 80;          // 薄さ（0?255）
-
+    float expand_timer;
+    float expand_duration;   // 1秒で最大サイズに到達
+    float max_size;    // 最大サイズ
+    float rotation_angle;
+    float rotation_speed;
 public:
     OmegaBom();
     ~OmegaBom();

@@ -67,6 +67,9 @@ void Player::Initialize()
 	shields2 = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206_480.png", 20, 5, 4, 480, 480);
 	shields = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206h_480.png", 15, 5, 3, 480, 480);
 
+	bottan[0] = rm->GetImages("Resource/Image/UI/Digital Buttons/Shoulder/button_xbox_digital_bumper_light_1.png")[0];
+	bottan[1] = rm->GetImages("Resource/Image/UI/Digital Buttons/Shoulder/button_xbox_digital_bumper_light_2.png")[0];
+
 	shot_interval = 0.07f;
 }
 
@@ -157,6 +160,13 @@ void Player::Update(float delta_second)
 		}
 	}
 
+	if (on_count == 2)
+	{
+		if (bottan_srid < 300)
+			bottan_srid++;
+		else
+			bottan_ok = true;
+	}
 
 	// 親クラスの更新処理を呼び出す
 	__super::Update(delta_second);
@@ -233,6 +243,12 @@ void Player::Draw(const Vector2D& screen_offset) const
 		DrawBox(location.x - box_size.x, location.y - box_size.y,
 			location.x + box_size.x, location.y + box_size.y, GetColor(255, 255, 255), TRUE);
 	#endif
+	}
+
+	if (bottan_ok == false)
+	{
+		DrawRotaGraph((location.x - 40.0f) - bottan_srid, location.y - 40.0f, 0.1f, 0.0f, bottan[0], TRUE);
+		DrawRotaGraph((location.x + 40.0f) + bottan_srid, location.y - 40.0f, 0.1f, 0.0f, bottan[1], TRUE);
 	}
 
 }
@@ -390,58 +406,54 @@ void Player::Shot(float delta_second)
 		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
 		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER)))
 	{
+		if(on_count < 2)
+			on_count++;
+
 		if (now_type == PlayerType::AlphaCode)
-		{
-			now_type = PlayerType::OmegaCode;
-			image = defence;
-			player_image_left = defence_player_image_left;
-			player_image_right = defence_player_image_right;
-
-			player_jet = defence_player_jet;
-
-			nozzle_type = defence_nozzles;
-
-			shot_interval = 0.10f;
-
-			EffectManager* em =  Singleton<EffectManager>::GetInstance();
-			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 1.0f);
-	
-			am->PlaySE(SE_NAME::Code);
-			am->ChangeSEVolume(SE_NAME::Code, 32);
-			am->PlaySE(SE_NAME::Code2);
-			am->ChangeSEVolume(SE_NAME::Code2, 50);
-			am->PlaySE(SE_NAME::Robo1);
-			am->ChangeSEVolume(SE_NAME::Robo1, 60);
-			am->PlaySE(SE_NAME::Noise);
-			am->ChangeSEVolume(SE_NAME::Noise, 50);
-		}
+			ChangeType(PlayerType::OmegaCode, true);
 		else
-		{
-			now_type = PlayerType::AlphaCode;
-			image = attack;
-			player_image_left = attack_player_image_left;
-			player_image_right = attack_player_image_right;
+			ChangeType(PlayerType::AlphaCode, true);
 
-			player_jet = attack_player_jet;
+		//if (now_type == PlayerType::AlphaCode)
+		//{
+		//	now_type = PlayerType::OmegaCode;
+		//	image = defence;
+		//	player_image_left = defence_player_image_left;
+		//	player_image_right = defence_player_image_right;
 
-			nozzle_type = attack_nozzles;
+		//	player_jet = defence_player_jet;
 
-			shot_interval = 0.08f;
+		//	nozzle_type = defence_nozzles;
 
-			EffectManager* em = Singleton<EffectManager>::GetInstance();
-			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-			em->SetScale(effe_id, 1.0f);
+		//	shot_interval = 0.10f;
 
-			am->PlaySE(SE_NAME::Code);
-			am->ChangeSEVolume(SE_NAME::Code, 30);
-			am->PlaySE(SE_NAME::Code2);
-			am->ChangeSEVolume(SE_NAME::Code2, 50);
-			am->PlaySE(SE_NAME::Robo3);
-			am->ChangeSEVolume(SE_NAME::Robo3, 60);
-			am->PlaySE(SE_NAME::Noise);
-			am->ChangeSEVolume(SE_NAME::Noise, 50);
-		}
+		//}
+		//else
+		//{
+		//	now_type = PlayerType::AlphaCode;
+		//	image = attack;
+		//	player_image_left = attack_player_image_left;
+		//	player_image_right = attack_player_image_right;
+
+		//	player_jet = attack_player_jet;
+
+		//	nozzle_type = attack_nozzles;
+
+		//	shot_interval = 0.08f;
+		//}
+
+		//EffectManager* em = Singleton<EffectManager>::GetInstance();
+		//effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+		//em->SetScale(effe_id, 1.0f);
+
+		//am->PlaySE(SE_NAME::Code);
+		//am->ChangeSEVolume(SE_NAME::Code, 32);
+		//am->PlaySE(SE_NAME::Code2);
+		//am->ChangeSEVolume(SE_NAME::Code2, 50);
+		//am->PlaySE(SE_NAME::Robo1);
+		//am->ChangeSEVolume(SE_NAME::Robo1, 60);
+		//am->PlaySE(SE_NAME::Noise);
+		//am->ChangeSEVolume(SE_NAME::Noise, 50);
 	}
 
 	EffectManager* em = Singleton<EffectManager>::GetInstance();
@@ -516,28 +528,33 @@ void Player::Shot(float delta_second)
 	{
 		if (stop == false)
 		{
-			beam_on = true;
-			stop = true;
-			beam_timer = 0.0f;
-			invincible_time = 5.0f;
-			UseSpecial();  // ゲージ消費
-			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
-			PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
-			beam->SetPlayer(this);
-			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
-		}
-		else
-		{
-			recovery_on = true;
-			stop = true;
-			can_change_type_now = false;
-			beam_timer = 0.0f;          // ★0開始（Playerの5秒管理に合わせる）
-			UseSpecial2();              // Ωゲージ消費
+			if (now_type == PlayerType::AlphaCode && CanUseSpecial())
+			{
+				beam_on = true;
+				stop = true;
+				beam_timer = 0.0f;
+				invincible_time = 5.0f;
+				UseSpecial();  // ゲージ消費
+				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+				PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
+				beam->SetPlayer(this);
+				SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+			}
+			else if (now_type == PlayerType::OmegaCode && CanUseSpecial2())
+			{
+				recovery_on = true;
+				stop = true;
+				can_change_type_now = false;
+				beam_timer = 0.0f;      // ★必ず0.0fで開始（Playerの5秒管理に合わせる）
+				UseSpecial2();          // Ωゲージ消費のみ
 
-			GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
-			OmegaBom* bom = gm->CreateObject<OmegaBom>(Vector2D(location.x, location.y));
-			bom->SetPlayer(this);
-			SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
+				OmegaBom* bom = gm->CreateObject<OmegaBom>(Vector2D(location.x, location.y));
+				bom->SetPlayer(this);
+
+				SEManager::GetInstance()->PlaySE(SE_NAME::PlayerBeam);
+				Singleton<ShakeManager>::GetInstance()->StartShake(4.0, 6, 6);
+			}
 		}
 	}
 #endif
@@ -936,6 +953,57 @@ void Player::SetNowType(PlayerType nt)
 {
 	now_type = nt;
 }
+
+void Player::ChangeType(PlayerType new_type, bool play_effect)
+{
+	now_type = new_type;
+
+	if (now_type == PlayerType::AlphaCode)
+	{
+		image = attack;
+		player_image_left = attack_player_image_left;
+		player_image_right = attack_player_image_right;
+		player_jet = attack_player_jet;
+		nozzle_type = attack_nozzles;
+		shot_interval = 0.08f;
+
+		if (play_effect)
+		{
+			SEManager* am = Singleton<SEManager>::GetInstance();
+			EffectManager* em = Singleton<EffectManager>::GetInstance();
+			int effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			em->SetScale(effe_id, 1.0f);
+
+			am->PlaySE(SE_NAME::Code);   am->ChangeSEVolume(SE_NAME::Code, 30);
+			am->PlaySE(SE_NAME::Code2);  am->ChangeSEVolume(SE_NAME::Code2, 50);
+			am->PlaySE(SE_NAME::Robo3);  am->ChangeSEVolume(SE_NAME::Robo3, 60);
+			am->PlaySE(SE_NAME::Noise);  am->ChangeSEVolume(SE_NAME::Noise, 50);
+		}
+	}
+	else if (now_type == PlayerType::OmegaCode)
+	{
+		image = defence;
+		player_image_left = defence_player_image_left;
+		player_image_right = defence_player_image_right;
+		player_jet = defence_player_jet;
+		nozzle_type = defence_nozzles;
+		shot_interval = 0.10f;
+
+		if (play_effect)
+		{
+			SEManager* am = Singleton<SEManager>::GetInstance();
+			EffectManager* em = Singleton<EffectManager>::GetInstance();
+			int effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			em->SetScale(effe_id, 1.0f);
+
+			am->PlaySE(SE_NAME::Code);   am->ChangeSEVolume(SE_NAME::Code, 32);
+			am->PlaySE(SE_NAME::Code2);  am->ChangeSEVolume(SE_NAME::Code2, 50);
+			am->PlaySE(SE_NAME::Robo1);  am->ChangeSEVolume(SE_NAME::Robo1, 60);
+			am->PlaySE(SE_NAME::Noise);  am->ChangeSEVolume(SE_NAME::Noise, 50);
+		}
+	}
+}
+
 void Player::ForceNeutralAnim(bool enable)
 {
 	force_neutral_anim = enable;

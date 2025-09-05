@@ -31,7 +31,7 @@ void Boss3::Initialize()
 	hp = 10000;
 
 	// 攻撃パターンの設定
-	attack_pattrn_num = { 7, 12, 5, 12, 6, 12, 10, 12 };
+	attack_pattrn_num = { 7, 12, 5, 12, 6, 12 };
 
 
 	// 当たり判定のオブジェクト設定
@@ -247,10 +247,12 @@ void Boss3::Update(float delta_second)
 
 	if (generate2 == true)
 	{
+		beam_damage_timer += delta_second;
+
 		if (damage_timer >= 0.05f)
 		{
 			damage_timer = 0.0f;
-			hp -= 5;
+			hp -= 10;
 		}
 
 	}
@@ -518,8 +520,6 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 	{
 		if (generate2 == true)
 		{
-			beam_damage_timer += delta;
-
 			if (beam_damage_timer >= 0.05f)
 			{
 				if (is_weakness == true)
