@@ -919,7 +919,7 @@ void Boss3::Attack(float delta_second)
 			/// <param name="spiral_speed">弾の速度</param>
 			/// <param name="generate_location">生成する位置</param>
 			/// <param name="delta_second">１フレームあたりの時間（基本的に変更なし）</param>
-			Pattrn5_2(0.05f, 5.0f, 300.0f, location, delta_second);
+			Pattrn5_2(0.05f, 5.0f, 400.0f, location, delta_second);
 			//Pattrn5(0.08f, 5.0f, 300.0f, location, delta_second);
 #endif
 			break;
@@ -933,7 +933,7 @@ void Boss3::Attack(float delta_second)
 			/// <param name="fan_duration_limit">攻撃する時間</param>
 			/// <param name="generate_location">生成する位置</param>
 			/// <param name="delta_second">１フレームあたりの時間（基本的に変更なし）</param>
-			Pattrn6_2(100.0f, 300.0f, 0.15f, 10.0f, location, delta_second);
+			Pattrn6_2(100.0f, 400.0f, 0.15f, 10.0f, location, delta_second);
 
 			break;
 		case 7:
@@ -946,7 +946,7 @@ void Boss3::Attack(float delta_second)
 			/// <param name="fan_duration_limit">攻撃時間</param>
 			/// <param name="generate_location">生成する位置</param>
 			/// <param name="delta_second">１フレームあたりの時間（基本的に変更なし）</param>
-			Pattrn7_2(150.0f, 500.0f, 0.2f, 5.0f, Vector2D(location.x, location.y + 100.0f), delta_second);
+			Pattrn7_2(150.0f, 500.0f, 0.15f, 5.0f, Vector2D(location.x, location.y + 100.0f), delta_second);
 
 			break;
 		case 8:
