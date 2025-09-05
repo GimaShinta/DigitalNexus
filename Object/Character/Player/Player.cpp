@@ -413,47 +413,6 @@ void Player::Shot(float delta_second)
 			ChangeType(PlayerType::OmegaCode, true);
 		else
 			ChangeType(PlayerType::AlphaCode, true);
-
-		//if (now_type == PlayerType::AlphaCode)
-		//{
-		//	now_type = PlayerType::OmegaCode;
-		//	image = defence;
-		//	player_image_left = defence_player_image_left;
-		//	player_image_right = defence_player_image_right;
-
-		//	player_jet = defence_player_jet;
-
-		//	nozzle_type = defence_nozzles;
-
-		//	shot_interval = 0.10f;
-
-		//}
-		//else
-		//{
-		//	now_type = PlayerType::AlphaCode;
-		//	image = attack;
-		//	player_image_left = attack_player_image_left;
-		//	player_image_right = attack_player_image_right;
-
-		//	player_jet = attack_player_jet;
-
-		//	nozzle_type = attack_nozzles;
-
-		//	shot_interval = 0.08f;
-		//}
-
-		//EffectManager* em = Singleton<EffectManager>::GetInstance();
-		//effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
-		//em->SetScale(effe_id, 1.0f);
-
-		//am->PlaySE(SE_NAME::Code);
-		//am->ChangeSEVolume(SE_NAME::Code, 32);
-		//am->PlaySE(SE_NAME::Code2);
-		//am->ChangeSEVolume(SE_NAME::Code2, 50);
-		//am->PlaySE(SE_NAME::Robo1);
-		//am->ChangeSEVolume(SE_NAME::Robo1, 60);
-		//am->PlaySE(SE_NAME::Noise);
-		//am->ChangeSEVolume(SE_NAME::Noise, 50);
 	}
 
 	EffectManager* em = Singleton<EffectManager>::GetInstance();
@@ -971,7 +930,7 @@ void Player::ChangeType(PlayerType new_type, bool play_effect)
 		{
 			SEManager* am = Singleton<SEManager>::GetInstance();
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
-			int effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			effe_id = em->PlayerAnimation(EffectName::eDefenceType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 1.0f);
 
 			am->PlaySE(SE_NAME::Code);   am->ChangeSEVolume(SE_NAME::Code, 30);
@@ -993,7 +952,7 @@ void Player::ChangeType(PlayerType new_type, bool play_effect)
 		{
 			SEManager* am = Singleton<SEManager>::GetInstance();
 			EffectManager* em = Singleton<EffectManager>::GetInstance();
-			int effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
+			effe_id = em->PlayerAnimation(EffectName::eAttackType, Vector2D(location.x, location.y + 10.0f), 0.04f, false);
 			em->SetScale(effe_id, 1.0f);
 
 			am->PlaySE(SE_NAME::Code);   am->ChangeSEVolume(SE_NAME::Code, 32);

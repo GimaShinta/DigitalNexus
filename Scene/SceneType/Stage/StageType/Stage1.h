@@ -78,7 +78,6 @@ private:
 	float wave1_next_at = 0.0f;  // 次の出現予定時刻（stage_timer基準）
 
 
-
 public:
 	// コンストラクタ・デストラクタ
 	Stage1(Player* player);     // プレイヤー情報を引数に取るステージ初期化

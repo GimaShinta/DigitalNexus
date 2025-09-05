@@ -133,6 +133,7 @@ private:
 	int on_count = 0;
 	float bottan_srid = 0.0f;
 	bool bottan_ok = false;
+
 public:
 	Player();
 	~Player();
