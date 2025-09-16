@@ -13,7 +13,7 @@ void Enemy4::Initialize() {
     EnemyBase::Initialize();
 
     // ---- 基本パラメータ ----
-    hp = 4000;
+    hp = 8000;
     is_destroy = false;
     is_alive = true;
     box_size = Vector2D(50, 50);
@@ -149,7 +149,7 @@ void Enemy4::UpdateBattle(float dt) {
         interval = 0.90f;  // Easy でも少し短め
     }
     else {
-        float hp_ratio = (float)hp / 4000.0f;
+        float hp_ratio = (float)hp / 8000.0f;
         if (hp_ratio < 0.0f) hp_ratio = 0.0f;
         if (hp_ratio > 1.0f) hp_ratio = 1.0f;
         interval = 0.70f * hp_ratio + 0.24f; // 0.24～0.94 秒程度
@@ -374,40 +374,41 @@ void Enemy4::Draw(const Vector2D& screen_offset) const {
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
-    // HPゲージ（4000基準）
-    {
-        float hp_ratio = (float)hp / 4000.0f;
-        if (hp_ratio < 0.0f) hp_ratio = 0.0f;
-        if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+    // HPゲージ
+    //{
+    //    float hp_ratio = (float)hp / 8000.0f;   // 元: 8000.0f
+    //    if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+    //    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
 
-        float fade_ratio = (pattern_timer < 0.0f) ? 0.0f
-            : ((pattern_timer > 1.2f) ? 1.0f : (pattern_timer / 1.2f));
-        int bar_alpha = (int)(fade_ratio * 200);
+    //    float fade_ratio = (pattern_timer < 0.0f) ? 0.0f
+    //        : ((pattern_timer > 1.2f) ? 1.0f : (pattern_timer / 1.2f));
+    //    int bar_alpha = (int)(fade_ratio * 200);
 
-        const int bar_width = 140;
-        const int bar_height = 5;
-        const int bar_x = (int)(location.x - screen_offset.x) - bar_width / 2;
-        const int bar_y = (int)(location.y - screen_offset.y) - (int)(scale_draw * 24.0f) - 8;
+    //    const int bar_width = 140;
+    //    const int bar_height = 5;
+    //    const int bar_x = (int)(location.x - screen_offset.x) - bar_width / 2;
+    //    const int bar_y = (int)(location.y - screen_offset.y) - (int)(scale_draw * 24.0f) - 8;
 
-        float wave = sinf(GetNowCount() * 0.01f) * 0.8f;
+    //    float wave = sinf(GetNowCount() * 0.01f) * 0.8f;
 
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, bar_alpha);
+    //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, bar_alpha);
 
-        DrawBox(bar_x, bar_y + (int)wave,
-            bar_x + bar_width, bar_y + bar_height + (int)wave,
-            GetColor(40, 40, 40), TRUE);
+    //    DrawBox(bar_x, bar_y + (int)wave,
+    //        bar_x + bar_width, bar_y + bar_height + (int)wave,
+    //        GetColor(40, 40, 40), TRUE);
 
-        int bar_color = GetColor(230, 70, 70);
-        DrawBox(bar_x, bar_y + (int)wave,
-            bar_x + (int)(bar_width * hp_ratio), bar_y + bar_height + (int)wave,
-            bar_color, TRUE);
+    //    int bar_color = GetColor(230, 70, 70);
+    //    DrawBox(bar_x, bar_y + (int)wave,
+    //        bar_x + (int)(bar_width * hp_ratio), bar_y + bar_height + (int)wave,
+    //        bar_color, TRUE);
 
-        DrawBox(bar_x, bar_y + (int)wave,
-            bar_x + bar_width, bar_y + bar_height + (int)wave,
-            GetColor(180, 180, 180), FALSE);
+    //    DrawBox(bar_x, bar_y + (int)wave,
+    //        bar_x + bar_width, bar_y + bar_height + (int)wave,
+    //        GetColor(180, 180, 180), FALSE);
 
-        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-    }
+    //    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    //}
+
 }
 
 void Enemy4::SetEasyMode(bool on) {

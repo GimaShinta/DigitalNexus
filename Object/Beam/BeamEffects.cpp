@@ -184,7 +184,7 @@ void LinkedBeam::Initialize()
     // ▼ 当たり判定の基本設定（敵弾→プレイヤーに当てる）
     box_size = Vector2D(8.0f, 8.0f);
     collision.is_blocking = true;
-    collision.object_type = eObjectType::eEnemyShot;
+    collision.object_type = eObjectType::eEnemyBeam;
     collision.hit_object_type.clear();
     collision.hit_object_type.push_back(eObjectType::ePlayer);
 }

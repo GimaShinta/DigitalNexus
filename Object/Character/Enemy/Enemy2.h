@@ -5,6 +5,7 @@
 enum class Enemy2Mode {
     Zako3Like,  // 既存：下から弧を描いて到達→射撃→浮遊→退場
     LineRise,   // 追加：列になって順番に下から登場
+    TopArcExit,
 };
 
 enum class Enemy2State {
@@ -48,8 +49,8 @@ private:
     float wait_time = 0.0f;         // LineRiseでの自分の開始遅延
 
     // 見た目
-    float scale_min = 0.3f;
-    float scale_max = 0.8f;
+    float scale_min = 0.4f;
+    float scale_max = 1.0f;
     float scale = 1.0f;
     float rotation = 0.0f;
     int   alpha = 0;

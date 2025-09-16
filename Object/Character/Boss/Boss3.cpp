@@ -27,8 +27,12 @@ void Boss3::Initialize()
 {
 	z_layer = 3;
 	box_size = 30;
-	hp = 100000;
+
+ #if _DEBUG
 	hp = 10000;
+ #else
+	hp = 110000;
+ #endif
 
 	// 攻撃パターンの設定
 	attack_pattrn_num = { 7, 12, 5, 12, 6, 12 };
@@ -747,6 +751,9 @@ void Boss3::Shot(float delta_second)
 
 void Boss3::DrawBoss3(const Vector2D position) const
 {
+
+	if (player && player->GetNowType() == PlayerType::OmegaCode)
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
 	// 本体
 	DrawRotaGraph(position.x, position.y, image_size, angle, Boss3_image[2], TRUE);
 

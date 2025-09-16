@@ -482,8 +482,7 @@ void Player::Shot(float delta_second)
 	}
 #else
 	// Bを押したらビーム発射
-	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B)) &&
-		CanUseSpecial())  // チャージ完了時のみ
+	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B))) // チャージ完了時のみ
 	{
 		if (stop == false)
 		{
@@ -544,7 +543,7 @@ void Player::PlayShotSE()
 	if (now_type == PlayerType::AlphaCode)
 	{
 		am->PlaySE(SE_NAME::Shot2);
-		am->ChangeSEVolume(SE_NAME::Shot2, 100);
+		am->ChangeSEVolume(SE_NAME::Shot2, 70);
 	}
 	else // OmegaCode
 	{

@@ -24,11 +24,11 @@ private:
 
 	// 左右出現管理
 	int spawn_index_left = 0;
-	float spawn_delay_timer_left = 0.0f;
+	float spawn_delay_timer_left = 1.0f;
 	bool spawning_left = false;
 
 	int spawn_index_right = 0;
-	float spawn_delay_timer_right = 0.0f;
+	float spawn_delay_timer_right = 1.0f;
 	bool spawning_right = false;
 
 	// Zako2/Zako7専用のWave管理
@@ -59,8 +59,8 @@ private:
 	// 既存の private: 節のどこか（他メンバの下でもOK）に追記
 // ===== 初心者向けフロー・スケジューラ =====
 	float intro_delay_sec = 6.0f;   // 最初の敵は6秒後に出現（早出しバグ封じ）
-	float wave1_duration_sec = 18.0f;  // Wave1 の最大持続
-	float miniboss_timeout_sec = 16.0f;  // 中ボスの強制退場まで
+	float wave1_duration_sec = 26.0f;  // Wave1 の最大持続
+	float miniboss_timeout_sec = 22.0f;  // 中ボスの強制退場まで
 
 	bool  wave1_started = false;
 	bool  wave1_done = false;
@@ -72,10 +72,12 @@ private:
 	bool  postwave_started = false;
 	bool  postwave_done = false;
 
+
 	// Wave1 内部
 	int   wave1_batch = 0;     // 0..2（3バッチ）
 	int   wave1_count = 0;     // バッチ内の出現カウント
 	float wave1_next_at = 0.0f;  // 次の出現予定時刻（stage_timer基準）
+	int wave1_pattern0[6];
 
 
 public:
@@ -96,6 +98,12 @@ private:
 	void UpdateGameStatus(float delta_second) override;
 	void StageLabel() const override;
 	void AppearancePlayer(float delta_second);
+	// private:
+	mutable float scroll_back = 0.0f;   // 奥グリッドのスクロール量（低速）
+	mutable float scroll_front = 0.0f;  // 前面グリッドのスクロール量（やや速い）
+
+	void ScrollEffectUpdate(float delta_second); // ★ 追加
+	void DrawFrontGrid() const;                  // ★ 追加
 
 
 };

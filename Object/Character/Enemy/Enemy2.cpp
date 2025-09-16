@@ -141,52 +141,83 @@ void Enemy2::Update(float delta_second)
 
     case Enemy2State::Appearing:
     {
-        // Zako3相当の上下弧（下からなので符号はマイナス）
+        // ★TopArcExit かどうかで軌道を切替
         appear_timer += delta_second;
         float t = my_min(appear_timer / appear_duration, 1.0f);
         float ease_t = 1 - powf(1 - t, 3);
 
-        location = start_pos + (target_pos - start_pos) * ease_t;
-        location.y -= 150.0f * sinf(t * DX_PI);  // 浮上の弧
+        if (mode == Enemy2Mode::TopArcExit) {
+            // 画面上から真下(または少し下)の目標へ → 弧
+            // start_pos は画面上（y: -80 など）を渡す想定
+            // target_pos は画面内の見せたい高さ
+            location = start_pos + (target_pos - start_pos) * ease_t;
 
-        alpha = static_cast<int>(255 * ease_t);
-        scale = scale_min + (scale_max - scale_min) * ease_t;
+            // “弧”のふくらみ：左右どちらかにランダムでカーブ
+            // is_from_left が true なら左→右へカーブ、false なら右→左へカーブ
+            float side = is_from_left ? +1.0f : -1.0f;
+            float arc = 120.0f * sinf(ease_t * DX_PI); // 0→π でふくらむ
+            location.x += side * arc;
 
-        if (t >= 1.0f) {
-            SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-            Shot(delta_second); // 到達時に一度撃つ
-            state = Enemy2State::Floating;
-            base_location = location;
-            float_timer = 0.0f;
-            scale = scale_max;
-            alpha = 255;
-            rotation = 0.0f;
+            alpha = static_cast<int>(255 * ease_t);
+            scale = scale_min + (scale_max - scale_min) * ease_t;
+
+            if (t >= 1.0f) {
+                // 到達時に1発だけ撃つ（既存APIを利用）
+                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+                ShootToPlayer(0.002f);
+                // すぐ退場モードへ：左右へスライドアウト
+                state = Enemy2State::Leaving;
+                // 左右どちらへ抜けるか：到達した側へ流す
+                velocity.x = side * 120.0f;  // 横へ
+                velocity.y = +10.0f;         // わずかに下げると見映えが柔らかい
+            }
+        }
+        else {
+            // 既存（Zako3Like）：下から弧→到達→Floating
+            location = start_pos + (target_pos - start_pos) * ease_t;
+            location.y -= 150.0f * sinf(t * DX_PI);
+            alpha = static_cast<int>(255 * ease_t);
+            scale = scale_min + (scale_max - scale_min) * ease_t;
+
+            if (t >= 1.0f) {
+                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+                Shot(delta_second);
+                state = Enemy2State::Floating;
+                base_location = location;
+                float_timer = 0.0f;
+                scale = scale_max;
+                alpha = 255;
+                rotation = 0.0f;
+            }
         }
         break;
     }
 
     case Enemy2State::Floating:
-    {
-        // 小刻みふわふわ
+        // 既存のふわふわ（TopArcExitでは使わない）
         location.x = base_location.x + sinf(float_timer * 1.5f) * 10.0f;
         location.y = base_location.y + sinf(float_timer * 2.0f) * 5.0f;
-
-        if (float_timer >= 3.0f) {
-            state = Enemy2State::Leaving;
-            float_timer = 0.0f;
-        }
+        if (float_timer >= 3.0f) { state = Enemy2State::Leaving; float_timer = 0.0f; }
         break;
-    }
 
     case Enemy2State::Leaving:
-    {
-        // 上方向に退場
-        location.y -= delta_second * 300.0f;
-        if (location.y + box_size.y < 0) {
-            is_destroy = true;
+        if (mode == Enemy2Mode::TopArcExit) {
+            // 左右へ抜ける
+            location += velocity * delta_second;
+            if (location.x < -80.0f || location.x > D_WIN_MAX_X + 80.0f ||
+                location.y > D_WIN_MAX_Y + 80.0f)
+            {
+                is_destroy = true;
+            }
+        }
+        else {
+            // 既存：上へ退場
+            location.y -= delta_second * 300.0f;
+            if (location.y + box_size.y < 0) {
+                is_destroy = true;
+            }
         }
         break;
-    }
 
     default: break;
     }

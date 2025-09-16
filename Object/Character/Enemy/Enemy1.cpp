@@ -131,6 +131,7 @@ void Enemy1::SetAppearParams(const Vector2D& start, const Vector2D& end, float t
 //
 //    EnemyBase::Update(delta_second);
 //}
+// Enemy1::Update（丸ごと差し替え）
 void Enemy1::Update(float delta_second) {
     appear_timer += delta_second;
 
@@ -139,8 +140,8 @@ void Enemy1::Update(float delta_second) {
         float t = appear_timer / appear_duration;
         if (t > 1.0f) t = 1.0f;
 
+        // 位置・スケール・アルファのイージング
         float ease_t = t * t * (3 - 2 * t);
-
         Vector2D prev = location;
         location = start_location + (target_location - start_location) * ease_t;
         velocity = (location - prev) / delta_second;
@@ -149,68 +150,42 @@ void Enemy1::Update(float delta_second) {
         alpha = static_cast<int>(255 * ease_t);
 
         if (t >= 1.0f) {
-            SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
-            Shot(150.0f); // ←ここ、speedは 150.0f にすると視認しやすいです
-            state = Enemy1State::Floating;
-            base_location = location;
-            float_timer = 0.0f;
-        }
-
-        break;
-    }
-
-    case Enemy1State::Floating: {
-        float_timer += delta_second;
-        location.x = base_location.x + sinf(float_timer * 1.5f) * 10.0f;
-        location.y = base_location.y + sinf(float_timer * 2.0f) * 5.0f;
-
-        // ★降り始めを個体ごとにランダム遅延（2.5?4.5秒後）
-        if (float_timer >= leave_delay)
-        {
+            // ★射撃はしない／停止もしない
             state = Enemy1State::Leaving;
+            // 真っすぐゆっくり下降
+            velocity.x = 0.0f;
+            velocity.y = 80.0f; // ←好みで 60～120 の範囲でどうぞ
         }
         break;
     }
 
     case Enemy1State::Leaving: {
-        // 左右にランダム方向の横移動を追加
-        static float horizontal_speed = 100.0f;
+        // ひたすら下へ
+        location += velocity * delta_second;
 
-        // 登場時に方向を決定しておくのがベストだが簡易的に左右ランダム
-        if (velocity.x == 0) {
-            velocity.x = (GetRand(1) == 0 ? -1 : 1) * horizontal_speed;
-            velocity.y = 300.0f; // 下方向の速度
-        }
-
-        // 移動更新
-        location.x += velocity.x * delta_second;
-        location.y += velocity.y * delta_second;
-
-        // 画面外に出たら削除
-        if (location.y - box_size.y > D_WIN_MAX_Y ||
-            location.x + box_size.x < 0 || location.x - box_size.x > D_WIN_MAX_X) {
+        // 画面外で消去
+        if (location.y - box_size.y > D_WIN_MAX_Y) {
             is_destroy = true;
         }
         break;
     }
 
+    default: break;
+    }
 
-    
-}
-
-    // 当たり判定のON/OFF
+    // 当たり判定：出現完了後のみON
     collision.is_blocking = (state != Enemy1State::Appearing);
     collision.object_type = collision.is_blocking ? eObjectType::eEnemy : eObjectType::eNone;
 
+    // 破壊処理・アニメ
     if (hp <= 0) {
         is_destroy = true;
         DropItems();
-        EffectManager* manager = Singleton<EffectManager>::GetInstance();
         SEManager::GetInstance()->PlaySE(SE_NAME::Destroy);
         SEManager::GetInstance()->PlaySE(SE_NAME::Dead1);
         Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 80);
-        EffectManager::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
-        manager->SetScale(anim_id, 0.5f);
+        int anim_id = EffectManager::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
+        Singleton<EffectManager>::GetInstance()->SetScale(anim_id, 0.5f);
         Singleton<ScoreData>::GetInstance()->AddScore(500);
     }
 
@@ -224,6 +199,7 @@ void Enemy1::Update(float delta_second) {
 
     EnemyBase::Update(delta_second);
 }
+
 
 void Enemy1::Draw(const Vector2D& screen_offset) const
 {

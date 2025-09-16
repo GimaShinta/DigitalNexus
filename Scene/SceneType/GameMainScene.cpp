@@ -959,13 +959,14 @@ void GameMainScene::DrawUI()
             "MOVE    : LeftStick",
             "SHOT    : A",
             "SPECIAL : B",
+            "CHANGE : RB-LB",
             "PAUSE   : Start"
         };
 
         int pulse = (GetNowCount() % 100 < 50) ? 255 : 100;
         int op_color = GetColor(100, pulse, 255);
 
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             int y = base_y + i * line_height;
             DrawStringToHandle(base_x, y, inputs[i], text_color, font_orbitron);

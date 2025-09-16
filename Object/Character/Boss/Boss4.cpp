@@ -18,7 +18,7 @@ void Boss4::Initialize()
 #if _DEBUG
 	hp = 15000;
 #else
-	hp = 150000;
+	hp = 170000;
 #endif
 
 	// 攻撃パターンの設定
@@ -742,7 +742,8 @@ void Boss4::Shot(float delta_second)
 
 void Boss4::DrawBoss4(const Vector2D position) const
 {
-
+	if (player && player->GetNowType() == PlayerType::OmegaCode)
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
 	// ── ジェット描画 ──
 	if (!is_crashing) {
 		const float jetAngle = DX_PI; // 180°回転で上向き

@@ -25,7 +25,7 @@ void Stage3::Initialize()
 
     SEManager* am = Singleton<SEManager>::GetInstance();
     am->PlaySE(SE_NAME::Kirikae);      
-    am->ChangeSEVolume(SE_NAME::Kirikae, 70);
+    am->ChangeSEVolume(SE_NAME::Kirikae, 80);
 
 }
 
@@ -374,13 +374,13 @@ void Stage3::EnemyAppearance(float delta_second)
 
         if (boss_spawned) return;
 
-        objm->CreateObject<PowerUp>(Vector2D(D_WIN_MAX_X / 2 - 60, 120))->SetPlayer(player);
-        objm->CreateObject<Shield>(Vector2D(D_WIN_MAX_X / 2 + 60, 120))->SetPlayer(player);
+      //  objm->CreateObject<PowerUp>(Vector2D(D_WIN_MAX_X / 2 - 60, 120))->SetPlayer(player);
+       // objm->CreateObject<Shield>(Vector2D(D_WIN_MAX_X / 2 + 60, 120))->SetPlayer(player);
 
-        boss = objm->CreateObject<Boss3>(Vector2D(670, -200));
-        boss->SetPlayer(player);
+        //boss = objm->CreateObject<Boss3>(Vector2D(670, -200));
+        //boss->SetPlayer(player);
         //enemy_list.push_back(boss2);
-        boss_spawned = true;
+       // boss_spawned = true;
         //is_warning = false;
 
 

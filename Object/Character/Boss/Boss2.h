@@ -34,6 +34,10 @@ public:
         return intro_active;
     }
 
+
+    // ★追加：Boss1同等の被弾処理（ビーム間引きダメージ対応）
+    void OnHitCollision(GameObjectBase* hit_object) override;
+
 private:
     void Shot(float delta_second);
 
@@ -41,7 +45,12 @@ private:
     void ReindexRing();
 
 private:
-    static constexpr int BOSS2_MAX_HP = 4000;
+    static constexpr int BOSS2_MAX_HP = 15000;
+
+    // Boss2.h
+    float rotation_angle = 0.0f;   // 円盤回転用
+    float float_timer = 0.0f;      // 浮遊用タイマ
+
 
     // 状態
     bool  is_alive = true;
@@ -77,8 +86,14 @@ private:
     // --- 登場演出 ---
     bool  intro_active = true; // イントロ中はShot停止
     float intro_timer = 0.0f;
-    float appear_scale = 1.8f;
+    float appear_scale = 1.4f;
     int   intro_spawned_count = 0;
     float part_spawn_timer = 0.0f;
     float part_spawn_interval = 0.35f; // 1体ずつ出す間隔
+
+    // === 持続ダメージ用（Boss1同等） ===
+    bool  battle_started = false; // 戦闘開始フラグ（イントロ終了後にON）
+    float damage_timer = 0.0f;  // 経過時間でHPを減少
+    float beam_damage_timer = 0.0f; // ビームの間引き用タイマ
+
 };

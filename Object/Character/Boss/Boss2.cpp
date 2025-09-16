@@ -58,7 +58,7 @@ void Boss2::Initialize()
     // イントロ初期化
     intro_active = true;
     intro_timer = 0.0f;
-    appear_scale = 1.8f;
+    appear_scale = 1.3f;
     intro_spawned_count = 0;
     part_spawn_timer = 0.0f;
     part_spawn_interval = 0.35f;
@@ -66,6 +66,11 @@ void Boss2::Initialize()
     // 破壊音は既存のまま
     sound_destroy = rm->GetSounds("Resource/sound/se/se_effect/kill_4.mp3");
     ChangeVolumeSoundMem(255, sound_destroy);
+
+    // ★ 持続ダメージ系の初期化（Boss1相当）
+    battle_started = false;
+    damage_timer = 0.0f;
+    beam_damage_timer = 0.0f;
 }
 
 void Boss2::Update(float delta_second)
@@ -95,10 +100,13 @@ void Boss2::Update(float delta_second)
     }
 
     // アニメーション
-    if (!images.empty() && !anim_indices.empty())
-    {
-        GameObjectBase::AnimationControl(delta_second, images, anim_indices, 10.0f);
-    }
+    //if (!images.empty() && !anim_indices.empty())
+    //{
+    //    GameObjectBase::AnimationControl(delta_second, images, anim_indices, 10.0f);
+    //}
+
+    int frame = static_cast<int>((GetNowCount() / 10) % images.size());
+    image = images[frame];
 
     // ==== イントロ：ズーム＋1体ずつスポーン（爆発エフェクト無し） ====
     if (intro_active)
@@ -141,6 +149,9 @@ void Boss2::Update(float delta_second)
 
             // ★ ここで当たり判定オン（ここから被弾OK）
             collision.is_blocking = true;
+            battle_started = true;
+            damage_timer = 0.0f;
+            beam_damage_timer = 0.0f;
         }
 
         __super::Update(delta_second);
@@ -162,9 +173,23 @@ void Boss2::Update(float delta_second)
         ReindexRing();
     }
 
+
+    // === Boss1同等：戦闘中の「持続ダメージ」 ===
+    if (battle_started)
+    {
+        damage_timer += delta_second;
+        if (damage_timer >= 0.05f)   // 0.05秒ごとに
+        {
+            damage_timer = 0.0f;
+            hp -= 8.0f;              // HPを減少
+        }
+    }
+    // Boss2.cpp Update内
+    rotation_angle += delta_second * 0.8f;   // ゆっくり回転
+    float_timer += delta_second;             // 浮遊アニメ用
+
     // 通常攻撃
     Shot(delta_second);
-
     __super::Update(delta_second);
 }
 
@@ -174,7 +199,15 @@ void Boss2::Draw(const Vector2D& /*screen_offset*/) const
 
     // 登場スケールを使用
     const float scale = appear_scale;
-    DrawRotaGraph(location.x, location.y, scale, 0.0f, image, TRUE);
+    // Boss2.cpp Draw内
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
+
+    float float_offset = std::sinf(float_timer * 1.5f) * 20.0f; // 上下に±10px揺れる
+    DrawRotaGraph((int)location.x, (int)(location.y + float_offset),
+        scale, rotation_angle, image, TRUE);
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
     // ★ イントロ中は静かな発光＋（任意で）演出強化
     if (intro_active)
@@ -371,6 +404,28 @@ void Boss2::ReindexRing()
         if (rotating_parts[i])
         {
             rotating_parts[i]->SetRingParams(i, n);
+        }
+    }
+}
+
+
+void Boss2::OnHitCollision(GameObjectBase* hit_object)
+{
+    auto type = hit_object->GetCollision().object_type;
+
+    if (type == eObjectType::eAttackShot)
+    {
+        hp -= 10; // Boss1 と同値
+    }
+
+    if (type == eObjectType::eBeam)
+    {
+        // Boss1 は 1/60f を足し込む方式。毎フレーム衝突が来る前提で間引き。
+        beam_damage_timer += 1.0f / 60.0f;
+        if (beam_damage_timer >= 0.15f)
+        {
+            hp -= 10;             // Boss1 と同値
+            beam_damage_timer = 0.0f;
         }
     }
 }

@@ -97,17 +97,17 @@ private:
     float pattern_cycle = 6.0f; // Ž©“®Ø‘Ö
 
     // Spiral
-    float interval_spiral = 0.08f;
+    float interval_spiral = 0.5f;
     float speed_spiral = 240.0f;
 
     // NWay
-    float interval_nway = 0.60f;
+    float interval_nway = 1.0f;
     int   nway_count = 5;
     float nway_spread_deg = 40.0f;
     float speed_nway = 260.0f;
 
     // Ring
-    float interval_ring = 2.00f;
+    float interval_ring = 3.0f;
     int   ring_count = 24;
     float speed_ring = 220.0f;
 
@@ -156,4 +156,8 @@ private:
     bool  hp_phase_enable = true;
     float hp_t1 = 0.75f, hp_t2 = 0.50f, hp_t3 = 0.25f;
     int   hp_phase = 0; // 0:>t1, 1:(t2,t1], 2:(t3,t2], 3:<=t3
+
+    // Boss2RotatingPart.h
+    float rotation_angle = 0.0f;
+
 };

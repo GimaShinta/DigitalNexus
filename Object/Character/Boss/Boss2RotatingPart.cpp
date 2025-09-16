@@ -105,6 +105,10 @@ void Boss2RotatingPart::Update(float delta_second)
     // HP連動パターン（有効時）
     if (hp_phase_enable) UpdateHpDrivenPattern();
 
+    // Boss2RotatingPart.cpp Update内
+    rotation_angle += delta_second * 2.0f; // 自己回転
+
+
     // 自動サイクル
     mode_timer += delta_second;
     if (mode_timer >= pattern_cycle)
@@ -330,7 +334,14 @@ void Boss2RotatingPart::Draw(const Vector2D& /*screen_offset*/) const
 {
     if (image < 0) return;
     float rot = DegToRad(GetAngleGlobal());
-    DrawRotaGraph((int)location.x, (int)location.y, 1.2f, rot, image, TRUE);
+    // Boss2RotatingPart.cpp Draw
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
+    if (image >= 0) {
+        DrawRotaGraph((int)location.x, (int)location.y, 1.5f, rotation_angle, image, TRUE);
+    }
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 }
 
 // ===== Utility =====

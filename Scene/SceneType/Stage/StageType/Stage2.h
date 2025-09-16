@@ -3,16 +3,17 @@
 
 // 前方宣言
 class Zako;
-class Boss1;
+class Boss2;
 class EnemyShot1;
 class Boss2;
+
 
 class Stage2 : public StageBase
 {
 private:
     // ===== 敵関連 =====
     Zako* zako = nullptr;
-    Boss1* boss = nullptr;
+   // Boss2* boss = nullptr;
     EnemyShot1* e_shot1 = nullptr;
     Boss2* boss2 = nullptr;
 
@@ -38,21 +39,12 @@ private:
     float entry_effect_timer = 0.0f;
 
     // フォント
-    int   font_orbitron = -1;
-    int   font_warning = -1;
+    //int   font_orbitron = -1;
+    //int   font_warning = -1;
 
     // ===== 背景スクロール =====
     float bg_scroll_offset_layer1 = 0.0f; // 奥
     float bg_scroll_offset_layer2 = 0.0f; // 手前
-
-    // ===== ステージ導入ラベル =====
-    enum class WarningLabelState
-    {
-        None, SlideIn, Displaying, SlideOut
-    };
-    WarningLabelState warning_label_state = WarningLabelState::None;
-    float warning_label_timer = 0.0f;
-    float warning_label_band_height = 0.0f; // 横帯の高さ（アニメ用）
 
     // ===== 追加：ボス登場演出の状態 =====
     enum class BossAppearState
@@ -86,8 +78,66 @@ private:
 
     // 追加：内部更新ヘルパ
     void UpdateBackgroundScroll(float delta_second);
-    void UpdateRabel(float delta_second);
+    //void UpdateRabel(float delta_second);
+
+private:
+    void DrawFrontGrid() const;   // ★追加：手前グリッド描画（Stage3方式）
+
 
     // ★ 追加：全画面フラッシュ（白→減衰）
     void DrawFullScreenFlash();
+
+private:
+    // === 背景用 ===
+    mutable float scroll_back = 0.0f;
+    mutable float scroll_front = 0.0f;
+
+    // === ステージラベル用 ===
+    int font_orbitron;
+    // font_warning は不要（Warning撤廃）
+
+    // delta保存
+    float delta_draw = 0.0f;
+
+    void ScrollEffectUpdate(float delta_second);
+
+    // Stage2.h （private: のどこかに追記）
+    // ====== Stage2 用：1分フローのスケジューラ ======
+    // 時間管理（Update内のstage_timerを利用）
+    // Wave1: Enemy1（整列バッチ）
+    bool  s2_wave1_started = false;
+    bool s2_wave1_mid = false;   // フェーズBを出したか
+    int   s2_wave1_phase = 0;     // 0:左右スウィープ / 1:上レイン
+    int   s2_wave1_i = 0;     // そのフェーズ内のインデックス
+    float s2_wave1_next = 0.0f;  // 次のスポーン時刻
+    bool  s2_wave1_done = false;
+    int   s2_wave1_batch = 0;     // 0..2 の3バッチ
+    int   s2_wave1_count = 0;     // バッチ内の出現カウント
+    float s2_wave1_next_t = 0.0f;  // 次の個体出現時刻
+
+    // Wave2（Enemy2：Snakeのみ）
+    bool  s2_wave2_started = false;
+    bool  s2_wave2_done = false;
+    int   s2_e2_group_id = 0;       // 何グループ目か
+    float s2_e2_group_next = 0.0f;    // 次のグループ開始時刻
+    float s2_e2_single_next = -1.0f;  // 単発の開始時刻（-1 なら未設定）
+    bool  s2_e2_single_used = false;  // そのグループで単発をすでに出したか
+
+
+    // Wave3: Enemy3（左右交互の列）
+    bool  s2_wave3_started = false;
+    bool  s2_wave3_done = false;
+    int   s2_left_idx = 0;
+    int   s2_right_idx = 0;
+    float s2_left_delay = 0.0f;
+    float s2_right_delay = 0.0f;
+
+
+    // Wave3 終了時刻を記録して、ボスを少し遅らせて出す
+    float s2_wave3_done_time = -1.0f;
+    float s2_boss_delay_after_wave3 = 2.5f; // Wave3終了の 2.5秒 後にボス出現
+
+    // Boss2 のスポーン（Warning撤廃で直接スポーン）
+    bool  s2_boss_spawned = false;
+
 };

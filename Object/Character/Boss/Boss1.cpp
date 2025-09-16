@@ -20,8 +20,8 @@ namespace {
 
     // çUåÇä‘äuÅiHPÇ™å∏Ç¡ÇƒÇ‡åÇÇ¬ä‘äuÇ™íZÇ≠Ç»ÇËâﬂÇ¨Ç»Ç¢ÇÊÇ§Ç…Åj
     // 0.75Å`1.30ïbÇÃîÕàÕÇ≈êÑà⁄Åiå≥ÅF0.50Å`1.10ïbÅj
-    constexpr float kShotIntervalMin = 0.75f;
-    constexpr float kShotIntervalBonus = 0.55f; // é¿ç€ÇÕ kShotIntervalMin + kShotIntervalBonus * hp_ratio
+    constexpr float kShotIntervalMin = 0.55f;
+    constexpr float kShotIntervalBonus = 0.4f; // é¿ç€ÇÕ kShotIntervalMin + kShotIntervalBonus * hp_ratio
 
     // íeë¨ÇÃëSëÃåWêîÅiëSÉpÉ^Å[ÉìÇ8äÑë¨Ç…ÅFéãîFê´UPÅïâÒîÇµÇ‚Ç∑Ç≠Åj
     constexpr float kBulletSpeedScale = 0.80f;
@@ -124,7 +124,7 @@ void Boss1::Update(float delta_second)
         if (damage_timer >= 0.05f) // 0.05ïbÇ≤Ç∆Ç…å∏è≠
         {
             damage_timer = 0.0f;
-            hp -= 5.0f; // å∏è≠ó 
+            hp -= 9.2f; // å∏è≠ó 
         }
     }
 
@@ -172,7 +172,7 @@ void Boss1::UpdateHovering(float delta_second)
 
     // === çUåÇä‘äuÅiíZÇ≠Ç»ÇËÇ∑Ç¨Çó}êßÅj ===
     shot_timer += delta_second;
-    static float next_shot_interval = 0.8f;
+    static float next_shot_interval = 0.6f;
 
     if (shot_timer > next_shot_interval)
     {
@@ -509,7 +509,7 @@ void Boss1::Draw(const Vector2D& screen_offset) const
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
     // ç≈ëÂHP = 8000
-    float hp_ratio = (float)hp / 8000.0f;
+    float hp_ratio = (float)hp / BOSS1_MAX_HP;
     if (hp_ratio < 0.0f) hp_ratio = 0.0f;
     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
 
@@ -571,7 +571,7 @@ void Boss1::OnHitCollision(GameObjectBase* hit_object)
         beam_damage_timer += 1.0f / 60.0f;
         if (beam_damage_timer >= 0.15f)
         {
-            hp -= 30;
+            hp -= 10;
             beam_damage_timer = 0.0f;
         }
     }
