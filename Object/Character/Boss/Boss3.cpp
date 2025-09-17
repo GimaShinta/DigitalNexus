@@ -81,6 +81,11 @@ void Boss3::Initialize()
 		ripples[i].timer = 0.0f;
 	}
 
+	beam11_on = false;
+	beam11 = nullptr;
+	beam12_on = false;
+	beams12.clear();
+
 	// 例：攻撃パターンごとに左右の波紋位置を定義
 	ripple_positions[0] = { Vector2D(-160,  100), Vector2D(160,  100) };
 	ripple_positions[7] = { Vector2D(-100,  70), Vector2D(100,  70) };
@@ -464,6 +469,11 @@ void Boss3::Draw(const Vector2D& screen_offset) const
 // 終了時処理
 void Boss3::Finalize()
 {
+	if (beam11) { beam11->SetDestroy(); beam11 = nullptr; }
+	for (auto* b : beams12) if (b) b->SetDestroy();
+	beams12.clear();
+	beam11_on = false;
+	beam12_on = false;
 }
 
 void Boss3::OnHitCollision(GameObjectBase* hit_object)
@@ -1954,102 +1964,86 @@ void Boss3::Pattrn10_2(int shot_count, float radius, float angular_speed, float 
 /// <param name="offsets_x">ボスからの距離</param>
 void Boss3::Pattrn11(float offsets_x)
 {
-	static bool                         beam_on = false;          // いま発射中か？
-	static EnemyBeam* b;                     // 発射中ビーム
-
-	if (!beam_on)
-	{
+	if (!beam11_on) {
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-		b = objm->CreateObject<EnemyBeam>(
-			Vector2D(
-				location.x + offsets_x,
-				(location.y + 150.0f) - box_size.y
-			));
-		b->SetBoss3(this);
-		beam_on = true;
+		beam11 = objm->CreateObject<EnemyBeam>(Vector2D(
+			location.x + offsets_x,
+			(location.y + 150.0f) - box_size.y));
+		if (beam11) {
+			beam11->SetBoss3(this);
+			beam11_on = true;
+		}
 	}
 
-	if (b != nullptr)
-	{
-		// それぞれ +100 / -100 のオフセットで追従
-		b->SetLocation(
-			Vector2D(
-				location.x + offsets_x,
-				(location.y + 150.0f) + b->GetBoxSize().y
-			));
+	if (beam11) {
+		beam11->SetLocation(Vector2D(
+			location.x + offsets_x,
+			(location.y + 150.0f) + beam11->GetBoxSize().y));
+		if (beam11->is_destroy) {
+			beam11->SetDestroy();
+			beam11 = nullptr;
+			beam11_on = false;
+			is_shot = false;
+		}
 	}
-
-	if (b != nullptr && b->is_destroy)   // 5 秒後などに true になる想定
-	{
-		b->SetDestroy();                 // 必要なら明示削除
+	else {
+		// 何らかで消えていた場合の保険
+		beam11_on = false;
 		is_shot = false;
-		beam_on = false;
 	}
 }
+
 
 /// <summary>
 /// 攻撃パターン12（ビーム二本）
 /// </summary>
 void Boss3::Pattrn12()
 {
-	static bool                         beam_on = false;          // いま発射中か？
-	static std::vector<EnemyBeam*>     beams;                     // 発射中ビーム
-	static const float                  OFFSETS_X[2] = { +100.f, -100.f }; // +100 / -100 の並び
+	static const float OFFSETS_X[2] = { +100.f, -100.f }; // 両砲口の横オフセット
 
-	if (!beam_on)
-	{
-		//PlaySoundMem(se_beam, DX_PLAYTYPE_BACK);
+	if (!beam12_on) {
 		GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-
-		for (int i = 0; i < 2; ++i)
-		{
-			EnemyBeam* b = objm->CreateObject<EnemyBeam>(
-				Vector2D(
-					location.x + OFFSETS_X[i],
-					(location.y + 50.0f) - box_size.y
-				));
-			b->SetBoss3(this);
-			beams.push_back(b);
-		}
-		beam_on = true;
-		//SEManager::GetInstance()->PlaySE(SE_NAME::EnemyBeam);
-	}
-
-	for (size_t i = 0; i < beams.size(); ++i)
-	{
-		if (beams[i] == nullptr) continue;   // 念のため
-
-		// それぞれ +100 / -100 のオフセットで追従
-		beams[i]->SetLocation(
-			Vector2D(
+		beams12.clear();
+		for (int i = 0; i < 2; ++i) {
+			EnemyBeam* b = objm->CreateObject<EnemyBeam>(Vector2D(
 				location.x + OFFSETS_X[i],
-				(location.y + 50.0f) + beams[i]->GetBoxSize().y
-			));
+				(location.y + 50.0f) - box_size.y));
+			if (b) {
+				b->SetBoss3(this);
+				beams12.push_back(b);
+			}
+		}
+		beam12_on = true;
 	}
 
-	for (auto it = beams.begin(); it != beams.end(); )
-	{
-		EnemyBeam* b = *it;
+	// 追従・生存チェック
+	for (size_t i = 0; i < beams12.size(); ++i) {
+		EnemyBeam* b = beams12[i];
+		if (!b) continue;
+		b->SetLocation(Vector2D(
+			location.x + OFFSETS_X[i],
+			(location.y + 50.0f) + b->GetBoxSize().y));
+	}
 
-		if (b != nullptr && b->is_destroy)   // 5 秒後などに true になる想定
-		{
-			b->SetDestroy();                 // 必要なら明示削除
-			it = beams.erase(it);            // vector から外す
+	// 破棄されたものを取り除く
+	for (auto it = beams12.begin(); it != beams12.end(); ) {
+		EnemyBeam* b = *it;
+		if (!b || b->is_destroy) {
+			if (b) b->SetDestroy();
+			it = beams12.erase(it);
 		}
-		else
-		{
+		else {
 			++it;
 		}
 	}
 
-	// 全部消えたら次の攻撃を解禁
-	if (beam_on && beams.empty())
-	{
+	// 2本とも消えたら次パターンへ
+	if (beam12_on && beams12.empty()) {
+		beam12_on = false;
 		is_shot = false;
-		beam_on = false;
 	}
 }
+
 
 /// <summary>
 /// 攻撃パターン13（ビームの段階攻撃）バグあり

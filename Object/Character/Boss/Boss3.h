@@ -109,6 +109,14 @@ private:
 	bool on_hit = false;
 	bool ikkai_bakuhatu = false;
 
+	// 11/12用のビーム状態（関数static撤廃）
+	bool beam11_on = false;
+	class EnemyBeam* beam11 = nullptr;
+
+	bool beam12_on = false;
+	std::vector<class EnemyBeam*> beams12;
+
+
 public:
 	Boss3();
 	~Boss3();
