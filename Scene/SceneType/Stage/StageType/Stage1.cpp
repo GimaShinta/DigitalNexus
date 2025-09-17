@@ -50,6 +50,29 @@ void Stage1::Initialize()
     e2_group_interval = 3.5f;
     e2_single_interval = 1.6f;
 
+    // === Waves reset ===
+    e5_started = e5_done = false;
+    e5_i_L = e5_i_R = 0;
+    e5_next_L = e5_next_R = 0.0f;
+
+    e6_started = e6_done = false;
+    e6_lane = 0;
+    e6_count_in_lane = 0;
+    e6_next_at = 0.0f;
+
+    postwave_start_at = -1.0f;
+
+    boss_spawn_at = -1.0f;
+    boss_delay_sec = 9.0f;
+
+    // 念のため既存フラグも確実にリセット（周回安全）
+    wave1_started = wave1_done = false;
+    miniboss_spawned = miniboss_done = false;
+    postwave_started = postwave_done = false;
+    miniboss_start_t = 0.0f;
+    wave1_batch = wave1_count = 0;
+    wave1_next_at = 0.0f;
+
 }
 
 // 終了時処理
@@ -395,8 +418,8 @@ void Stage1::EnemyAppearance(float dt)
     }
 
     // Boss出現を“数秒後に予約”するためのローカル静的変数
-    static float boss_spawn_at = -1.0f; // <0: 未予約
-    static float boss_delay_sec = 9.0f;  // ★Enemy2出し切り後に待つ秒数（お好みで 2.0～4.0）
+   // static float boss_spawn_at = -1.0f; // <0: 未予約
+   // static float boss_delay_sec = 9.0f;  // ★Enemy2出し切り後に待つ秒数（お好みで 2.0～4.0）
 
 
     // 6秒までは一切スポーンしない（「早く出る」バグ封じ）
@@ -412,7 +435,6 @@ void Stage1::EnemyAppearance(float dt)
     // Wave1：Enemy1 を 3バッチ × 6体（やさしめ）
     // 0.30秒おきに1体 → 2秒休み → 次バッチ
     // ─────────────────────────────────────────
-
     if (!wave1_done) {
         if (!wave1_started) {
             wave1_started = true;
@@ -507,9 +529,9 @@ void Stage1::EnemyAppearance(float dt)
     // ─────────────────────────────────────────
 // Wave: Enemy5 斜めフォーメーション（左右）
 // ─────────────────────────────────────────
-    static bool  e5_started = false, e5_done = false;
-    static int   e5_i_L = 0, e5_i_R = 0;        // 出した数
-    static float e5_next_L = 0.0f, e5_next_R = 0.0f;
+   // static bool  e5_started = false, e5_done = false;
+   // static int   e5_i_L = 0, e5_i_R = 0;        // 出した数
+   // static float e5_next_L = 0.0f, e5_next_R = 0.0f;
 
     if (!e5_done) {
         const int   COUNT_PER_SIDE = 8;   // 6 → 8（1ラインの台数を少し増やす）
@@ -582,10 +604,10 @@ void Stage1::EnemyAppearance(float dt)
         VIEW_X_MAX - 120.0f
     };
 
-    static bool e6_started = false, e6_done = false;
-    static int  e6_lane = 0, e6_count_in_lane = 0;
-    static float e6_next_at = 0.0f;
-    static float postwave_start_at = -1.0f;  // <0: 未設定
+    //static bool e6_started = false, e6_done = false;
+    //static int  e6_lane = 0, e6_count_in_lane = 0;
+   // static float e6_next_at = 0.0f;
+    //static float postwave_start_at = -1.0f;  // <0: 未設定
 
 
     if (!e6_done) {

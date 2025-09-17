@@ -79,6 +79,26 @@ private:
 	float wave1_next_at = 0.0f;  // 次の出現予定時刻（stage_timer基準）
 	int wave1_pattern0[6];
 
+	// Wave: Enemy5
+	bool  e5_started = false;
+	bool  e5_done = false;
+	int   e5_i_L = 0, e5_i_R = 0;
+	float e5_next_L = 0.0f, e5_next_R = 0.0f;
+
+	// Wave: Enemy6
+	bool  e6_started = false;
+	bool  e6_done = false;
+	int   e6_lane = 0, e6_count_in_lane = 0;
+	float e6_next_at = 0.0f;
+
+	// Post-Wave(Enemy2) 開始ディレイ
+	float postwave_start_at = -1.0f; // <0: 未設定
+
+	// Boss 予約
+	float boss_spawn_at = -1.0f;  // <0: 未予約
+	float boss_delay_sec = 9.0f;   // 既存の値を踏襲
+
+
 
 public:
 	// コンストラクタ・デストラクタ
