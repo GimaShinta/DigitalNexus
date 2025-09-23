@@ -362,82 +362,82 @@ void GameMainScene::Draw()
             }
         }
 
-        if (isPaused)
-        {
-            const int cx = D_WIN_MAX_X / 2;
-            const int cy = D_WIN_MAX_Y / 2 - 20;
+        //if (isPaused)
+        //{
+        //    const int cx = D_WIN_MAX_X / 2;
+        //    const int cy = D_WIN_MAX_Y / 2 - 20;
 
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
-            DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-            //DrawBox(400, 200, 880, D_WIN_MAX_Y - 200, GetColor(255, 255, 255), FALSE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        //    SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
+        //    DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+        //    //DrawBox(400, 200, 880, D_WIN_MAX_Y - 200, GetColor(255, 255, 255), FALSE);
+        //    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-            const char* menuItems[] = {
-                "START GAME",
-                "BACK TITLE",
-            };
+        //    const char* menuItems[] = {
+        //        "START GAME",
+        //        "BACK TITLE",
+        //    };
 
-            for (int i = 0; i < 2; ++i)
-            {
-                int y = 300 + i * 50;
-                int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
-                int x = (D_WIN_MAX_X - textWidth) / 2;
+        //    for (int i = 0; i < 2; ++i)
+        //    {
+        //        int y = 300 + i * 50;
+        //        int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
+        //        int x = (D_WIN_MAX_X - textWidth) / 2;
 
-                if (i == m_selectedIndex)
-                {
-                    // =========================
-                    // 背景ハイライトバー（画面端まで）
-                    // =========================
-                    int barHeight = 40;
-                    int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50); // パルス
-                    SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
-                    DrawBox(
-                        0, y - 5,
-                        D_WIN_MAX_X, y + barHeight,
-                        GetColor(0, 200, 255), TRUE
-                    );
+        //        if (i == m_selectedIndex)
+        //        {
+        //            // =========================
+        //            // 背景ハイライトバー（画面端まで）
+        //            // =========================
+        //            int barHeight = 40;
+        //            int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50); // パルス
+        //            SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
+        //            DrawBox(
+        //                0, y - 5,
+        //                D_WIN_MAX_X, y + barHeight,
+        //                GetColor(0, 200, 255), TRUE
+        //            );
 
-                    // =========================
-                    // 両端のエッジエフェクト（流れる光）
-                    // =========================
-                    int edgeWidth = 80;
-                    int edgeHeight = 4;
-                    int scrollSpeed = 2;
-                    int edgeOffset = (GetNowCount() * scrollSpeed) % (D_WIN_MAX_X + edgeWidth * 2);
+        //            // =========================
+        //            // 両端のエッジエフェクト（流れる光）
+        //            // =========================
+        //            int edgeWidth = 80;
+        //            int edgeHeight = 4;
+        //            int scrollSpeed = 2;
+        //            int edgeOffset = (GetNowCount() * scrollSpeed) % (D_WIN_MAX_X + edgeWidth * 2);
 
-                    // 左から右へ流れる（2個表示してループ感を出す）
-                    for (int j = 0; j < 2; ++j)
-                    {
-                        int edgeX = edgeOffset - edgeWidth * j;
-                        SetDrawBlendMode(DX_BLENDMODE_ADD, 50);
-                        DrawBox(
-                            edgeX, y + 10,
-                            edgeX + edgeWidth, y + 10 + edgeHeight,
-                            GetColor(200, 255, 255), TRUE
-                        );
-                        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-                    }
+        //            // 左から右へ流れる（2個表示してループ感を出す）
+        //            for (int j = 0; j < 2; ++j)
+        //            {
+        //                int edgeX = edgeOffset - edgeWidth * j;
+        //                SetDrawBlendMode(DX_BLENDMODE_ADD, 50);
+        //                DrawBox(
+        //                    edgeX, y + 10,
+        //                    edgeX + edgeWidth, y + 10 + edgeHeight,
+        //                    GetColor(200, 255, 255), TRUE
+        //                );
+        //                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        //            }
 
-                    // =========================
-                    // テキスト（アウトライン＋グロー）
-                    // =========================
-                    int offsetX = (rand() % 3) - 1;
-                    int offsetY = (rand() % 3) - 1;
+        //            // =========================
+        //            // テキスト（アウトライン＋グロー）
+        //            // =========================
+        //            int offsetX = (rand() % 3) - 1;
+        //            int offsetY = (rand() % 3) - 1;
 
-                    DrawStringToHandle(x + offsetX - 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                    DrawStringToHandle(x + offsetX + 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                    DrawStringToHandle(x + offsetX, y + offsetY - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                    DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+        //            DrawStringToHandle(x + offsetX - 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+        //            DrawStringToHandle(x + offsetX + 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+        //            DrawStringToHandle(x + offsetX, y + offsetY - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+        //            DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
 
-                    int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
-                    DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
-                }
-                else
-                {
-                    DrawStringToHandle(x, y, menuItems[i], GetColor(180, 180, 180), m_menuFontHandle);
-                }
-            }
-        }
+        //            int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
+        //            DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
+        //        }
+        //        else
+        //        {
+        //            DrawStringToHandle(x, y, menuItems[i], GetColor(180, 180, 180), m_menuFontHandle);
+        //        }
+        //    }
+        //}
 
         if (player && player->GetGameOver())
         {
@@ -977,6 +977,8 @@ void GameMainScene::DrawUI()
 
     if (isPaused)
     {
+
+
         const int cx = D_WIN_MAX_X / 2;
         const int cy = D_WIN_MAX_Y / 2 - 20;
 
@@ -984,6 +986,15 @@ void GameMainScene::DrawUI()
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
         DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // === 上部に「PAUSE」表示 ===
+        const char* pauseText = "PAUSE";
+        int textW = GetDrawStringWidthToHandle(pauseText, strlen(pauseText), m_menuFontHandle);
+        int x = (D_WIN_MAX_X - textW) / 2;
+        int y = 120; // 上からの位置（お好みで調整）
+
+        int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
+        DrawStringToHandle(x, y, pauseText, GetColor(100 + glow, 255, 255), m_menuFontHandle);
 
         // メニュー項目
         const char* menuItems[] = {
