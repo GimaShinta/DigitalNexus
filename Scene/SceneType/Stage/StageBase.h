@@ -281,6 +281,8 @@ public:
         game_time_miri = time_miri;
     }
 
+    
+
     bool time_stop = false;
 
     bool GetGameTimeStop() const

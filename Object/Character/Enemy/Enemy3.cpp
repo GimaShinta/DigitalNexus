@@ -64,12 +64,13 @@ void Enemy3::SetMode(ZakoMode new_mode)
 void Enemy3::ShootToPlayer(float speed)
 {
     GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
-    GameObjectBase* shot = gm->CreateObject<EnemyBullet1>(location); // ←使用中の弾クラスに変更
+    EnemyBulletBase* shot = gm->CreateObject<EnemyBullet1>(location); // ←使用中の弾クラスに変更
     if (shot && player)
     {
         Vector2D dir = player->GetLocation() - location;
         dir.Normalize();
         shot->SetVelocity(dir * speed);
+        shot->SetPlayer(player);
     }
 }
 

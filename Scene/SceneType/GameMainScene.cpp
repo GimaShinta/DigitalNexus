@@ -787,7 +787,7 @@ void GameMainScene::DrawUI()
         int y = 220 + (int)offset.y;
 
         int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
-        int line_color = GetTypeColor(255, 255, 255, 255, 100, 100);
+        int line_color = GetTypeColor(0, 255, 255, 255, 100, 100);
 
         DrawStringToHandle(x + 10, y + 2, "POWER", text_color, font_orbitron);
 
@@ -822,6 +822,8 @@ void GameMainScene::DrawUI()
 
         DrawStringToHandle(bar_start - 10, bar_y + 5, "E", line_color, font_orbitron);
         DrawStringToHandle(bar_end + 5, bar_y + 5, "F", line_color, font_orbitron);
+
+        DrawLine(x, y + 100, x + 200, y + 100, line_color);
     }
 
     // ==== SHIELD（タイプ演出対応） ====
@@ -830,7 +832,7 @@ void GameMainScene::DrawUI()
         int type_offset_x = GetUIXOffsetRight();
 
         int x = D_WIN_MAX_X - 230 + (int)offset.x + type_offset_x;
-        int y = 290 + (int)offset.y;
+        int y = 330 + (int)offset.y;
 
         int text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
         int line_color = GetTypeColor(0, 255, 255, 255, 80, 80);
@@ -978,20 +980,26 @@ void GameMainScene::DrawUI()
         const int cx = D_WIN_MAX_X / 2;
         const int cy = D_WIN_MAX_Y / 2 - 20;
 
+        // 背景フェード
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, transparent);
         DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
-        //DrawBox(400, 200, 880, D_WIN_MAX_Y - 200, GetColor(255, 255, 255), FALSE);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-
+        // メニュー項目
         const char* menuItems[] = {
             "START GAME",
             "BACK TITLE",
         };
+        const int menuCount = 2;
+        const int menuPitch = 50;   // 各項目の縦間隔
+        const int offsetY = 100;    // 中央からどれだけ下げるか
 
-        for (int i = 0; i < 2; ++i)
+        // メニュー全体の開始位置を中央基準で計算
+        const int menuStartY = (D_WIN_MAX_Y / 2) - (menuCount * menuPitch) / 2 + offsetY;
+
+        for (int i = 0; i < menuCount; ++i)
         {
-            int y = 300 + i * 50;
+            int y = menuStartY + i * menuPitch;
             int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
             int x = (D_WIN_MAX_X - textWidth) / 2;
 
@@ -1034,15 +1042,15 @@ void GameMainScene::DrawUI()
                 // テキスト（アウトライン＋グロー）
                 // =========================
                 int offsetX = (rand() % 3) - 1;
-                int offsetY = (rand() % 3) - 1;
+                int offsetY2 = (rand() % 3) - 1;
 
-                DrawStringToHandle(x + offsetX - 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                DrawStringToHandle(x + offsetX + 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                DrawStringToHandle(x + offsetX, y + offsetY - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-                DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                DrawStringToHandle(x + offsetX - 1, y + offsetY2, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                DrawStringToHandle(x + offsetX + 1, y + offsetY2, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                DrawStringToHandle(x + offsetX, y + offsetY2 - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
+                DrawStringToHandle(x + offsetX, y + offsetY2 + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
 
                 int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
-                DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
+                DrawStringToHandle(x + offsetX, y + offsetY2, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
             }
             else
             {
@@ -1069,21 +1077,22 @@ void GameMainScene::DrawUI()
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
+    int time_text_color = GetTypeColor(0, 255, 255, 255, 160, 160);
 
     if (game_timer_hun < 10.0f)
-        DrawFormatString(0, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_hun, TRUE);
+        DrawFormatStringToHandle(30 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "0%.0f : ", game_timer_hun, TRUE);
     else
-        DrawFormatString(0, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_hun, TRUE);
+        DrawFormatStringToHandle(30 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "%.0f : ", game_timer_hun, TRUE);
 
     if(game_timer_byou < 10.0f)
-        DrawFormatString(40, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_byou, TRUE);
+        DrawFormatStringToHandle(90 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "0%.0f : ", game_timer_byou, TRUE);
     else
-        DrawFormatString(40, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_byou, TRUE);
+        DrawFormatStringToHandle(90 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "%.0f : ", game_timer_byou, TRUE);
 
     if(game_timer_miri < 10.0f)
-        DrawFormatString(80, 0, GetColor(255, 255, 255), "0%.0f : ", game_timer_miri, TRUE);
+        DrawFormatStringToHandle(150 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "0%.0f", game_timer_miri, TRUE);
     else
-        DrawFormatString(80, 0, GetColor(255, 255, 255), "%.0f : ", game_timer_miri, TRUE);
+        DrawFormatStringToHandle(150 + (int)offset.x, 200 + (int)offset.y, time_text_color, font_orbitron, "%.0f", game_timer_miri, TRUE);
 }
 
 // 警告演出の更新処理

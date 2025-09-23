@@ -669,7 +669,16 @@ void Stage3::ResultDraw(float delta_second)
     ScoreData* score = Singleton<ScoreData>::GetInstance();
     float base_score = score->GetTotalScore();
     int life_bonus = player->GetLife() * 1000;
-    float time_bonus = game_time_byou;
+
+    // 経過時間を秒に換算
+    float total_seconds = game_time_hun * 60.0f + game_time_byou + game_time_miri / 1000.0f;
+
+    // タイムボーナス計算
+    const int max_bonus = 10000000;   // 最大ボーナス
+    const int decay_per_sec = 5000;   // 1秒ごとの減点
+    int time_bonus = static_cast<int>(max_bonus - total_seconds * decay_per_sec);
+    if (time_bonus < 0) time_bonus = 0;
+
     total_score = base_score + life_bonus + time_bonus;
 
     // 表示ライン設定
@@ -721,7 +730,7 @@ void Stage3::ResultDraw(float delta_second)
                 sprintf_s(value_buf, "%d", life_bonus);
             }
             else if (line.label == "TIME BONUS") {
-                sprintf_s(value_buf, "%.0f", time_bonus);
+                sprintf_s(value_buf, "%d", time_bonus);
             }
             else if (line.label == "FINAL SCORE") {
                 sprintf_s(value_buf, "%.0f", total_score);

@@ -261,7 +261,7 @@ void Boss3::Update(float delta_second)
 		if (damage_timer >= 0.05f)
 		{
 			damage_timer = 0.0f;
-			hp -= 10;
+			hp -= 20;
 		}
 
 	}
