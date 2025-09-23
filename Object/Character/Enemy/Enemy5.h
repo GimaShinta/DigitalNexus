@@ -66,4 +66,6 @@ private:
     int   image = -1;
     float animation_time = 0.0f;
     int   animation_index = 0;
+
+
 };

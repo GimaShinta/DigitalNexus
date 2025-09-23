@@ -5,7 +5,9 @@
 class Zako;
 class Boss2;
 class EnemyShot1;
-class Boss2;
+class Boss2;        
+class Enemy7;
+
 
 
 class Stage2 : public StageBase
@@ -139,5 +141,52 @@ private:
 
     // Boss2 のスポーン（Warning撤廃で直接スポーン）
     bool  s2_boss_spawned = false;
+
+    private:
+        // ====== フロー管理 ======
+        // Wave1（等間隔の横列→上から整列）
+
+        // Stage2.h の private: に追加（既存の wave1_started/wave1_done はそのまま利用）
+        int   wave1_group = 0;     // 何回目の隊列か
+        int   wave1_total_groups = 7;     // 出したい隊列の回数（お好みで）
+        float wave1_interval = 1.8f;  // 隊列と隊列の間隔（秒）
+
+
+        bool  wave1_started = false;
+        bool  wave1_done = false;
+        int   wave1_batch = 0;      // 0..2（3バッチ）
+        int   wave1_count = 0;      // バッチ内のスポーン数
+        float wave1_next_at = 0.0f;   // 次の1体を出す時刻
+
+        // Wave2（斜め流し：左上→右下）
+        bool  wave2_started = false;
+        bool  wave2_done = false;
+        int   wave2_count = 0;
+        float wave2_next_at = 0.0f;
+
+        // Wave3（中央から小集団）
+        bool  wave3_started = false;
+        bool  wave3_done = false;
+        int   wave3_group = 0;      // 0..2（3グループ）
+        int   wave3_i = 0;      // グループ内のインデックス
+        float wave3_next_at = 0.0f;
+
+
+
+
+        // private: に追加
+        Enemy7* enemy7_left = nullptr;
+        Enemy7* enemy7_right = nullptr;
+        bool    enemy7_spawned = false;
+        bool    enemy7_done = false;
+        float   enemy7_start_t = 0.0f;
+        float   enemy7_timeout_sec = 28.0f; // 念のため少し長め
+
+
+        // Boss2
+        bool  boss_spawned = false;
+
+        // デバッグ：ボスだけ見たい時
+        bool  debug_boss_only = false;
 
 };

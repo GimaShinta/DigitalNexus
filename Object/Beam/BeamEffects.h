@@ -1,6 +1,9 @@
 #pragma once
 #include "../../Object/GameObjectBase.h"
 #include <vector>
+// FollowBeam.h
+class Boss2;
+
 
 class FollowBeam : public GameObjectBase
 {
@@ -24,6 +27,7 @@ public:
         return is_destroy;
     }
 
+    void SetFollowBoss(Boss2* boss, float angle_offset, bool warning);
 private:
     GameObjectBase* follow_target = nullptr;
     GameObjectBase* look_target = nullptr;

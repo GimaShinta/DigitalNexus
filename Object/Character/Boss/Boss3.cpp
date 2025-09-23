@@ -696,7 +696,7 @@ void Boss3::Shot(float delta_second)
 					ripples[i].timer = 0.0f;
 					ripples[i].pos = location + left_offset;
 					SEManager::GetInstance()->PlaySE(SE_NAME::Hamon);
-					SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Hamon, 60);
+					SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Hamon, 40);
 					break;
 				}
 			}

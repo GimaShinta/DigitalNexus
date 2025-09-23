@@ -234,6 +234,7 @@ void Enemy1::Shot(float speed)
         Vector2D dir(sinf(angle_rad), cosf(angle_rad)); // Y•ûŒü‚ª‰º
 
         auto bullet = Singleton<GameObjectManager>::GetInstance()->CreateObject<EnemyBullet2>(location);
+        SEManager::GetInstance()->PlaySE(SE_NAME::Bullet01);
         bullet->SetPlayer(player);
         if (bullet)
         {

@@ -89,6 +89,11 @@ public:
 public:
     StageID GetStageID() const { return stage_id; }
 
+    // StageBase.h（public）
+    virtual bool IsStageLabelActive() const { return false; }            // デフォルトfalse
+    virtual bool IsBossExplosionWindowActive() const { return false; }   // デフォルトfalse
+
+
 protected:
     virtual void EnemyAppearance(float delta_second) = 0;       // 敵の出現処理
     // クリア判定

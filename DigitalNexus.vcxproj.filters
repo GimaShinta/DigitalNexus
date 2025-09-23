@@ -58,6 +58,8 @@
     <ClCompile Include="Object\Beam\OmegaBom.cpp" />
     <ClCompile Include="Object\Character\Enemy\Enemy5.cpp" />
     <ClCompile Include="Object\Character\Enemy\Enemy6.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy7.cpp" />
+    <ClCompile Include="Object\Character\Enemy\Enemy8.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Application.h" />
@@ -120,5 +122,7 @@
     <ClInclude Include="Object\Beam\OmegaBom.h" />
     <ClInclude Include="Object\Character\Enemy\Enemy5.h" />
     <ClInclude Include="Object\Character\Enemy\Enemy6.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy7.h" />
+    <ClInclude Include="Object\Character\Enemy\Enemy8.h" />
   </ItemGroup>
 </Project>

@@ -82,12 +82,40 @@ eSceneType GameMainScene::Update(float delta_second)
     InputManager* input = Singleton<InputManager>::GetInstance();
 
     // ポーズ機能
-    if (input->GetButtonDown(XINPUT_BUTTON_START) ||
-        input->GetKeyDown(KEY_INPUT_P) && (current_stage && !current_stage->IsOver()))
+    //if (input->GetButtonDown(XINPUT_BUTTON_START) ||
+    //    input->GetKeyDown(KEY_INPUT_P) && (current_stage && !current_stage->IsOver()))
+    //{
+    //    isPaused = !isPaused;
+    //    m_selectedIndex = 0;
+    //}
+
+    const bool isStage3or4Clear =
+        (current_stage &&
+            (current_stage->GetStageID() == StageID::Stage3 || current_stage->GetStageID() == StageID::Stage4) &&
+            current_stage->IsClear());
+
+    // 瞬間ブロック：各ステージが「今だけ不可」と言うときだけ true
+    bool pause_block_by_stage = false;
+    if (current_stage) {
+        pause_block_by_stage |= current_stage->IsStageLabelActive();          // Stage1 ラベル中
+        pause_block_by_stage |= current_stage->IsBossExplosionWindowActive(); // Boss3/4 爆発見せ場中
+        // Stage4 の WARNING は GameMain 管理
+        if (current_stage->GetStageID() == StageID::Stage4) {
+            pause_block_by_stage |= IsStage4WarningActive();                  // WARNING 中
+        }
+    }
+
+    // トグル
+    if ((input->GetButtonDown(XINPUT_BUTTON_START) || input->GetKeyDown(KEY_INPUT_P)) &&
+        current_stage &&
+        !current_stage->IsOver() &&
+        !isStage3or4Clear &&
+        !pause_block_by_stage)
     {
         isPaused = !isPaused;
         m_selectedIndex = 0;
     }
+
 
     // ======= スコアログのスライド演出更新 =======
     for (auto& log : score_logs)
@@ -456,10 +484,14 @@ void GameMainScene::Draw()
                     "RETRY GAME",
                     "BACK TITLE",
                 };
+                const int menuPitch = 50;
+                const int menuCount = 2;
+                const int offsetY = 100; // 下にずらす量
+                const int menuStartY = (D_WIN_MAX_Y / 2) - (menuCount * menuPitch) / 2 + offsetY;
 
-                for (int i = 0; i < 2; ++i)
+                for (int i = 0; i < menuCount; ++i)
                 {
-                    int y = 300 + i * 50;
+                    int y = menuStartY + i * menuPitch;
                     int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
                     int x = (D_WIN_MAX_X - textWidth) / 2;
 
@@ -1260,7 +1292,7 @@ void GameMainScene::DrawGameOverEffect() {
 #endif
 
         SetFontSize(54);
-        DrawString(D_WIN_MAX_X / 2 - 200, D_WIN_MAX_Y / 2 - 32, "GAME OVER", GetColor(255, 255, 255));
+        DrawString(D_WIN_MAX_X / 2 - 200, D_WIN_MAX_Y / 2 - 80, "GAME OVER", GetColor(255, 255, 255));
         SetFontSize(16);
     }
 }
@@ -1624,3 +1656,5 @@ void GameMainScene::UpdateUITransition(float delta)
 #endif
 
 }
+
+

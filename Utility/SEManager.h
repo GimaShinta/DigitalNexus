@@ -29,6 +29,10 @@ enum class SE_NAME
 	Code,
 	Code2,
 	Noise,
+	Noise2,
+	BeamC,
+	Bullet01,
+	Keikoku,
 	Dead1
 	// •K—v‚É‰ž‚¶‚Ä’Ç‰Á
 };

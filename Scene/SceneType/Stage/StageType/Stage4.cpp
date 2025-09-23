@@ -62,6 +62,19 @@ void Stage4::Update(float delta_second)
 
     // 登場時のステージラベルの更新処理
     UpdateRabel(delta_second);
+
+    static bool was_crashing = false;
+    bool now_crashing = (boss && boss->GetIsCrashing());
+
+    if (now_crashing && !was_crashing) {
+        // 撃破直後にフラッシュをリセット＆有効化
+        crash_flash_active = true;
+        crash_flash_timer = 0.0f;
+    }
+    was_crashing = now_crashing;
+
+
+
 }
 
 void Stage4::Draw()
@@ -153,21 +166,25 @@ void Stage4::Draw()
         }
     }
 
-    // === Hero Finish Flash (first 2s of crash) ===
-    if (boss && boss->GetIsCrashing()) {
-        static float crash_t = 0.0f; if (crash_t < 2.0f) crash_t += delta_draw;
-        if (crash_t < 2.0f) {
-            float k = 1.0f - (crash_t / 2.0f); // 1→0
-            int a1 = (int)(220 * k); // 白→減衰
+    if (crash_flash_active) {
+        crash_flash_timer += delta_draw;
+        if (crash_flash_timer < 2.0f) {
+            float k = 1.0f - (crash_flash_timer / 2.0f);
+            int a1 = (int)(220 * k);
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, a1);
             DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE);
-            // 白の上にネオンブルー薄被せ（クールな“勝利”色）
+
             int a2 = (int)(120 * k);
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, a2);
             DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(120, 180, 255), TRUE);
+
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
+        else {
+            crash_flash_active = false; // 2秒で終了
+        }
     }
+
 
 
 
@@ -446,11 +463,28 @@ void Stage4::ResultDraw(float delta_second)
         };
 
     // スコア集計
+    //ScoreData* score = Singleton<ScoreData>::GetInstance();
+    //float base_score = score->GetTotalScore();
+    //int life_bonus = player->GetLife() * 1000;
+    //float time_bonus = game_time_byou;
+    //total_score = base_score + life_bonus + time_bonus;
+
+    // スコア集計（★タイムボーナス式を置き換え）
     ScoreData* score = Singleton<ScoreData>::GetInstance();
     float base_score = score->GetTotalScore();
-    int life_bonus = player->GetLife() * 1000;
-    float time_bonus = game_time_byou;
+    int   life_bonus = player->GetLife() * 1000;
+
+    // 経過時間（秒）に換算
+    float total_seconds = game_time_hun * 60.0f + game_time_byou + game_time_miri / 1000.0f;
+
+    // タイムボーナス（★最終式）
+    const int base = 150000; // 上限 150,000
+    const int decay = 400;    // 1秒ごと -400
+    int time_bonus = base - static_cast<int>(total_seconds * decay);
+    if (time_bonus < 0) time_bonus = 0;
+
     total_score = base_score + life_bonus + time_bonus;
+
 
     // 表示ライン設定
     struct ResultLine {
@@ -621,3 +655,7 @@ void Stage4::StageLabel() const
     }
 }
 
+// Stage4.cpp
+bool Stage4::IsBossExplosionWindowActive() const {
+    return (boss != nullptr && boss->GetIsCrashing() && !result_started);
+}

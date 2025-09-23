@@ -115,6 +115,7 @@ void Enemy5::Update(float dt) {
     }
     }
 
+
     // ”í”j‰óˆ—iEnemy1/2 ‚Æ“¯‚¶•µˆÍ‹Cj :contentReference[oaicite:7]{index=7} :contentReference[oaicite:8]{index=8}
     if (hp <= 0) {
         is_destroy = true;

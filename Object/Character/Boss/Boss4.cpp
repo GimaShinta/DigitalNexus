@@ -118,8 +118,15 @@ void Boss4::Update(float delta_second)
 		is_crashing = true;
 		Singleton<ScoreData>::GetInstance()->AddScore(30000);
 		velocity = Vector2D(0, 0); // 落下は手動処理
+		// 撃破開始で波紋を即消去
+		for (int i = 0; i < 5; ++i) {
+			ripples[i].active = false;
+			ripples[i].timer = 0.0f;
+		}
+
 		return; // このフレームで以降の処理は行わない
 	}
+
 
 	// 部品の相対オフセット（左右に2個ずつ）
 	Vector2D offsets[11] = {

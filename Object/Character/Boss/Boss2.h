@@ -61,6 +61,9 @@ private:
 
     float flash_timer = 0.0f;
     float shot_timer = 0.0f;
+    // Boss2.h (private:)
+    float cross_angle = 0.0f;   // 十字の基準角（ラジアン）
+
 
     // 表示・アニメ
     std::vector<int> images;
@@ -81,7 +84,7 @@ private:
     // 共通回転
     float orbit_base_angle = 0.0f; // [deg]
     float orbit_speed_deg = 90.0f; // [deg/sec]
-    float orbit_radius = 250.0f;
+    float orbit_radius = 120.0f;
 
     // --- 登場演出 ---
     bool  intro_active = true; // イントロ中はShot停止

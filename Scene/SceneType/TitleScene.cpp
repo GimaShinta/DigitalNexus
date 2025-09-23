@@ -120,7 +120,9 @@ eSceneType TitleScene::Update(float delta_second)
 
 
     // 決定（スペース or Aボタン）
-    if (!m_startTransitioning && (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)))
+    if (!m_startTransitioning
+        && !exit_scene                                      // ★追加：Exit 演出中は決定無効
+        && (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)))
     {
         PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
 
@@ -131,14 +133,15 @@ eSceneType TitleScene::Update(float delta_second)
         else if (m_selectedIndex == 1) {
             return eSceneType::eRanking;
         }
-        else if (m_selectedIndex == 2)
-        {
+        else if (m_selectedIndex == 2) {
             return eSceneType::eCredit;
         }
         else if (m_selectedIndex == 3) {
-            exit_scene = true;
+            exit_scene = true;                   // ← 一度 true になったら以降は無効
+            // （既存の Exit 演出タイマー進行はそのまま）
         }
     }
+
 
     if (exit_scene == true)
     {

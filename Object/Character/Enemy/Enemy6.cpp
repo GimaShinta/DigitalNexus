@@ -101,7 +101,10 @@ void Enemy6::Update(float dt) {
 }
 
 void Enemy6::Draw(const Vector2D& screen_offset) const {
+    
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+    if (player && player->GetNowType() == PlayerType::OmegaCode)
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
     DrawRotaGraph(
         (int)(location.x - screen_offset.x),
         (int)(location.y - screen_offset.y),
@@ -118,8 +121,8 @@ void Enemy6::Shot(float speed)
     EnemyBullet1* shot = gm->CreateObject<EnemyBullet1>(location);
     shot->SetPlayer(player);
 
-    am->PlaySE(SE_NAME::EnemyShot);
-    am->ChangeSEVolume(SE_NAME::EnemyShot, 90);
+    am->PlaySE(SE_NAME::Bullet01);
+    am->ChangeSEVolume(SE_NAME::Bullet01, 100);
 
     if (shot && player)
     {

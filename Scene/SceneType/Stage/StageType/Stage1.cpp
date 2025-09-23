@@ -856,3 +856,9 @@ void Stage1::AppearancePlayer(float delta_second)
         player->SetLocation(new_pos);
     }
 }
+
+bool Stage1::IsStageLabelActive() const {
+    // ƒ‰ƒxƒ‹•`‰æ‚Åg‚Á‚Ä‚¢‚é“¯‚¶ğŒ‚É‡‚í‚¹‚é
+    return (warning_label_state != WarningLabelState::None &&
+        warning_label_band_height > 1.0f);  // ©•`‰æ‘¤‚Æ“¯ˆêè‡’l  :contentReference[oaicite:2]{index=2}
+}

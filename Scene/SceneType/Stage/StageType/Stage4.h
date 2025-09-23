@@ -37,6 +37,11 @@ private:
 
 	float scroll_timer = 0.0f;
 
+	// 撃破フラッシュ管理
+	bool  crash_flash_active = false;
+	float crash_flash_timer = 0.0f;
+
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage4(Player* player);     // プレイヤー情報を引数に取るステージ初期化
@@ -48,6 +53,11 @@ public:
 	void Update(float delta_second) override;       // 毎フレームの更新処理
 	void Draw() override;                    // 描画処理
 	StageBase* GetNextStage(Player* player) override; // 次のステージを取得
+
+	// Stage4.h（public）
+	bool IsBossExplosionWindowActive() const override;
+
+
 
 private:
 	void DrawScrollBackground() const override; // 背景のスクロール描画

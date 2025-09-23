@@ -112,6 +112,10 @@ public:
 	void Draw() override;                    // 描画処理
 	StageBase* GetNextStage(Player* player) override; // 次のステージを取得
 
+
+	bool IsStageLabelActive() const override;
+
+
 private:
 	void DrawScrollBackground() const override; // 背景のスクロール描画
 	void EnemyAppearance(float delta_second) override;

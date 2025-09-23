@@ -9,7 +9,7 @@
 #include "../../Beam/OmegaBom.h"
 
 
-Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false), life(0), on_hit(false), is_damage(false)
 {
 }
 
@@ -122,6 +122,9 @@ void Player::Update(float delta_second)
 		{
 			is_dead_animation_playing = true;
 			dead_animation_timer = 0.0f;
+			SEManager* am = Singleton<SEManager>::GetInstance();
+			am->PlaySE(SE_NAME::Noise2);
+			am->ChangeSEVolume(SE_NAME::Noise2, 90);
 		}
 
 		if (powerd_time > 0.0f)
@@ -558,6 +561,8 @@ void Player::Damage(float delta_second)
 	// ダメージを受けたときチカチカさせる
 	if (is_damage == true)
 	{
+		SEManager::GetInstance()->PlaySE(SE_NAME::Keikoku);
+		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Keikoku, 70);
 		// カウント加算
 		damage_timer += delta_second;
 		if (damage_timer >= 0.05f)

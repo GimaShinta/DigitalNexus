@@ -58,7 +58,7 @@ void Boss2::Initialize()
     // イントロ初期化
     intro_active = true;
     intro_timer = 0.0f;
-    appear_scale = 1.3f;
+    appear_scale = 1.0f;
     intro_spawned_count = 0;
     part_spawn_timer = 0.0f;
     part_spawn_interval = 0.35f;
@@ -78,6 +78,8 @@ void Boss2::Update(float delta_second)
     // 全パーツの共通回転角を進める
     orbit_base_angle += orbit_speed_deg * delta_second;
     if (orbit_base_angle >= 360.0f) orbit_base_angle -= 360.0f;
+    // Boss2::Update(float delta_second) の先頭あたり
+    cross_angle += delta_second * 0.5f;  // ゆっくり回転
 
     if (hp <= 0)
     {
@@ -117,7 +119,7 @@ void Boss2::Update(float delta_second)
         // ズーム（easeOutCubic）
         const float zoom_dur = 2.2f;
         float t = EaseOutCubic(intro_timer / zoom_dur);
-        appear_scale = 1.8f + (4.5f - 1.8f) * t;
+        appear_scale = 1.3f + (4.5f - 1.3f) * t;
 
         // 一定間隔で1体ずつスポーン
         const int total_target = 6;
@@ -346,46 +348,46 @@ void Boss2::Shot(float delta_second)
             shot_timer = 0.0f;
         }
     }
-    else if (hp > BOSS2_MAX_HP / 3)
-    {
-        // ── 新規：クロスレーザー（上下左右4方向に警告→本ビーム） ─────────────
-        // WarningBeam::SetUp(direction, length, lifetime) を使用:contentReference[oaicite:3]{index=3}
-        shot_timer += delta_second;
-        if (shot_timer >= 4.0f)
-        {
-            const int beams = 4;
-            for (int i = 0; i < beams; ++i)
-            {
-                float ang = (3.1415926535f / 2.0f) * i; // 0, 90, 180, 270 度
-                Vector2D dir(std::cos(ang), std::sin(ang));
+    //else if (hp > BOSS2_MAX_HP / 3)
+    //{
+    //    // ── 新規：クロスレーザー（上下左右4方向に警告→本ビーム） ─────────────
+    //    // WarningBeam::SetUp(direction, length, lifetime) を使用:contentReference[oaicite:3]{index=3}
+    //    shot_timer += delta_second;
+    //    if (shot_timer >= 4.0f)
+    //    {
+    //        const int beams = 8;
+    //        for (int i = 0; i < beams; ++i)
+    //        {
+    //            float ang = cross_angle + (DX_PI * 2.0f / beams) * i; // 360°/8
+    //            Vector2D dir(std::cos(ang), std::sin(ang));
 
-                auto warn = Singleton<GameObjectManager>::GetInstance()
-                    ->CreateObject<WarningBeam>(location);
-                // 長さ: 900px, 警告時間: 0.8秒（警告後に FollowBeam が自動生成される）:contentReference[oaicite:4]{index=4}
-                warn->SetUp(dir, 900.0f, 0.8f);
-            }
-            shot_timer = 0.0f;
-        }
-    }
-    else
-    {
-        // ── 低HP帯（必要ならここに“終盤専用”攻撃を追加可能） ────────────────
-        // 例：クロスの間隔を短縮したい場合は 2.0f など
-        shot_timer += delta_second;
-        if (shot_timer >= 2.5f)
-        {
-            const int beams = 4;
-            for (int i = 0; i < beams; ++i)
-            {
-                float ang = (3.1415926535f / 2.0f) * i;
-                Vector2D dir(std::cos(ang), std::sin(ang));
-                auto warn = Singleton<GameObjectManager>::GetInstance()
-                    ->CreateObject<WarningBeam>(location);
-                warn->SetUp(dir, 900.0f, 0.6f); // 終盤は警告短め
-            }
-            shot_timer = 0.0f;
-        }
-    }
+    //            auto warn = Singleton<GameObjectManager>::GetInstance()
+    //                ->CreateObject<WarningBeam>(location);
+    //            // 長さ: 900px, 警告時間: 0.8秒（警告後に FollowBeam が自動生成される）:contentReference[oaicite:4]{index=4}
+    //            warn->SetUp(dir, 900.0f, 0.8f);
+    //        }
+    //        shot_timer = 0.0f;
+    //    }
+    //}
+    //else
+    //{
+    //    // ── 低HP帯（必要ならここに“終盤専用”攻撃を追加可能） ────────────────
+    //    // 例：クロスの間隔を短縮したい場合は 2.0f など
+    //    shot_timer += delta_second;
+    //    if (shot_timer >= 2.5f)
+    //    {
+    //        const int beams = 4;
+    //        for (int i = 0; i < beams; ++i)
+    //        {
+    //            float ang = (3.1415926535f / 2.0f) * i;
+    //            Vector2D dir(std::cos(ang), std::sin(ang));
+    //            auto warn = Singleton<GameObjectManager>::GetInstance()
+    //                ->CreateObject<WarningBeam>(location);
+    //            warn->SetUp(dir, 900.0f, 0.6f); // 終盤は警告短め
+    //        }
+    //        shot_timer = 0.0f;
+    //    }
+    //}
 }
 
 

@@ -63,6 +63,10 @@ public:
 	void Draw() override;                    // 描画処理
 	StageBase* GetNextStage(Player* player) override; // 次のステージを取得
 
+public:
+	bool IsBossExplosionWindowActive() const override;
+
+
 private:
 	void DrawScrollBackground() const override; // 背景のスクロール描画
 	void ScrollEffectUpdate(float delta_second);

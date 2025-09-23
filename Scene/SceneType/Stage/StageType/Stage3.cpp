@@ -674,8 +674,8 @@ void Stage3::ResultDraw(float delta_second)
     float total_seconds = game_time_hun * 60.0f + game_time_byou + game_time_miri / 1000.0f;
 
     // タイムボーナス計算
-    const int max_bonus = 10000000;   // 最大ボーナス
-    const int decay_per_sec = 5000;   // 1秒ごとの減点
+    const int max_bonus = 60000;   // 最大ボーナス 60,000
+    const int decay_per_sec = 200; // 1秒ごとの減点 200
     int time_bonus = static_cast<int>(max_bonus - total_seconds * decay_per_sec);
     if (time_bonus < 0) time_bonus = 0;
 
@@ -852,4 +852,9 @@ void Stage3::StageLabel() const
                 "Eliminate all hostile units.", GetColor(160, 120, 255), font_orbitron);
         }
     }
+}
+
+bool Stage3::IsBossExplosionWindowActive() const {
+    // 例：ボスのクラッシュ中で、リザルトの本開始（フェードアウト開始）までは true
+    return (boss && boss->GetIsCrashing()) && !result_fadeout_started;  // 例：あなたのフラグに合わせる
 }

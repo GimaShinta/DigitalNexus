@@ -31,6 +31,10 @@ void SEManager::LoadSE()
 	se_handles[SE_NAME::Code] = rm->GetSounds("Resource/sound/se/effect/code_se.mp3");
 	se_handles[SE_NAME::Code2] = rm->GetSounds("Resource/sound/se/effect/code2_se.mp3");
 	se_handles[SE_NAME::Noise] = rm->GetSounds("Resource/sound/se/effect/noise_se.mp3");
+	se_handles[SE_NAME::Noise2] = rm->GetSounds("Resource/sound/se/se_effect/noise_over.mp3");
+	se_handles[SE_NAME::BeamC] = rm->GetSounds("Resource/sound/se/se_effect/beam_c.mp3");
+	se_handles[SE_NAME::Keikoku] = rm->GetSounds("Resource/sound/se/se_effect/keikoku.mp3");
+	se_handles[SE_NAME::Bullet01] = rm->GetSounds("Resource/sound/se/se_effect/bullet.mp3");
 	se_handles[SE_NAME::Dead1] = rm->GetSounds("Resource/sound/se/effect/dead_se.mp3");
 }
 

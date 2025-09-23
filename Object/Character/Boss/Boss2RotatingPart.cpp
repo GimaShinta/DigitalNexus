@@ -357,6 +357,8 @@ Vector2D Boss2RotatingPart::SafeNormalize(const Vector2D& v)
 void Boss2RotatingPart::FireBullet(const Vector2D& dir, float speed)
 {
     auto* objm = Singleton<GameObjectManager>::GetInstance();
+    SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+    SEManager::GetInstance()->ChangeSEVolume(SE_NAME::EnemyShot, 40);
     auto* b = objm->CreateObject<EnemyBullet1>(location);
     b->SetPlayer(player);
     if (!b) return;

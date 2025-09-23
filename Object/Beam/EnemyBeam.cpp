@@ -94,6 +94,7 @@ void EnemyBeam::Update(float delta_second)
                 am->SetScale(anim, 2.0f);
                 am->SetAlpha(anim, 30);
                 am->SetZLayer(anim, 2);
+              //  SEManager::GetInstance()->PlaySE(SE_NAME::BeamC);
 
             }
             else if (boss3 != nullptr)
@@ -103,6 +104,7 @@ void EnemyBeam::Update(float delta_second)
                 am->SetScale(anim, 0.7f);
                 am->SetAlpha(anim, 30);
                 am->SetZLayer(anim, 2);
+               // SEManager::GetInstance()->PlaySE(SE_NAME::BeamC);
 
             }
 

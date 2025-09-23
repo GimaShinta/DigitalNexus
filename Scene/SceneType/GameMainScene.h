@@ -155,6 +155,17 @@ public:
 	// 警告演出の更新処理
 	void WarningUpdate(float delta_second);
 
+	// GameMainScene.h（publicなど見える所に）
+	bool IsWarningActive() const {
+		return (warning_state != WarningState::None);
+	}
+	bool IsStage4WarningActive() const {
+		// 見た目上の帯が残っていなければブロックしない
+		// Shrinking 完了で WarningState::None に戻るのでこれで十分
+		return warning_state != WarningState::None;
+	}
+
+
 	void DrawGameOverEffect();
 
 	eSceneType UpdateGameplay(float delta);
