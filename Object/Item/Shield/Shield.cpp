@@ -31,11 +31,15 @@ void Shield::Initialize()
 
 void Shield::Update(float delta)
 {
+    //入力機能取得
     InputManager* input = Singleton<InputManager>::GetInstance();
 
+    //アニメーション
     std::vector<int> animation_num = { 6, 7, 8, 9, 10, 11 };
+
     //フレームレートで時間を計測
     animation_time += delta;
+
     //8秒経ったら画像を切り替える
     if (animation_time >= 0.03f)
     {
@@ -89,11 +93,19 @@ void Shield::Update(float delta)
     location += velocity * delta;
 }
 
+/// <summary>
+/// 描画処理
+/// </summary>
+/// <param name="offset"></param>
 void Shield::Draw(const Vector2D& offset) const
 {
     DrawRotaGraph(location.x, location.y, 1.5f, 0.0f, image, TRUE);
 }
 
+/// <summary>
+/// 当たり判定
+/// </summary>
+/// <param name="hit_object">ヒットオブジェクト</param>
 void Shield::OnHitCollision(GameObjectBase* hit_object)
 {
     // すでに吸収済みなら無視

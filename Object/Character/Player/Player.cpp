@@ -9,7 +9,8 @@
 #include "../../Beam/OmegaBom.h"
 
 
-Player::Player() : is_shot(false), life(8), on_hit(false), is_damage(false)
+Player::Player() : is_shot(false),
+life(8), on_hit(false), is_damage(false)
 {
 }
 
@@ -17,18 +18,21 @@ Player::~Player()
 {
 }
 
-// 初期化処理
+/// <summary>
+///	初期化処理
+/// </summary>
 void Player::Initialize()
 {
-	z_layer = 5;
-	velocity = 0;
-	box_size = 4;
-
+	z_layer = 5;	//レイヤーの順番
+	velocity = 0;	//初期加速
+	box_size = 4;	//当たり判定サイズ
 
 	// 当たり判定のオブジェクト設定
 	collision.is_blocking = true;
+
 	// 自分のオブジェクトタイプ
 	collision.object_type = eObjectType::ePlayer;
+
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::eEnemy);
 	collision.hit_object_type.push_back(eObjectType::eBoss);
@@ -37,39 +41,45 @@ void Player::Initialize()
 
 	// 動くかどうか（trueなら動く、falseなら止まる）
 	is_mobility = true;
-
+	
+	//画像読み込み
 	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
 	attack = rm->GetImages("Resource/Image/Object/Player/color04/player03.png")[0];
 	defence = rm->GetImages("Resource/Image/Object/Player/color02/player03.png")[0];
 	image = attack;
 
-	// プレイヤーの傾き画像
+	// プレイヤーの傾きアニメーション画像読み込み
 	attack_player_image_left = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_L01.png", 2, 2, 1, 56, 64);
 	attack_player_image_right = rm->GetImages("Resource/Image/Object/Player/color04/anime_player03_R01.png", 2, 2, 1, 56, 64);
 	defence_player_image_left = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_L01.png", 2, 2, 1, 56, 64);
 	defence_player_image_right = rm->GetImages("Resource/Image/Object/Player/color02/anime_player03_R01.png", 2, 2, 1, 56, 64);
+
+	// 攻撃タイプ：アルファの初期アニメーション画像設定
 	player_image_left = attack_player_image_left;
 	player_image_right = attack_player_image_right;
 
-	// プレイヤーのジェット部分の画像
+	// プレイヤーのジェット部分の画像読み込み
 	attack_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect17.png", 6, 6, 1, 8, 88);
 	defence_player_jet = rm->GetImages("Resource/Image/Object/Player/Shot/anime_effect16.png", 6, 6, 1, 8, 88);
 	player_jet = attack_player_jet;
 	jet = player_jet[2];
 
-	// プレイヤーのノズル部分の画像
+	// プレイヤーのノズル部分の画像読み込み
 	nozzles = rm->GetImages("Resource/Image/Effect/293.png", 72, 8, 9, 64, 64);
 	nozzle = nozzles[17];
 	attack_nozzles = { 17, 18, 19, 20, 21, 22, 23, 24, 25 };
 	defence_nozzles = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
 	nozzle_type = attack_nozzles;
 
+	//シールド画像読み込み
 	shields2 = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206_480.png", 20, 5, 4, 480, 480);
 	shields = rm->GetImages("Resource/Image/Object/Item/Shield/pipo-btleffect206h_480.png", 15, 5, 3, 480, 480);
 
+	//モード切り替え用UIの設定
 	bottan[0] = rm->GetImages("Resource/Image/UI/Digital Buttons/Shoulder/button_xbox_digital_bumper_light_1.png")[0];
 	bottan[1] = rm->GetImages("Resource/Image/UI/Digital Buttons/Shoulder/button_xbox_digital_bumper_light_2.png")[0];
 
+	//攻撃間隔の初期値
 	shot_interval = 0.07f;
 }
 
@@ -84,18 +94,20 @@ void Player::Update(float delta_second)
 
 	if (is_dead_animation_playing)
 	{
+		//ゲームオーバー演出中：当たり判定を無効にする
 		collision.object_type = eObjectType::eNone;
 		collision.hit_object_type.clear();
 
+		//ゲームオーバーアニメーションタイマー加算
 		dead_animation_timer += delta_second;
 
 		if (dead_animation_timer >= dead_animation_duration)
 		{
+			//演出完了：エフェクトを生成してゲームオーバーフラグを立てる
 			if (is_alive)
 			{
 				EffectManager* fm = Singleton<EffectManager>::GetInstance();
-				int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); // スケール2倍
-
+				int id = fm->PlayerAnimation(EffectName::eExprotion2, location, 0.05f, false); 
 				is_alive = false;
 			}
 		}
@@ -117,7 +129,7 @@ void Player::Update(float delta_second)
 			Shot(delta_second);
 		}
 
-		// ライフが０になったらゲームオーバー
+		// ライフが０になったらゲームオーバー演出に移行
 		if (life < 0)
 		{
 			is_dead_animation_playing = true;
@@ -127,6 +139,7 @@ void Player::Update(float delta_second)
 			am->ChangeSEVolume(SE_NAME::Noise2, 90);
 		}
 
+		//一時敵なパワーアップの時間管理
 		if (powerd_time > 0.0f)
 		{
 			powerd_time -= delta_second;
@@ -136,6 +149,7 @@ void Player::Update(float delta_second)
 			powerd_on = false;
 		}
 
+		//パワー最大値を制限
 		if (powerd >= 3)
 		{
 			powerd = 3;
@@ -148,6 +162,7 @@ void Player::Update(float delta_second)
 		// 部品のアニメーション
 		BuhinAnim(delta_second);
 
+		//無敵時間：当たり判定を無効化
 		if (invincible_time > 0.0f)
 		{
 			invincible_time -= delta_second;
@@ -163,6 +178,7 @@ void Player::Update(float delta_second)
 		}
 	}
 
+	//ボタン演出の制御：UI
 	if (on_count == 2)
 	{
 		if (bottan_srid < 300)
@@ -185,23 +201,25 @@ void Player::Draw(const Vector2D& screen_offset) const
 
 	if (is_alive)
 	{
+		//ノズルフラッシュの描画
 		if (is_shot_anim == true)
 		{
 			float position = location.x - 3.0f;
 
 			if (stop == false)
 			{
-				if (powerd <= 1)
+				
+				if (powerd <= 1)	//パワー1：ノズルフラッシュ
 				{
 					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
 
 				}
-				else if (powerd == 2)
+				else if (powerd == 2)	//パワー2：ノズルフラッシュ
 				{
 					DrawRotaGraph(position + 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
 					DrawRotaGraph(position - 10.0f, location.y - 0.0f, 1.5f, 0.0f, nozzle, TRUE);
 				}
-				else
+				else	//パワー3：ノズルフラッシュ
 				{
 					DrawRotaGraph(position - 25.0f, location.y - 0.0f, 1.0f, 0.0f, nozzle, TRUE);
 					DrawRotaGraph(position, location.y - 20.0f, 1.0f, 0.0f, nozzle, TRUE);
@@ -210,9 +228,11 @@ void Player::Draw(const Vector2D& screen_offset) const
 			}
 		}
 
+		//ジェット部分の描画
 		DrawRotaGraph(location.x - 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
 		DrawRotaGraph(location.x + 10.0f, location.y + 70.0f, 1.0f, 0.0f, jet, TRUE);
 
+		//プレイヤーアニメーションの描画
 		switch (anim_state)
 		{
 		case PlayerAnimState::Neutral:
@@ -226,6 +246,7 @@ void Player::Draw(const Vector2D& screen_offset) const
 			break;
 		}
 
+		//シールド描画
 		if (is_shield == true)
 		{
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
@@ -236,7 +257,7 @@ void Player::Draw(const Vector2D& screen_offset) const
 		// ライフ表示などはそのまま
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
-	#if _DEBUG
+	#if _DEBUG	//デバッグ表示：モードと当たり判定
 		if (now_type == PlayerType::AlphaCode)
 			DrawString(location.x - 50.0f, location.y, "Alpha Code", GetColor(255, 255, 255), TRUE);
 		else
@@ -248,6 +269,7 @@ void Player::Draw(const Vector2D& screen_offset) const
 	#endif
 	}
 
+	//ボタンUI演出
 	if (bottan_ok == false)
 	{
 		DrawRotaGraph((location.x - 40.0f) - bottan_srid, location.y - 40.0f, 0.1f, 0.0f, bottan[0], TRUE);
@@ -256,22 +278,26 @@ void Player::Draw(const Vector2D& screen_offset) const
 
 }
 
-// 終了時処理
+/// <summary>
+/// 終了処理
+/// </summary>
 void Player::Finalize()
 {
 }
 
 /// <summary>
-/// ヒット時処理
+/// 当たり判定処理
 /// </summary>
 /// <param name="hit_object">当たった相手</param>
 void Player::OnHitCollision(GameObjectBase* hit_object)
 {
+	//敵・弾・ボスに当たった場合
 	if (hit_object->GetCollision().object_type == eObjectType::eEnemy ||
 		hit_object->GetCollision().object_type == eObjectType::eEnemyShot ||
 		hit_object->GetCollision().object_type == eObjectType::eEnemyBeam ||
 		hit_object->GetCollision().object_type == eObjectType::eBoss)
 	{
+		//初回ヒット時のみダメージ処理
 		if (on_hit == false)
 		{
 			if (is_shield == false)
@@ -282,6 +308,7 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			}
 			else
 			{
+				//シールド削除
 				is_shield_damage = true;
 				is_shield = false;
 				shield_anim_on = false;
@@ -291,6 +318,7 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			on_hit = true;
 		}
 	}
+	//パワーアップアイテム取得
 	if (hit_object->GetCollision().object_type == eObjectType::ePowerUp)
 	{
 		if (powerd_on == false)
@@ -300,10 +328,12 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			powerd_time = 0.0f;
 		}
 	}
+	//シールド取得
 	if (hit_object->GetCollision().object_type == eObjectType::eShield)
 	{
 		is_shield = true;
 	}
+	//最大チャージアイテム取得
 	if (hit_object->GetCollision().object_type == eObjectType::eMaxCharge)
 	{
 		charge = charge_max;
@@ -317,13 +347,14 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 /// <param name="delta_second">１フレーム当たりの時間</param>
 void Player::Movement(float delta_second)
 {
+	//入力機能取得
 	InputManager* input = Singleton<InputManager>::GetInstance();
 	Vector2D stick_value = input->GetLeftStick();
 
-	const float accel = 1000.0f;
-	const float friction = 800.0f;
-	const float dead_zone = 0.1f;
-	const float max_speed = PLAYER_SPEED_MAX;
+	const float accel = 1000.0f;	//未使用：移動：加速度
+	const float friction = 800.0f;	//未使用：減速：摩擦係数
+	const float dead_zone = 0.1f;	//スティックのデッドゾーン
+	const float max_speed = PLAYER_SPEED_MAX;	//最大速度
 
 	// 入力ベクトル（初期化）
 	Vector2D input_dir = { 0.0f, 0.0f };
@@ -331,9 +362,10 @@ void Player::Movement(float delta_second)
 	// スティック入力が有効ならそれを優先
 	if (std::abs(stick_value.x) > dead_zone || std::abs(stick_value.y) > dead_zone) {
 		input_dir.x = stick_value.x;
-		input_dir.y = -stick_value.y;
+		input_dir.y = -stick_value.y;	//画面座標系に合わせて上下を判定
 	}
 	else {
+		//キー：十字ボタン入力
 		if (input->GetKey(KEY_INPUT_D) || input->GetButton(XINPUT_BUTTON_DPAD_RIGHT)) input_dir.x += 1.0f;
 		if (input->GetKey(KEY_INPUT_A) || input->GetButton(XINPUT_BUTTON_DPAD_LEFT))  input_dir.x -= 1.0f;
 		if (input->GetKey(KEY_INPUT_S) || input->GetButton(XINPUT_BUTTON_DPAD_DOWN))  input_dir.y += 1.0f;
@@ -343,6 +375,7 @@ void Player::Movement(float delta_second)
 	// 入力方向があれば正規化
 	if (input_dir.Length() > 1.0f) input_dir.Normalize();
 
+	//強制ニュートラル指定があれば正面固定
 	if (force_neutral_anim)
 	{
 		anim_state = PlayerAnimState::Neutral;
@@ -360,9 +393,10 @@ void Player::Movement(float delta_second)
 		}
 	}
 
-	// 仮の次の位置を計算
+	// 次に移動したい位置を計算
 	Vector2D next_location = location + (input_dir * max_speed * delta_second);
 
+	//　X軸の可動範囲
 	const float limit_x = (D_WIN_MAX_X / 2);
 	const float half_width = 350.0f;
 
@@ -393,10 +427,13 @@ void Player::Movement(float delta_second)
 	location += velocity * delta_second;
 }
 
-// 弾を打つ
+/// <summary>
+/// ショット処理
+/// </summary>
+/// <param name="delta_second"></param>
 void Player::Shot(float delta_second)
 {
-	// オブジェクト管理クラスのインスタンを取得
+	//入力とＳＥ機能の取得
 	InputManager* input = Singleton<InputManager>::GetInstance();
 	SEManager* am = Singleton<SEManager>::GetInstance();
 
@@ -409,15 +446,18 @@ void Player::Shot(float delta_second)
 		input->GetButtonDown(XINPUT_BUTTON_LEFT_SHOULDER) ||
 		input->GetButtonDown(XINPUT_BUTTON_RIGHT_SHOULDER)))
 	{
+		//一度だけボタン演出カウントを進める
 		if(on_count < 2)
 			on_count++;
 
+		//アルファ・オメガ：トグル
 		if (now_type == PlayerType::AlphaCode)
 			ChangeType(PlayerType::OmegaCode, true);
 		else
 			ChangeType(PlayerType::AlphaCode, true);
 	}
 
+	// 切替演出エフェクトの位置更新
 	EffectManager* em = Singleton<EffectManager>::GetInstance();
 	em->SetPosition(effe_id, Vector2D(location.x, location.y + 10.0f));
 
@@ -436,29 +476,31 @@ void Player::Shot(float delta_second)
 				shot_timer = 0.0f;
 				PlayShotSE();
 			}
+			//弾生成
 			GenarateBullet();
 		}
 	}
 	else
 	{
-		is_shot_anim = false;
 		// 押してない間は、即撃てるようにする
+		is_shot_anim = false;
 		shot_timer = shot_interval;
 	}
 
-#if _DEBUG
-	// Bを押したらビーム発射
+#if _DEBUG	//デバッグ用
+	// Bを押したらビーム発射：制限なし
 	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B)))  // チャージ完了時のみ
 	{
 		if (stop == false)
 		{
 			if (now_type == PlayerType::AlphaCode)
 			{
+				//ビーム発射
 				beam_on = true;
 				stop = true;
 				beam_timer = 0.0f;
-				invincible_time = 5.0f;
-				can_change_type_now = false;
+				invincible_time = 5.0f;	//無敵時間
+				can_change_type_now = false; //ビーム中切替停止
 				UseSpecial();  // ゲージ消費
 				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
 				PlayerBeam* beam = gm->CreateObject<PlayerBeam>(Vector2D(location.x, (location.y - D_OBJECT_SIZE) - 848));
@@ -468,10 +510,11 @@ void Player::Shot(float delta_second)
 			}
 			else
 			{
+				//ボム発射
 				recovery_on = true;
 				stop = true;
 				can_change_type_now = false;
-				beam_timer = 0.0f;      // ★必ず0.0fで開始（Playerの5秒管理に合わせる）
+				beam_timer = 0.0f;      // Playerの5秒管理に合わせる
 				UseSpecial2();          // Ωゲージ消費のみ
 
 				GameObjectManager* gm = Singleton<GameObjectManager>::GetInstance();
@@ -536,26 +579,30 @@ void Player::Shot(float delta_second)
 
 }
 
-// Player.cpp （ファイル末尾のほう、他メンバ関数定義と同じ階層に追加）
+/// <summary>
+/// ショットＳＥの再生
+/// </summary>
 void Player::PlayShotSE()
 {
 	SEManager* am = Singleton<SEManager>::GetInstance();
 
-	// ★必要に応じてSE名を入れ替えてください★
-	// 例）Alpha=Shot、Omega=Shot2（Shot2が無ければ別名に変更）
+	//アルファ：ショット
 	if (now_type == PlayerType::AlphaCode)
 	{
 		am->PlaySE(SE_NAME::Shot2);
 		am->ChangeSEVolume(SE_NAME::Shot2, 70);
 	}
-	else // OmegaCode
+	else // オメガ：ショット
 	{
-		am->PlaySE(SE_NAME::Shot);      // ← ここを手元のSE名に
+		am->PlaySE(SE_NAME::Shot);     
 		am->ChangeSEVolume(SE_NAME::Shot, 60);
 	}
 }
 
-
+/// <summary>
+/// ダメージ演出
+/// </summary>
+/// <param name="delta_second"></param>
 void Player::Damage(float delta_second)
 {
 	// ダメージを受けたときチカチカさせる
@@ -563,6 +610,7 @@ void Player::Damage(float delta_second)
 	{
 		SEManager::GetInstance()->PlaySE(SE_NAME::Keikoku);
 		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Keikoku, 70);
+
 		// カウント加算
 		damage_timer += delta_second;
 		if (damage_timer >= 0.05f)
@@ -593,11 +641,13 @@ void Player::Damage(float delta_second)
 		}
 	}
 
+	//シールド+ダメージ：一定時間後にヒット状態を解除
 	if (is_shield_damage)
 	{
 		shield_damage_timer += delta_second;
 		if (shield_damage_timer >= 1.0f)
 		{
+			//次の被弾を受け付け
 			is_shield_damage = true;
 			on_hit = false;
 			shield_damage_timer = 0.0f;
@@ -605,6 +655,10 @@ void Player::Damage(float delta_second)
 	}
 }
 
+/// <summary>
+/// 部品アニメーション
+/// </summary>
+/// <param name="delta_second"></param>
 void Player::BuhinAnim(float delta_second)
 {
 	// アニメーション更新処理
@@ -725,6 +779,9 @@ void Player::BuhinAnim(float delta_second)
 	}
 }
 
+/// <summary>
+/// 弾生成
+/// </summary>
 void Player::GenarateBullet()
 {
 	// プレイヤーが弾を打つ準備ができていたら弾を生成        
@@ -760,26 +817,30 @@ void Player::GenarateBullet()
 		}
 		else
 		{
+			//オメガ：相殺弾
 			struct BulletAngleInfo {
-				float angle_deg;
+				float angle_deg;	//発射角度
 				std::vector<float> offset_x_list;
 			};
 
 			std::vector<BulletAngleInfo> angle_infos;
 
-			// 中央（0°）
+			// パワーによって扇状に拡張させる
 			if (powerd == 1)
 			{
+				//中央２発(０度)
 				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 2発
 			}
 			else if (powerd == 2)
 			{
+				// 中央 + 左右（±15度）
 				angle_infos.push_back({ 0.0f, { -10.0f, +10.0f } }); // 中央2発
 				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } }); // 左30°
 				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } }); // 右30°
 			}
 			else // powerd >= 3
 			{
+				// 中央3発 + 左右±15° ×2発 + 左右±30° ×1発
 				angle_infos.push_back({ 0.0f, { -15.0f, 0.0f, +15.0f } });  // 中央3発
 				angle_infos.push_back({ -15.0f, { -10.0f, +10.0f } });      // 左30°
 				angle_infos.push_back({ 15.0f, { -10.0f, +10.0f } });      // 右30°
@@ -787,6 +848,7 @@ void Player::GenarateBullet()
 				angle_infos.push_back({ 30.0f, { 0.0f } });                // 右60° 1発
 			}
 
+			//定義した各角度・各オフセットで弾を生成
 			for (const auto& info : angle_infos)
 			{
 				for (float offset_x : info.offset_x_list)
@@ -800,26 +862,31 @@ void Player::GenarateBullet()
 	}
 }
 
+//生存状態
 bool Player::GetIsAlive() const
 {
 	return is_alive;
 }
 
+//ビーム発動中
 bool Player::GetBeamOn() const
 {
 	return beam_on;
 }
 
+//オメガ：ボム発動中
 bool Player::GetRecoveryOn() const
 {
 	return recovery_on;
 }
 
+//見た目反転フラグ
 bool Player::GetShotFlip() const
 {
 	return shot_flip;
 }
 
+//ビームをセット：終了
 void Player::SetBeamOn()
 {
 	beam_on = false;
@@ -917,12 +984,18 @@ void Player::SetNowType(PlayerType nt)
 	now_type = nt;
 }
 
+/// <summary>
+/// 攻撃タイプ切替
+/// </summary>
+/// <param name="new_type"></param>
+/// <param name="play_effect"></param>
 void Player::ChangeType(PlayerType new_type, bool play_effect)
 {
 	now_type = new_type;
 
 	if (now_type == PlayerType::AlphaCode)
 	{
+		//攻撃モード切替
 		image = attack;
 		player_image_left = attack_player_image_left;
 		player_image_right = attack_player_image_right;
@@ -945,6 +1018,7 @@ void Player::ChangeType(PlayerType new_type, bool play_effect)
 	}
 	else if (now_type == PlayerType::OmegaCode)
 	{
+		//相殺モード切替
 		image = defence;
 		player_image_left = defence_player_image_left;
 		player_image_right = defence_player_image_right;
@@ -967,11 +1041,17 @@ void Player::ChangeType(PlayerType new_type, bool play_effect)
 	}
 }
 
+/// <summary>
+/// 強制ニュートラル（傾きアニメを無効にして常に正面）
+/// </summary>
 void Player::ForceNeutralAnim(bool enable)
 {
 	force_neutral_anim = enable;
 }
 
+/// <summary>
+/// 攻撃タイプ切替の可否（ゲーム進行やスペシャル中の制御用途）
+/// </summary>
 void Player::SetCanChangeType(bool enable)
 {
 	can_change_type = enable;
