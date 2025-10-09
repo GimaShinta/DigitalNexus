@@ -157,15 +157,13 @@ void Boss3::Update(float delta_second)
 			part_positions[i] = location + adjusted_offset;
 		}
 
-		// ===== 爆発処理開始（初回だけ）=====
+		// ===== 爆発処理開始 =====
 		if (!explosions_started) {
 			explosions_started = true;
 			explosion_index = 0;
 			explosion_timer = 0.0f;
 			SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu);
 			SEManager::GetInstance()->PlaySE(SE_NAME::Kill);
-			//PlaySoundMem(se[0], DX_PLAYTYPE_BACK);
-			//PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
 			// 初回の爆発を即時生成
 			float offset_x = static_cast<float>(GetRand(200) - 100);
 			float offset_y = static_cast<float>(GetRand(200) - 100);
