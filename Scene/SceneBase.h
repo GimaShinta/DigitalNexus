@@ -11,6 +11,7 @@ enum class eSceneType
 {
 	eStart,
 	eTitle,
+	eSelect,
 	eGameMain,
 	eRanking,
 	eCredit,

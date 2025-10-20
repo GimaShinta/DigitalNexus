@@ -172,7 +172,7 @@ eSceneType TitleScene::Update(float delta_second)
 
         //ScoreData::GetInstance()->Reset();
         if (m_transitionTimer >= 2.0f) // 2秒で次のシーンへ
-            return eSceneType::eGameMain;
+            return eSceneType::eSelect;
     }
 
 
@@ -210,7 +210,7 @@ eSceneType TitleScene::Update(float delta_second)
         if (m_menuAlpha < 0.0f) m_menuAlpha = 0.0f;
 
         if (m_transitionTimer >= 2.0f)
-            return eSceneType::eGameMain;
+            return eSceneType::eSelect;
     }
 
     // パーティクルの更新

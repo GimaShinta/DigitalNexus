@@ -173,6 +173,7 @@
     <ClCompile Include="Object\Item\PowerUp\PowerUp.cpp" />
     <ClCompile Include="Object\Bullet\PlayerBullet\PlayerBulletBase.cpp" />
     <ClCompile Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.cpp" />
+    <ClCompile Include="Scene\SceneType\SelectScene.cpp" />
     <ClCompile Include="Utility\ShakeManager.cpp" />
     <ClCompile Include="Utility\ScoreData.cpp" />
     <ClCompile Include="Utility\BoxCollision.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="Object\Item\PowerUp\PowerUp.h" />
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h" />
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h" />
+    <ClInclude Include="Scene\SceneType\SelectScene.h" />
     <ClInclude Include="Utility\ShakeManager.h" />
     <ClInclude Include="Utility\ScoreData.h" />
     <ClInclude Include="Utility\BoxCollision.h" />

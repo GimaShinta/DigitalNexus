@@ -4,6 +4,7 @@
 // 各シーンのインクルード（必要なシーンは下に追加）
 #include "SceneType/StartScene.h"
 #include "SceneType/TitleScene.h"
+#include "SceneType/SelectScene.h"
 #include "SceneType/GameMainScene.h"
 #include "SceneType/RankingScene.h"
 #include "SceneType/CreditScene.h"
@@ -148,6 +149,8 @@ SceneBase* SceneManager::CreateScene(eSceneType type)
 		return dynamic_cast<SceneBase*>(new StartScene());
 	case eSceneType::eTitle:
 		return dynamic_cast<SceneBase*>(new TitleScene());
+	case eSceneType::eSelect:
+		return dynamic_cast<SceneBase*>(new SelectScene());
 	case eSceneType::eGameMain:
 		return dynamic_cast<SceneBase*>(new GameMainScene());
 	case eSceneType::eRanking:

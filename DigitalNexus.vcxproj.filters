@@ -60,6 +60,7 @@
     <ClCompile Include="Object\Character\Enemy\Enemy6.cpp" />
     <ClCompile Include="Object\Character\Enemy\Enemy7.cpp" />
     <ClCompile Include="Object\Character\Enemy\Enemy8.cpp" />
+    <ClCompile Include="Scene\SceneType\SelectScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Application.h" />
@@ -124,5 +125,6 @@
     <ClInclude Include="Object\Character\Enemy\Enemy6.h" />
     <ClInclude Include="Object\Character\Enemy\Enemy7.h" />
     <ClInclude Include="Object\Character\Enemy\Enemy8.h" />
+    <ClInclude Include="Scene\SceneType\SelectScene.h" />
   </ItemGroup>
 </Project>
