@@ -9,6 +9,7 @@
 #include "Stage/StageType/Stage3.h"
 #include "Stage/StageType/Stage4.h"
 #include "../../Utility/ShakeManager.h"
+#include "../../Utility/SelectStage.h"
 
 GameMainScene::GameMainScene()
 {
@@ -25,8 +26,31 @@ void GameMainScene::Initialize()
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
     player = objm->CreateObject<Player>(Vector2D(D_WIN_MAX_X / 2, (D_WIN_MAX_Y / 2) + 220.0f));
 
-    current_stage = new Stage1(player);
+    // 選択したステージ情報を取得
+    SelectStage* stage = Singleton<SelectStage>::GetInstance();
+    StageID select_stage = stage->GetSelectStage();
 
+    // 選択したステージを生成
+    switch (select_stage)
+    {
+    case StageID::Stage1:
+        current_stage = new Stage1(player);
+        break;
+    case StageID::Stage2:
+        current_stage = new Stage2(player);
+        break;
+    case StageID::Stage3:
+        current_stage = new Stage3(player);
+        break;
+    case StageID::Unknown:
+        current_stage = new Stage1(player);
+        break;
+    default:
+        current_stage = new Stage1(player);
+        break;
+    }
+
+    // 選択したステージの初期化処理
     current_stage->Initialize();
 
     // BGM読み込み（初回のみ）

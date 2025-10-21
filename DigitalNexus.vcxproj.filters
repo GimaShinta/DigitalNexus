@@ -126,5 +126,6 @@
     <ClInclude Include="Object\Character\Enemy\Enemy7.h" />
     <ClInclude Include="Object\Character\Enemy\Enemy8.h" />
     <ClInclude Include="Scene\SceneType\SelectScene.h" />
+    <ClInclude Include="Utility\SelectStage.h" />
   </ItemGroup>
 </Project>

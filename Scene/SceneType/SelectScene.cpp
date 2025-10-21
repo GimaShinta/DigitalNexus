@@ -1,4 +1,5 @@
 #include "SelectScene.h"
+#include "../../Utility/SelectStage.h"
 
 SelectScene::SelectScene()
 {
@@ -30,8 +31,8 @@ eSceneType SelectScene::Update(float delta_second)
 	// ステージ選択のカーソル
 	if (stage_check == false)
 	{
-		int cur_max = 3;
-		int cur_min = 1;
+		cur_max = 3;
+		cur_min = 1;
 
 		if (input->GetKeyDown(KEY_INPUT_D) || input->GetButtonDown(XINPUT_BUTTON_DPAD_RIGHT))
 		{
@@ -55,8 +56,8 @@ eSceneType SelectScene::Update(float delta_second)
 	// ステージ選択の確認の操作
 	else
 	{
-		int cur_max = 2;
-		int cur_min = 1;
+		cur_max = 2;
+		cur_min = 1;
 
 		if (input->GetKeyDown(KEY_INPUT_D) || input->GetButtonDown(XINPUT_BUTTON_DPAD_RIGHT))
 		{
@@ -85,6 +86,24 @@ eSceneType SelectScene::Update(float delta_second)
 			// 決定
 			else
 			{
+				// 選択したステージの情報を保存する
+				SelectStage* stage = Singleton<SelectStage>::GetInstance();
+				switch (stage_cursor)
+				{
+				case 1:
+					stage->SetSelectStage(StageID::Stage1);
+					break;
+				case 2:
+					stage->SetSelectStage(StageID::Stage2);
+					break;
+				case 3:
+					stage->SetSelectStage(StageID::Stage3);
+					break;
+				default:
+					stage->SetSelectStage(StageID::Stage1);
+					break;
+				}
+
 				return eSceneType::eGameMain;
 			}
 		}
@@ -129,6 +148,22 @@ void SelectScene::Draw()
 		// カーソルの表示
 		DrawBox(start_x + ((stage_cursor * 400) - 400), start_y, start_x + box_offset + ((stage_cursor * 400) - 400), start_y + box_offset,
 			GetColor(0, 255, 0), TRUE);
+
+		switch (stage_cursor)
+		{
+		case 1:
+			DrawString(150, 500, "stage1", GetColor(255, 255, 255), TRUE);
+			break;
+		case 2:
+			DrawString(500, 500, "stage2", GetColor(255, 255, 255), TRUE);
+			break;
+		case 3:
+			DrawString(850, 500, "stage3", GetColor(255, 255, 255), TRUE);
+			break;
+		default:
+			DrawString(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2, "Not Select", GetColor(255, 255, 255), TRUE);
+			break;
+		}
 	}
 	// ステージ選択の確認のカーソル
 	else
@@ -143,23 +178,6 @@ void SelectScene::Draw()
 		// ステージ情報
 		DrawBox(D_WIN_MAX_X / 2 - 300, D_WIN_MAX_Y / 2 - 200, D_WIN_MAX_X / 2 + 300, D_WIN_MAX_Y / 2 + 200,
 			GetColor(0, 0, 255), TRUE);
-
-		switch (stage_cursor)
-		{
-		case 1:
-			DrawString(150, 500, "stage1", GetColor(255, 255, 255), TRUE);
-			break;
-		case 2:
-			DrawString(450, 500, "stage2", GetColor(255, 255, 255), TRUE);
-			break;
-		case 3:
-			DrawString(850, 500, "stage3", GetColor(255, 255, 255), TRUE);
-			break;
-			
-		default:
-			DrawString(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2, "Not Select", GetColor(255, 255, 255), TRUE);
-			break;
-		}
 
 		// カーソルの表示
 		DrawBox(800 + ((check_cursor * 200) - 200), 650, 150 + 800 + ((check_cursor * 200) - 200), 700,

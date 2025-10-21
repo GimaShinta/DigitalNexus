@@ -235,6 +235,7 @@
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerBulletBase.h" />
     <ClInclude Include="Object\Bullet\PlayerBullet\PlayerDefenceBullet.h" />
     <ClInclude Include="Scene\SceneType\SelectScene.h" />
+    <ClInclude Include="Utility\SelectStage.h" />
     <ClInclude Include="Utility\ShakeManager.h" />
     <ClInclude Include="Utility\ScoreData.h" />
     <ClInclude Include="Utility\BoxCollision.h" />
