@@ -140,12 +140,32 @@ void SelectScene::Draw()
 				select_color, TRUE);
 		}
 
+		// ステージ情報
+		DrawBox(D_WIN_MAX_X / 2 - 300, D_WIN_MAX_Y / 2 - 200, D_WIN_MAX_X / 2 + 300, D_WIN_MAX_Y / 2 + 200,
+			GetColor(0, 0, 255), TRUE);
+
+		switch (stage_cursor)
+		{
+		case 1:
+			DrawString(150, 500, "stage1", GetColor(255, 255, 255), TRUE);
+			break;
+		case 2:
+			DrawString(450, 500, "stage2", GetColor(255, 255, 255), TRUE);
+			break;
+		case 3:
+			DrawString(850, 500, "stage3", GetColor(255, 255, 255), TRUE);
+			break;
+			
+		default:
+			DrawString(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2, "Not Select", GetColor(255, 255, 255), TRUE);
+			break;
+		}
+
 		// カーソルの表示
 		DrawBox(800 + ((check_cursor * 200) - 200), 650, 150 + 800 + ((check_cursor * 200) - 200), 700,
 			GetColor(0, 255, 0), TRUE);
 		DrawString(800, 650, "Back", GetColor(0, 0, 255), TRUE);
 		DrawString(1000, 650, "ok", GetColor(0, 0, 255), TRUE);
-
 	}
 }
 

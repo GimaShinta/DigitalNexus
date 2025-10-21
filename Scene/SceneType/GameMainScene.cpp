@@ -226,6 +226,7 @@ void GameMainScene::Draw()
 #if _DEBUG
 	DrawString(0, 0, "GameMainScene", GetColor(255, 255, 255));
 #endif
+
     if (current_stage)
     {
         EffectManager* anim = Singleton<EffectManager>::GetInstance();
