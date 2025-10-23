@@ -12,6 +12,11 @@ SelectScene::~SelectScene()
 // 初期化処理
 void SelectScene::Initialize()
 {
+	// 画像読み込み機能取得
+	ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
+	stage_image[0] = rm->GetImages("Resource/Image/BackGround/Select/select_image/stage1.png")[0];
+	stage_image[1] = rm->GetImages("Resource/Image/BackGround/Select/select_image/stage2.png")[0];
+	stage_image[2] = rm->GetImages("Resource/Image/BackGround/Select/select_image/stage3.png")[0];
 }
 
 /// <summary>
@@ -52,6 +57,10 @@ eSceneType SelectScene::Update(float delta_second)
 		// ステージの選択をする
 		if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A))
 			stage_check = true;
+
+		// タイトル画面へ戻る
+		if (input->GetKeyDown(KEY_INPUT_Z) || input->GetButtonDown(XINPUT_BUTTON_B))
+			return eSceneType::eTitle;
 	}
 	// ステージ選択の確認の操作
 	else
@@ -116,6 +125,22 @@ eSceneType SelectScene::Update(float delta_second)
 		}
 	}
 
+#if 0
+	if (input->GetKeyDown(KEY_INPUT_UP))
+		image_y--;
+	else if (input->GetKeyDown(KEY_INPUT_DOWN))
+		image_y++;
+	else if (input->GetKeyDown(KEY_INPUT_LEFT))
+		image_x--;
+	else if (input->GetKeyDown(KEY_INPUT_RIGHT))
+		image_x++;
+
+	if (input->GetKeyDown(KEY_INPUT_M))
+		image_scale += 0.1f;
+	else if (input->GetKeyDown(KEY_INPUT_N))
+		image_scale -= 0.1f;
+#endif
+
 	return GetNowSceneType();
 }
 
@@ -125,40 +150,101 @@ eSceneType SelectScene::Update(float delta_second)
 /// <returns></returns>
 void SelectScene::Draw()
 {
-	DrawString(0, 0, "selectscene", GetColor(255, 255, 255), TRUE);
-	DrawFormatString(0, 30, GetColor(255, 255, 255), "selectstage : %d", stage_cursor);
-	DrawFormatString(0, 60, GetColor(255, 255, 255), "selectstage : %d", check_cursor);
+	//DrawString(0, 0, "selectscene", GetColor(255, 255, 255), TRUE);
+	//DrawFormatString(0, 30, GetColor(255, 255, 255), "selectstage : %d", stage_cursor);
+	//DrawFormatString(0, 60, GetColor(255, 255, 255), "selectstage : %d", check_cursor);
+
+	// ステージ画像
+	DrawRotaGraph(210, 375, 1.0f, 0.0f, stage_image[0], TRUE);
+	DrawRotaGraph(638, 374, 1.0f, 0.0f, stage_image[1], TRUE);
+	DrawRotaGraph(1066, 298, 1.0f, 0.0f, stage_image[2], TRUE);
+
+	// 背景の動いている横線
+	for (int y = 0; y < D_WIN_MAX_Y; y += 4)
+	{
+		int bright = 10 + (y + GetNowCount() / 3) % 40;
+		DrawLine(0, y, D_WIN_MAX_X, y, GetColor(0, bright, bright));
+	}
 
 	// オフセット
-	float start_x = 100.0f;
-	float start_y = 150.0f;
-	float box_offset = 250.0f;
+	float start_x = -5.0f;
+	float start_y = 0.0f;
+	float box_offset = 427.0f;
 	int select_color = GetColor(255, 255, 255);
-	// ステージ詳細のボックス
-	for (int i = 0; i < 3; i++)
+
+	// カーソルの表示（選択したものを明るく）
+	switch (stage_cursor)
 	{
-		DrawBox(start_x + (i * 400), start_y, start_x + box_offset + (i * 400), start_y + box_offset,
-			select_color, TRUE);
-		DrawFormatString(start_x + (i * 400), start_y, GetColor(255, 0, 0), "Stage %d", i + 1);
+	case 1:
+		// 薄めのカーソルの表示
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
+		DrawBox(start_x + ((2 * box_offset) - box_offset), 0, box_offset + ((2 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		DrawBox(start_x + ((3 * box_offset) - box_offset), 0, box_offset + ((3 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		break;
+	case 2:
+		// 薄めのカーソルの表示
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
+		DrawBox(start_x + ((1 * box_offset) - box_offset), 0, box_offset + ((1 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		DrawBox(start_x + ((3 * box_offset) - box_offset), 0, box_offset + ((3 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		break;
+	case 3:
+		// 薄めのカーソルの表示
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
+		DrawBox(start_x + ((1 * box_offset) - box_offset), 0, box_offset + ((1 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		DrawBox(start_x + ((2 * box_offset) - box_offset), 0, box_offset + ((2 * box_offset) - box_offset), D_WIN_MAX_Y,
+			GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		break;
+	default:
+		DrawString(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2, "Not Select", GetColor(255, 255, 255), TRUE);
+		break;
 	}
 
 	// ステージ選択のカーソル
 	if (stage_check == false)
 	{
-		// カーソルの表示
-		DrawBox(start_x + ((stage_cursor * 400) - 400), start_y, start_x + box_offset + ((stage_cursor * 400) - 400), start_y + box_offset,
-			GetColor(0, 255, 0), TRUE);
-
+		// ステージ名オフセット
+		int im_x;
+		int im_y;
+		// カーソルが指したステージ名表示
 		switch (stage_cursor)
 		{
 		case 1:
-			DrawString(150, 500, "stage1", GetColor(255, 255, 255), TRUE);
+			// ステージ名オフセット
+			im_x = (D_WIN_MAX_X / 3) - 270;
+			im_y = D_WIN_MAX_Y - (D_WIN_MAX_Y / 2);
+			// ステージ名
+			SetFontSize(32);
+			DrawString(im_x, im_y, "stage1", GetColor(255, 255, 255), TRUE);
+			SetFontSize(16);
 			break;
 		case 2:
-			DrawString(500, 500, "stage2", GetColor(255, 255, 255), TRUE);
+			// ステージ名オフセット
+			im_x = (D_WIN_MAX_X / 2) - 70;
+			im_y = D_WIN_MAX_Y - (D_WIN_MAX_Y / 2);
+			// ステージ名
+			SetFontSize(32);
+			DrawString(im_x, im_y, "stage2", GetColor(255, 255, 255), TRUE);
+			SetFontSize(16);
 			break;
 		case 3:
-			DrawString(850, 500, "stage3", GetColor(255, 255, 255), TRUE);
+			// ステージ名オフセット
+			im_x = D_WIN_MAX_X - 270;
+			im_y = D_WIN_MAX_Y - (D_WIN_MAX_Y / 2);
+			// ステージ名
+			SetFontSize(32);
+			DrawString(im_x, im_y, "stage3", GetColor(255, 255, 255), TRUE);
+			SetFontSize(16);
 			break;
 		default:
 			DrawString(D_WIN_MAX_X / 2, D_WIN_MAX_Y / 2, "Not Select", GetColor(255, 255, 255), TRUE);
@@ -168,6 +254,17 @@ void SelectScene::Draw()
 	// ステージ選択の確認のカーソル
 	else
 	{
+		// 確認文字のラベル
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
+		DrawBox(0, D_WIN_MAX_Y / 2 - 30, D_WIN_MAX_X, D_WIN_MAX_Y / 2 + 50,
+			GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		// 確認文字
+		SetFontSize(32);
+		DrawString((D_WIN_MAX_X / 2) - 150, D_WIN_MAX_Y / 2, "Start this stage?", GetColor(255, 255, 255), TRUE);
+		SetFontSize(16);
+
 		// 確認ボックス
 		for (int i = 0; i < 2; i++)
 		{
@@ -175,16 +272,18 @@ void SelectScene::Draw()
 				select_color, TRUE);
 		}
 
-		// ステージ情報
-		DrawBox(D_WIN_MAX_X / 2 - 300, D_WIN_MAX_Y / 2 - 200, D_WIN_MAX_X / 2 + 300, D_WIN_MAX_Y / 2 + 200,
-			GetColor(0, 0, 255), TRUE);
-
 		// カーソルの表示
 		DrawBox(800 + ((check_cursor * 200) - 200), 650, 150 + 800 + ((check_cursor * 200) - 200), 700,
 			GetColor(0, 255, 0), TRUE);
 		DrawString(800, 650, "Back", GetColor(0, 0, 255), TRUE);
 		DrawString(1000, 650, "ok", GetColor(0, 0, 255), TRUE);
 	}
+
+#if 0
+	DrawFormatString(0, 100, GetColor(255, 255, 255), "image_x : %d", image_x, TRUE);
+	DrawFormatString(0, 130, GetColor(255, 255, 255), "image_y : %d", image_y, TRUE);
+	DrawFormatString(0, 160, GetColor(255, 255, 255), "image_scale : %.1f", image_scale, TRUE);
+#endif
 }
 
 // 終了時処理（使ったインスタンスの削除とか）

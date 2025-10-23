@@ -8,6 +8,13 @@ private:
 	int check_cursor = 1;
 	// ステージを選択したかどうか
 	bool stage_check = false;
+	// 各ステージの選択画像
+	int stage_image[3];
+
+	// 画像調整用
+	int image_x = D_WIN_MAX_X - 100;
+	int image_y = D_WIN_MAX_Y / 2;
+	float image_scale = 1.0f;
 
 public:
 	SelectScene();
