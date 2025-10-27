@@ -9,13 +9,15 @@ private:
 	// ステージを選択したかどうか
 	bool stage_check = false;
 	// 各ステージの選択画像
-	int stage_image[3];
+	int stage_image[6];
 
 	// 画像調整用
-	int image_x = D_WIN_MAX_X - 100;
+	int image_x = D_WIN_MAX_X / 2 + 200;
 	int image_y = D_WIN_MAX_Y / 2;
 	float image_scale = 1.0f;
 
+	// 選択UIの切り替え
+	bool select_ui = false;
 public:
 	SelectScene();
 	virtual ~SelectScene();
