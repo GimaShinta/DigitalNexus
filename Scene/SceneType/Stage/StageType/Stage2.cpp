@@ -58,14 +58,9 @@ void Stage2::Initialize()
     s2_e2_single_next = -1.0f;
     s2_e2_single_used = false;
 
-
     s2_wave3_started = s2_wave3_done = false;
     s2_left_idx = s2_right_idx = 0;
     s2_left_delay = s2_right_delay = 0.0f;
-
-    // Mid関連の初期化は削除（撤廃のため）
-    // s2_mid_spawned = s2_mid_done = false; などは消す
-
 
     // Waveフラグを完全にリセット
     wave1_started = wave1_done = false;
@@ -97,11 +92,10 @@ void Stage2::Initialize()
 
     s2_boss_spawned = false;
 
-    // ★ Warning 演出は使わないため、ラベル状態もクリア寄りに
-    warning_label_state = WarningLabelState::None;  // ← 警告帯撤廃:contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}
+    //Warning 演出は使わないため、ラベル状態もクリア寄りに
+    warning_label_state = WarningLabelState::None;  
 
-
-    // ★ ボス登場演出 初期値
+    //ボス登場演出 初期値
     boss_appear_state = BossAppearState::Waiting;
     boss_appear_timer = 0.0f;
     flash_request = false;
@@ -161,7 +155,7 @@ void Stage2::Draw()
     // 背景
     DrawScrollBackground();
 
-    // 手前の太いグリッド（これが見えなかった原因：未呼び出し）:contentReference[oaicite:7]{index=7}
+    // 手前グリッド
     DrawFrontGrid();
 
     // オブジェクト
@@ -170,12 +164,10 @@ void Stage2::Draw()
     // エフェクト
     Singleton<EffectManager>::GetInstance()->Draw();
 
-
-
-    // ★ 全画面フラッシュ（必要時）
+    // 全画面フラッシュ
     DrawFullScreenFlash();
 
-    // 遷移ノイズ（既存）
+    // 遷移ノイズ
     if (entry_effect_playing)
     {
         float t = entry_effect_timer / 1.0f;
@@ -198,8 +190,6 @@ void Stage2::Draw()
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
-
-
     // ステージ演出ラベル（WARNING含む）
     StageLabel();
 }
@@ -210,7 +200,7 @@ StageBase* Stage2::GetNextStage(Player* player)
     return new Stage3(player);
 }
 
-// ===== 背景：視差スクロール付きのニューログリッド =====
+//背景スクロール
 void Stage2::DrawScrollBackground() const
 {
     // === カメラふんわりオフセット ===
@@ -273,16 +263,16 @@ void Stage2::DrawScrollBackground() const
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 
-
+//背景エフェクト
 void Stage2::ScrollEffectUpdate(float delta_second)
 {
-    // ここを “遅く”
-    scroll_back -= delta_second * 110.0f;  // 200 → 110
-    scroll_front -= delta_second * 280.0f;  // 600 → 280
+    //スクロールスピード
+    scroll_back -= delta_second * 110.0f;  
+    scroll_front -= delta_second * 280.0f;  
 
     for (auto& p : star_particles) {
-        p.pos.y += p.velocity.y * delta_second * 0.6f; // 1.0 → 0.6（落下もゆっくり）
-        p.alpha -= delta_second * 22.0f;               // 30 → 22（フェード緩やか）
+        p.pos.y += p.velocity.y * delta_second * 0.6f; 
+        p.alpha -= delta_second * 22.0f;               
     }
 
     star_particles.erase(
@@ -301,6 +291,7 @@ void Stage2::ScrollEffectUpdate(float delta_second)
     }
 }
 
+//敵出現
 void Stage2::EnemyAppearance(float dt)
 {
     GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -318,13 +309,13 @@ void Stage2::EnemyAppearance(float dt)
     const float CX = D_WIN_MAX_X * 0.5f;
 
     // =========================
-  // Wave1：Enemy8 三機隊列（中央だけ少し前）を“複数回”レーン出現
-  // =========================
+    //  ウェーブ１
+    // =========================
     if (!wave1_started) {
         wave1_started = true;
         wave1_done = false;
-        wave1_group = 0;                   // ★ 初期化
-        wave1_next_at = stage_timer + 1.6f;  // ★ 開幕を少し遅らせる
+        wave1_group = 0;                 
+        wave1_next_at = stage_timer + 1.6f;  //開幕を少し遅らせる
     }
 
     if (!wave1_done) {
@@ -333,36 +324,35 @@ void Stage2::EnemyAppearance(float dt)
             const float H = (float)D_WIN_MAX_Y;
 
             // 三機フォーメーションの横オフセット
-            constexpr float SPACING_X = 72.0f;  // ← 100 → 72 に縮める（お好みで 64?84 程度）
+            constexpr float SPACING_X = 72.0f;  
             constexpr float START_Y = -80.0f;
             constexpr float TARGET_Y = 170.0f;
             constexpr float CENTER_Y = TARGET_Y + 18.0f;
             constexpr float APPEAR_T = 1.25f;
 
-            // ── レーン設計 ─────────────────────────────
-            // 三機横並びの“半幅”ぶん余白をとって、安全に収まるレーン中心を計算
+            //レーン設計
             const float formation_half = SPACING_X;   // 左右 ±SPACING_X に置く
             const float margin = 15.0f;
             const float left = formation_half + margin;
             const float right = W - (formation_half + margin);
 
-            // ★ 追加：レーンの展開幅を圧縮（値を小さくするほど“狭く”寄る）
-            const float LANE_SPAN_SCALE = 0.30f; // 例: 0.6（0<scale<=1）
+            //レーンの展開幅
+            const float LANE_SPAN_SCALE = 0.30f; 
             const float mid = (left + right) * 0.5f;
             const float half_span = (right - left) * 0.5f * LANE_SPAN_SCALE;
             const float leftN = mid - half_span;
             const float rightN = mid + half_span;
 
-            // レーン数（お好みで 3?7 くらいまで増やせます）
+            // レーン数
             constexpr int LANE_N = 5;
 
-            // レーン中心座標（★ left/right ではなく leftN/rightN を使う）
+            // レーン中心座標
             auto laneCenter = [&](int laneIdx)->float {
                 if (LANE_N <= 1) return (leftN + rightN) * 0.5f;
                 return leftN + (rightN - leftN) * (float)laneIdx / (float)(LANE_N - 1);
                 };
 
-            // 見た目に単調にならない並び順（中央→左端→右端→左中→右中）
+            //並び順（中央→左端→右端→左中→右中）
             auto laneOrder = [&](int k)->int {
                 switch (k % LANE_N) {
                 case 0: return 2; // center
@@ -373,11 +363,11 @@ void Stage2::EnemyAppearance(float dt)
                 }
                 };
 
-            // 今回出すレーン
+            //今回出すレーン
             const int   laneIdx = laneOrder(wave1_group);
             const float CX = laneCenter(laneIdx);
 
-            // 三機の相対配置（中央だけ少し前へ）
+            // 三機の相対配置（中央だけ少し前）
             struct Slot { float ox; float ty; };
             const Slot slots[3] = {
                 { -SPACING_X, TARGET_Y },
@@ -398,20 +388,20 @@ void Stage2::EnemyAppearance(float dt)
             // 次の隊列を予約 or 完了
             wave1_group++;
             if (wave1_group < wave1_total_groups) {
-                wave1_next_at += wave1_interval;  // ★ 間隔をあけてもう一度
+                wave1_next_at += wave1_interval;  //間隔をあけてもう一度
             }
             else {
-                wave1_done = true;                // ★ Wave1 完了、次へ進める
+                wave1_done = true;                //Wave1 完了、次へ進める
             }
         }
 
-        // Wave1 が続いている間はここで止める（後続Waveに進めない）
+        // Wave1 が続いている間はここで止める
         if (!wave1_done) return;
     }
 
 
     // =========================
-    // Wave2：斜め流し（左上→右下）
+    // ウェーブ２
     // =========================
     if (!wave2_started) {
         wave2_started = true;
@@ -427,11 +417,11 @@ void Stage2::EnemyAppearance(float dt)
             constexpr float DX        = 70.0f; // 右へ
             constexpr float DY        = 70.0f; // 下へ
 
-            float sx = 120.0f + (wave2_count % 4) * 60.0f; // 120,180,240,300 ...
-            float sy = -60.0f  - (wave2_count / 4) * 40.0f; // -60,-100,-140
+            float sx = 120.0f + (wave2_count % 4) * 60.0f; 
+            float sy = -60.0f  - (wave2_count / 4) * 40.0f; 
 
             Vector2D start_pos(sx, sy);
-            Vector2D target_pos(sx + DX * 6.0f, sy + DY * 6.0f); // 斜め大移動
+            Vector2D target_pos(sx + DX * 6.0f, sy + DY * 6.0f); // 斜め移動
 
             auto e = objm->CreateObject<Enemy1>(start_pos);
             if (e) {
@@ -448,7 +438,7 @@ void Stage2::EnemyAppearance(float dt)
         }
         if (!wave2_done) return;
     }
-    // ===== Wave2 終了後：中ボス Enemy7×2 追加 =====
+    //ウェーブ２終了：Enemy7出現
     if (wave2_done && !enemy7_done)
     {
         GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
@@ -460,7 +450,7 @@ void Stage2::EnemyAppearance(float dt)
             enemy7_spawned = true;
             enemy7_start_t = stage_timer;
 
-            // 左右の徘徊範囲を定義（Xは半画面、Yは浅め）
+            // 左右の徘徊範囲
             RectF leftArea{ 40.0f,   H * 0.20f,  CX - 24.0f, H * 0.38f };
             RectF rightArea{ CX + 24.0f, H * 0.20f,  W - 40.0f, H * 0.38f };
 
@@ -470,8 +460,6 @@ void Stage2::EnemyAppearance(float dt)
                 enemy7_left->SetPlayer(player);
                 enemy7_left->SetWanderBounds(leftArea);
                 enemy7_left->SetLabel("LEFT");
-                // 難易度スイッチがあればここで
-                // enemy7_left->SetEasyMode(player && player->IsEasyMode());
             }
 
             // 右：やや右上から入場
@@ -488,25 +476,22 @@ void Stage2::EnemyAppearance(float dt)
         bool right_done = (!enemy7_right) || enemy7_right->IsCleared();
 
         if (!left_done && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec) {
-            enemy7_left->ForceRetreat(); //left_done = true;
+            enemy7_left->ForceRetreat(); 
         }
         if (!right_done && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec) {
-            enemy7_right->ForceRetreat(); //right_done = true;
+            enemy7_right->ForceRetreat(); 
         }
 
         if (left_done && right_done) {
-            // 念のため掃除
-           // if (enemy7_left)  enemy7_left->SetDestroy();
-           // if (enemy7_right) enemy7_right->SetDestroy();
             enemy7_done = true;
         }
         else {
-            // ★ 中ボスが生きている間はここで止める
+            //中ボスが生きている間はここで止める
             return;
         }
     }
     // =========================
-    // Wave3：中央から小集団 × 3
+    // ウェーブ３：中央から小集団 × 3
     // =========================
     if (!wave3_started) {
         wave3_started = true;
@@ -560,374 +545,6 @@ void Stage2::EnemyAppearance(float dt)
     }
 }
 
-//void Stage2::EnemyAppearance(float dt)
-//{
-//    GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-//
-//    // 0) 序盤は演出のみ（~5.0s）
-//    if (stage_timer < 5.0f) return;
-//
-//    const float CX = D_WIN_MAX_X * 0.5f;
-//    const float appear_y_top = -80.0f;
-//    // ─────────────────────────────────────
-//    // Wave1：逐次スポーン（最初の方式の応用・短縮）
-//    // 5.0s開始 → フェーズ0（左右スウィープ）→ 小休止 → フェーズ1（上レイン）
-//    // それぞれ1体ずつタイマで出すので一度に終わらない
-//    // ─────────────────────────────────────
-//    if (!s2_wave1_done)
-//    {
-//        const float CX = D_WIN_MAX_X * 0.5f;
-//
-//        if (!s2_wave1_started && stage_timer >= 5.0f) {
-//            s2_wave1_started = true;
-//            s2_wave1_phase = 0;
-//            s2_wave1_i = 0;
-//            s2_wave1_next = stage_timer;  // すぐ最初の1体
-//        }
-//
-//        if (s2_wave1_started && stage_timer >= s2_wave1_next)
-//        {
-//            if (s2_wave1_phase == 0) {
-//                // === フェーズ0：左右スウィープ（交互に1体ずつ） ===
-//                constexpr int   N = 6;     // 合計体数
-//                constexpr float INTERVAL = 0.22f;  // 1体ごとの間隔
-//                constexpr float APPEAR_T = 0.95f;  // 到達時間
-//
-//                bool from_left = (s2_wave1_i % 2 == 0);
-//                float lane_t = float(s2_wave1_i % 6) / 5.0f;      // 0..1
-//                float sy = 130.0f + 120.0f * lane_t;
-//
-//                float sx = from_left ? -90.0f : (D_WIN_MAX_X + 90.0f);
-//                float tx = CX + (from_left ? -1.0f : +1.0f) * (200.0f - 120.0f * lane_t);
-//                float ty = sy + 18.0f;
-//
-//                Vector2D s(sx, sy), t(tx, ty);
-//                if (auto e1 = objm->CreateObject<Enemy1>(s)) {
-//                    e1->SetAppearParams(s, t, APPEAR_T);
-//                    e1->SetPlayer(player);
-//                }
-//
-//                s2_wave1_i++;
-//                if (s2_wave1_i < N) {
-//                    s2_wave1_next = stage_timer + INTERVAL;
-//                }
-//                else {
-//                    // 次フェーズへ（小休止して切り替え）
-//                    s2_wave1_phase = 1;
-//                    s2_wave1_i = 0;
-//                    s2_wave1_next = stage_timer + 0.6f;
-//                }
-//            }
-//            else if (s2_wave1_phase == 1) {
-//                // === フェーズ1：上レイン（1体ずつ落ちてくる） ===
-//                constexpr int   N = 12;
-//                constexpr float INTERVAL = 0.18f;
-//                constexpr float APPEAR_T = 0.85f;
-//
-//                float t01 = (s2_wave1_i + 0.5f) / float(N);          // 0..1
-//                float sx = 120.0f + (D_WIN_MAX_X - 240.0f) * t01;   // 画面上端の等間隔
-//                float sy = -80.0f;
-//
-//                // 着地点は微蛇行：一直線に並ばない
-//                float tx = sx + 36.0f * std::sinf(t01 * 6.28318f);
-//                float ty = 180.0f + 28.0f * std::cosf(t01 * 6.28318f);
-//
-//                Vector2D s(sx, sy), t(tx, ty);
-//                if (auto e1 = objm->CreateObject<Enemy1>(s)) {
-//                    e1->SetAppearParams(s, t, APPEAR_T);
-//                    e1->SetPlayer(player);
-//                }
-//
-//                s2_wave1_i++;
-//                if (s2_wave1_i < N) {
-//                    s2_wave1_next = stage_timer + INTERVAL;
-//                }
-//                else {
-//                    s2_wave1_done = true;  // Wave1完了
-//                }
-//            }
-//        }
-//
-//        if (!s2_wave1_done) return;
-//    }
-//
-//
-//    // ─────────────────────────────────────
-//  // Wave2：Enemy2（20.0s ～ 35.0s）… Snakeのみ
-//  // ─────────────────────────────────────
-//    if (!s2_wave2_done)
-//    {
-//        // 開始トリガ（20sから）
-//        if (!s2_wave2_started && stage_timer >= 20.0f)
-//        {
-//            s2_wave2_started = true;
-//            s2_e2_group_id = 0;
-//            s2_e2_group_next = stage_timer + 0.2f; // 少し間を置いて最初のグループ
-//            s2_e2_single_next = -1.0f;
-//            s2_e2_single_used = false;
-//        }
-//
-//        // 時間制限（保険）
-//        if (stage_timer >= 35.0f) s2_wave2_done = true;
-//
-//        // まだWave2を進めるなら
-//        if (s2_wave2_started && !s2_wave2_done)
-//        {
-//            // ===== 2-A) グループ（9体 Snake 隊列）=====
-//            if (stage_timer >= s2_e2_group_next)
-//            {
-//                constexpr int   GROUP_SIZE = 9;
-//                constexpr float LINE_INTERVAL = 0.14f; // i毎の遅延
-//                constexpr float APPEAR_TIME = 1.00f; // 到達時間（固定時間）
-//                constexpr float SPACING_X = 50.0f;
-//                const     float APPEAR_Y = D_WIN_MAX_Y + 90.0f;
-//
-//                // アンカー（左/中/右）巡回
-//                const float CX = D_WIN_MAX_X * 0.5f;
-//                float anchor_x;
-//                switch (s2_e2_group_id % 3) {
-//                case 0: anchor_x = CX;            break;
-//                case 1: anchor_x = CX - 100.0f;   break;
-//                default:anchor_x = CX + 100.0f;   break;
-//                }
-//                float base_x = anchor_x - (SPACING_X * (GROUP_SIZE - 1) * 0.5f);
-//
-//                // Snake オフセット（上下うねり）
-//                auto snakeOfs = [&](int i)->Vector2D {
-//                    float c = i - (GROUP_SIZE - 1) * 0.5f;
-//                    float ox = 18.0f * sinf(c * 0.9f);
-//                    float oy = -10.0f * i + 48.0f * sinf(c * 0.9f + DX_PI / 3);
-//                    return Vector2D(ox, oy);
-//                    };
-//
-//                for (int i = 0; i < GROUP_SIZE; ++i)
-//                {
-//                    Vector2D ofs = snakeOfs(i);
-//                    float x = base_x + i * SPACING_X + ofs.x;
-//
-//                    Vector2D s(x, APPEAR_Y + i * 16.0f);
-//                    Vector2D t(x, D_WIN_MAX_Y / 2.0f - 120.0f + ofs.y); // レーンYは上固定
-//
-//                    auto e2 = objm->CreateObject<Enemy2>(s);
-//                    if (e2)
-//                    {
-//                        e2->SetMode(Enemy2Mode::LineRise);
-//                        e2->SetLineParams(i, GROUP_SIZE, LINE_INTERVAL);
-//                        e2->SetAppearParams(s, t, APPEAR_TIME, true);
-//                        e2->SetPlayer(player);
-//                    }
-//                }
-//
-//                // ★次スケジュールを未来に進める（同フレームで再生成を防止）
-//                const float group_finish = stage_timer + (GROUP_SIZE - 1) * LINE_INTERVAL + APPEAR_TIME;
-//                s2_e2_group_next = group_finish + 0.6f;  // 次グループまで少し休む
-//                s2_e2_single_next = group_finish + 0.2f;  // 単発は直後に1回だけ
-//                s2_e2_single_used = false;                // 単発リセット
-//
-//                s2_e2_group_id++;
-//                // グループ回数上限で軽量化（必要に応じて調整）
-//                if (s2_e2_group_id >= 4) {
-//                    s2_wave2_done = true;
-//                }
-//            }
-//
-//            // ===== 2-B) 単発：直前グループの芯に 1回だけ =====
-//            if (!s2_wave2_done && s2_e2_single_next > 0.0f && !s2_e2_single_used && stage_timer >= s2_e2_single_next)
-//            {
-//                const float CX = D_WIN_MAX_X * 0.5f;
-//
-//                // 直前グループのアンカー位置に合わせる（左/中/右）
-//                float anchor_x;
-//                switch ((s2_e2_group_id > 0 ? s2_e2_group_id - 1 : 0) % 3) {
-//                case 0: anchor_x = CX;            break;
-//                case 1: anchor_x = CX - 100.0f;   break;
-//                default:anchor_x = CX + 100.0f;   break;
-//                }
-//
-//                // Stairs撤廃：単発も上レーン固定
-//                float single_y = D_WIN_MAX_Y / 2.0f - 125.0f;
-//
-//                Vector2D s(anchor_x, D_WIN_MAX_Y + 90.0f);
-//                Vector2D t(anchor_x, single_y);
-//
-//                auto e2 = objm->CreateObject<Enemy2>(s);
-//                if (e2)
-//                {
-//                    e2->SetMode(Enemy2Mode::Zako3Like);
-//                    e2->SetAppearParams(s, t, 1.00f, true);
-//                    e2->SetPlayer(player);
-//                }
-//
-//                // ★このグループの単発は消化済みに
-//                s2_e2_single_used = true;
-//                s2_e2_single_next = -1.0f; // 再発しない
-//            }
-//        }
-//
-//        if (!s2_wave2_done) return;
-//    }
-//
-//
-//    // ─────────────────────────────────────
-//    // Wave3：Enemy3 左右交互（35.0s ～ 50.0s）
-//    // ─────────────────────────────────────
-//    if (!s2_wave3_done)
-//    {
-//        if (!s2_wave3_started)
-//        {
-//            s2_wave3_started = true;
-//            s2_left_idx = s2_right_idx = 0;
-//            s2_left_delay = s2_right_delay = 0.0f;
-//        }
-//
-//        // 左列 6体
-//        if (s2_left_idx < 6)
-//        {
-//            s2_left_delay -= dt;
-//            if (s2_left_delay <= 0.0f)
-//            {
-//                float base_x = 100.0f;
-//                float spacing = 100.0f;
-//                Vector2D appear_pos(base_x + spacing * s2_left_idx, -100.0f);
-//                Vector2D end_pos(D_WIN_MAX_X / 2 - 180.0f + spacing * s2_left_idx, 220.0f);
-//                float delay = s2_left_idx * 0.4f;
-//
-//                auto z = objm->CreateObject<Enemy3>(appear_pos);
-//                z->SetMode(ZakoMode::Zako3);
-//                z->SetAppearParams(appear_pos, end_pos, 1.2f + delay, true);
-//                z->SetPlayer(player);
-//
-//                s2_left_idx++;
-//                s2_left_delay = 0.25f;
-//            }
-//        }
-//
-//        // 右列 6体
-//        if (s2_right_idx < 6)
-//        {
-//            s2_right_delay -= dt;
-//            if (s2_right_delay <= 0.0f)
-//            {
-//                float base_x = D_WIN_MAX_X - 100.0f;
-//                float spacing = -100.0f;
-//                Vector2D appear_pos(base_x + spacing * s2_right_idx, -100.0f);
-//                Vector2D end_pos(D_WIN_MAX_X / 2 + 120.0f + spacing * s2_right_idx, 300.0f);
-//                float delay = s2_right_idx * 0.4f;
-//
-//                auto z = objm->CreateObject<Enemy3>(appear_pos);
-//                z->SetMode(ZakoMode::Zako3);
-//                z->SetAppearParams(appear_pos, end_pos, 1.2f + delay, false);
-//                z->SetPlayer(player);
-//
-//                s2_right_idx++;
-//                s2_right_delay = 0.25f;
-//            }
-//        }
-//        // Wave3 のおわり
-//        if (s2_left_idx >= 6 && s2_right_idx >= 6)
-//        {
-//            if (!s2_wave3_done) {
-//                s2_wave3_done = true;
-//                s2_wave3_done_time = stage_timer; // ★ここで終了時刻を記録
-//            }
-//        }
-//
-//        if (!s2_wave3_done) return;
-//
-//    }
-//
-//  
-//    // ─────────────────────────────────────
-//    // ラスト：Boss2 直接スポーン（Warning撤廃）
-//    // Wave3 終了から s2_boss_delay_after_wave3 秒 後に出す
-//    // ─────────────────────────────────────
-//    if (!s2_boss_spawned && s2_wave3_done
-//        && s2_wave3_done_time >= 0.0f
-//        && stage_timer >= s2_wave3_done_time + s2_boss_delay_after_wave3)
-//    {
-//        const float CX = D_WIN_MAX_X * 0.5f;
-//
-//        if (!stage2boss2_spawned)
-//        {
-//            stage2boss2_spawned = true;
-//            boss_appear_state = BossAppearState::Spawning; // Warningは使わない
-//
-//            boss2 = objm->CreateObject<Boss2>(Vector2D(CX, 240.0f));
-//            if (boss2) {
-//                boss2->Initialize();
-//                boss2->SetPlayer(player);
-//            }
-//            // 必要なら演出
-//            // flash_request = true;
-//        }
-//
-//        s2_boss_spawned = true;
-//        return;
-//    }
-//
-//
-//}
-
-
-// 敵の出現（演出フロー込み）
-//void Stage2::EnemyAppearance(float delta_second)
-//{
-//    enemy_spawn_timer += delta_second;
-//    boss_appear_timer += delta_second;
-//
-//    switch (boss_appear_state)
-//    {
-//        case BossAppearState::Waiting:
-//            // ★ 5.0秒で警告へ（元はここで即スポーンしていた）:contentReference[oaicite:4]{index=4}
-//            if (stage_timer >= 5.0f)
-//            {
-//                boss_appear_state = BossAppearState::Warning;
-//                boss_appear_timer = 0.0f;
-//                bg_speed_scale = 1.2f; // 少し加速
-//                // TODO: サイレンSEなど
-//            }
-//            break;
-//
-//        case BossAppearState::Warning:
-//            // 2.0秒ほど警告表示 → スポーンへ
-//            if (boss_appear_timer >= 2.0f)
-//            {
-//                boss_appear_state = BossAppearState::Spawning;
-//                boss_appear_timer = 0.0f;
-//                bg_speed_scale = 2.0f; // さらに加速
-//
-//                if (!stage2boss2_spawned)
-//                {
-//                    stage2boss2_spawned = true;
-//                    GameObjectManager* objm = Singleton<GameObjectManager>::GetInstance();
-//                    boss2 = objm->CreateObject<Boss2>(Vector2D(640.0f, 240.0f));
-//                    boss2->Initialize();
-//                    boss2->SetPlayer(player);
-//                }
-//
-//                // 登場瞬間の白フラッシュ
-//                flash_request = true;
-//            }
-//            break;
-//
-//        case BossAppearState::Spawning:
-//            // Boss2 のイントロ（ズーム＋パーツ集結）が終わったら戦闘へ
-//            if (boss2 != nullptr && !boss2->IsIntroActive()) // ★ Boss2側アクセサで判定:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
-//            {
-//                boss_appear_state = BossAppearState::Active;
-//                boss_appear_timer = 0.0f;
-//                bg_speed_scale = 1.0f; // 平常に戻す
-//                flash_request = true;  // 戦闘開始フラッシュ
-//                // TODO: BGM切り替え
-//            }
-//            break;
-//
-//        case BossAppearState::Active:
-//            // 通常進行
-//            break;
-//    }
-//}
-
 // クリア・ゲームオーバーの判定
 void Stage2::UpdateGameStatus(float delta_second)
 {
@@ -944,12 +561,6 @@ void Stage2::UpdateGameStatus(float delta_second)
         boss2->SetDestroy();
         is_clear = true;
     }
-
-    //if (boss != nullptr && boss->GetIsAlive() == false && !is_over)
-    //{
-    //    boss->SetDestroy();
-    //    is_clear = true;
-    //}
 
     // プレイヤー死亡でゲームオーバー
     if (player != nullptr && player->GetGameOver() && !is_clear)
@@ -970,7 +581,6 @@ void Stage2::UpdateGameStatus(float delta_second)
 }
 
 // ステージ導入ラベル（描画）
-// Stage2.cpp : StageLabel を差し替え
 void Stage2::StageLabel() const
 {
     if (warning_label_state != WarningLabelState::None && warning_label_band_height > 1.0f)
@@ -1032,11 +642,6 @@ void Stage2::StageLabel() const
     }
 }
 
-
-
-
-
-
 // ===== 追加：内部更新 =====
 void Stage2::UpdateBackgroundScroll(float delta_second)
 {
@@ -1050,64 +655,7 @@ void Stage2::UpdateBackgroundScroll(float delta_second)
     if (bg_scroll_offset_layer2 > 10000.0f) bg_scroll_offset_layer2 -= 10000.0f;
 }
 
-//void Stage2::UpdateRabel(float delta_second)
-//{
-//    // ラベルのスライド／表示／退場アニメ（既存）
-//    const float slideDur = 0.45f;
-//    const float showDur = 1.10f;
-//
-//    switch (warning_label_state)
-//    {
-//        case WarningLabelState::SlideIn:
-//            warning_label_timer += delta_second;
-//            // 0→1 で帯が伸びる
-//            {
-//                float t = warning_label_timer / slideDur;
-//                if (t > 1.0f) t = 1.0f;
-//                // 0→240px くらいまで伸ばす
-//                warning_label_band_height = 240.0f * t;
-//                if (warning_label_timer >= slideDur)
-//                {
-//                    warning_label_timer = 0.0f;
-//                    warning_label_state = WarningLabelState::Displaying;
-//                }
-//            }
-//            break;
-//
-//        case WarningLabelState::Displaying:
-//            warning_label_timer += delta_second;
-//            // 高さは一定
-//            if (warning_label_timer >= showDur)
-//            {
-//                warning_label_timer = 0.0f;
-//                warning_label_state = WarningLabelState::SlideOut;
-//            }
-//            break;
-//
-//        case WarningLabelState::SlideOut:
-//            warning_label_timer += delta_second;
-//            {
-//                float t = warning_label_timer / slideDur;
-//                if (t > 1.0f) t = 1.0f;
-//                // 240→0 に縮む
-//                warning_label_band_height = 240.0f * (1.0f - t);
-//                if (warning_label_timer >= slideDur)
-//                {
-//                    warning_label_timer = 0.0f;
-//                    warning_label_state = WarningLabelState::None;
-//                    warning_label_band_height = 0.0f;
-//                }
-//            }
-//            break;
-//
-//        case WarningLabelState::None:
-//        default:
-//            // 何もしない
-//            break;
-//    }
-//}
-
-// ★ 追加：全画面フラッシュ（白→減衰）
+// 全画面フラッシュ（白→減衰）
 void Stage2::DrawFullScreenFlash()
 {
     // フラッシュ要求が出たらタイマ起動
@@ -1119,8 +667,7 @@ void Stage2::DrawFullScreenFlash()
 
     if (flash_timer > 0.0f)
     {
-        // ここはフレーム時間を渡せるなら delta を使ってOK
-        float decay = 1.0f / 60.0f; // 60fps想定の簡易減衰
+        float decay = 1.0f / 60.0f; 
         flash_timer -= decay;
         if (flash_timer < 0.0f) flash_timer = 0.0f;
 
@@ -1134,10 +681,8 @@ void Stage2::DrawFullScreenFlash()
     }
 }
 
-
 void Stage2::DrawFrontGrid() const
 {
-    // Stage3::DrawFrontGrid 相当（色だけ青寄りに変更）:contentReference[oaicite:5]{index=5}
     static Vector2D camera_offset(0, 0);
     static Vector2D camera_target_offset_prev(0, 0);
 

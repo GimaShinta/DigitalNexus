@@ -1388,6 +1388,20 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
 {
     StageID id = current_stage->GetStageID();
 
+    // --- 単発プレイ（セレクト発進）の場合は、どのステージでもリザルト後に戻る ---
+    if (started_from_select) {
+        // お片付け
+        current_stage->Finalize();
+        delete current_stage;
+        current_stage = nullptr;
+
+        // BGM後始末など必要ならここで
+        StopSoundMem(current_bgm_handle);
+
+        // セレクト（いったん eTitle に合流）
+        return eSceneType::eSelect;
+    }
+
     // ステージ3 → ステージ4 専用フェード演出
     if (id == StageID::Stage3)
     {

@@ -65,6 +65,9 @@ private:
 
 	int vo = 70;
 
+	// セレクト経由の単発プレイフラグ（暫定true）
+	bool started_from_select = true; 
+
 
 	bool black_fade_started = false;
 	float black_fade_timer = 0.0f;
