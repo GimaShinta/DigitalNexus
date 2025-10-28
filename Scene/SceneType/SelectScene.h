@@ -10,6 +10,7 @@ private:
 	bool stage_check = false;
 	// 各ステージの選択画像
 	int stage_image[6];
+	int stage_movie[3];
 
 	// 画像調整用
 	int image_x = D_WIN_MAX_X / 2 + 200;
