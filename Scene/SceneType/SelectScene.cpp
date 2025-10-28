@@ -157,7 +157,7 @@ eSceneType SelectScene::Update(float delta_second)
 /// <returns></returns>
 void SelectScene::Draw()
 {
-	if (select_ui)
+	if (!select_ui)
 	{
 		// ステージ画像
 		DrawRotaGraph(210, 375, 1.0f, 0.0f, stage_image[0], TRUE);
@@ -215,9 +215,18 @@ void SelectScene::Draw()
 			break;
 		}
 
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
+		// ベストタイムとハイスコア表示する帯
+		DrawBox(0, 580, D_WIN_MAX_X, 670, GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		DrawLine(D_WIN_MAX_X / 3, 0, D_WIN_MAX_X / 3, D_WIN_MAX_Y, GetColor(255, 255, 255), 1);
+		DrawLine((D_WIN_MAX_X / 3) * 2, 0, (D_WIN_MAX_X / 3) * 2, D_WIN_MAX_Y, GetColor(255, 255, 255), 1);
+
 		// ステージ選択のカーソル
 		if (stage_check == false)
 		{
+
 			// ステージ名オフセット
 			int im_x;
 			int im_y;
@@ -232,8 +241,8 @@ void SelectScene::Draw()
 				SetFontSize(32);
 				DrawString(im_x, im_y, "stage1", GetColor(255, 255, 255), TRUE);
 				SetFontSize(24);
-				DrawString(im_x - 70, im_y + 80, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-				DrawString(im_x - 70, im_y + 130, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 120, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 120, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
 				SetFontSize(16);
 				break;
 			case 2:
@@ -244,8 +253,8 @@ void SelectScene::Draw()
 				SetFontSize(32);
 				DrawString(im_x, im_y, "stage2", GetColor(255, 255, 255), TRUE);
 				SetFontSize(24);
-				DrawString(im_x - 60, im_y + 80, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-				DrawString(im_x - 60, im_y + 130, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 110, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 110, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
 				SetFontSize(16);
 				break;
 			case 3:
@@ -256,8 +265,8 @@ void SelectScene::Draw()
 				SetFontSize(32);
 				DrawString(im_x, im_y, "stage3", GetColor(255, 255, 255), TRUE);
 				SetFontSize(24);
-				DrawString(im_x - 70, im_y + 80, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-				DrawString(im_x - 70, im_y + 130, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 120, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
+				DrawString(im_x - 120, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
 				SetFontSize(16);
 				break;
 			default:
@@ -279,18 +288,19 @@ void SelectScene::Draw()
 			DrawString((D_WIN_MAX_X / 2) - 150, D_WIN_MAX_Y / 2, "Start this stage?", GetColor(255, 255, 255), TRUE);
 			SetFontSize(16);
 
+			int off_x = (D_WIN_MAX_X / 2) - 170;
 			// 確認ボックス
 			for (int i = 0; i < 2; i++)
 			{
-				DrawBox(800 + (i * 200), 650, 150 + 800 + (i * 200), 700,
+				DrawBox(off_x + (i * 200), 430, (150 + off_x + (i * 200)), 480,
 					select_color, TRUE);
 			}
 
 			// カーソルの表示
-			DrawBox(800 + ((check_cursor * 200) - 200), 650, 150 + 800 + ((check_cursor * 200) - 200), 700,
+			DrawBox(off_x + ((check_cursor * 200) - 200), 430, 150 + off_x + ((check_cursor * 200) - 200), 480,
 				GetColor(0, 255, 0), TRUE);
-			DrawString(800, 650, "back", GetColor(0, 0, 255), TRUE);
-			DrawString(1000, 650, "ok", GetColor(0, 0, 255), TRUE);
+			DrawString(off_x, 430, "back", GetColor(0, 0, 255), TRUE);
+			DrawString(off_x + 200, 430, "ok", GetColor(0, 0, 255), TRUE);
 		}
 	}
 	else
