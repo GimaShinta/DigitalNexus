@@ -26,6 +26,7 @@ void SelectScene::Initialize()
 	stage_movie[1] = LoadGraph("Resource/pv/stage_pv/Stage2_movie.mp4");
 	stage_movie[2] = LoadGraph("Resource/pv/stage_pv/Stage3_movie.mp4");
 
+	// 動画再生
 	PlayMovieToGraph(stage_movie[0], DX_PLAYTYPE_LOOP);
 	PlayMovieToGraph(stage_movie[1], DX_PLAYTYPE_LOOP);
 	PlayMovieToGraph(stage_movie[2], DX_PLAYTYPE_LOOP);
@@ -55,6 +56,7 @@ eSceneType SelectScene::Update(float delta_second)
 		cur_max = 3;
 		cur_min = 1;
 
+		// カーソルを右に移動
 		if (input->GetKeyDown(KEY_INPUT_D) || input->GetButtonDown(XINPUT_BUTTON_DPAD_RIGHT))
 		{
 			if (stage_cursor < cur_max)
@@ -62,6 +64,7 @@ eSceneType SelectScene::Update(float delta_second)
 				stage_cursor++;
 			}
 		}
+		// カーソルを左に移動
 		if (input->GetKeyDown(KEY_INPUT_A) || input->GetButtonDown(XINPUT_BUTTON_DPAD_LEFT))
 		{
 			if (stage_cursor > cur_min)
@@ -85,6 +88,7 @@ eSceneType SelectScene::Update(float delta_second)
 		cur_max = 2;
 		cur_min = 1;
 
+		// カーソルを右に移動
 		if (input->GetKeyDown(KEY_INPUT_D) || input->GetButtonDown(XINPUT_BUTTON_DPAD_RIGHT))
 		{
 			if (check_cursor < cur_max)
@@ -92,6 +96,7 @@ eSceneType SelectScene::Update(float delta_second)
 				check_cursor++;
 			}
 		}
+		// カーソルを左に移動
 		if (input->GetKeyDown(KEY_INPUT_A) || input->GetButtonDown(XINPUT_BUTTON_DPAD_LEFT))
 		{
 			if (check_cursor > cur_min)
@@ -164,7 +169,7 @@ eSceneType SelectScene::Update(float delta_second)
 		break;
 	}
 
-#if 1
+#if 0
 	if (input->GetKeyDown(KEY_INPUT_UP))
 		image_y--;
 	else if (input->GetKeyDown(KEY_INPUT_DOWN))
@@ -189,7 +194,6 @@ eSceneType SelectScene::Update(float delta_second)
 /// <returns></returns>
 void SelectScene::Draw()
 {
-	
 	// ステージ画像
 	DrawRotaGraph(210, 375, 1.0f, 0.0f, stage_image[0], TRUE);
 	DrawRotaGraph(638, 374, 1.0f, 0.0f, stage_image[1], TRUE);
@@ -331,8 +335,8 @@ void SelectScene::Draw()
 		DrawString((D_WIN_MAX_X / 2) - 150, D_WIN_MAX_Y / 2, "Start this stage?", GetColor(255, 255, 255), TRUE);
 		SetFontSize(16);
 
-		int off_x = (D_WIN_MAX_X / 2) - 170;
 		// 確認ボックス
+		int off_x = (D_WIN_MAX_X / 2) - 170;
 		for (int i = 0; i < 2; i++)
 		{
 			DrawBox(off_x + (i * 200), 430, (150 + off_x + (i * 200)), 480,

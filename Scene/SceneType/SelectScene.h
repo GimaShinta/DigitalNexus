@@ -11,14 +11,13 @@ private:
 	// 各ステージの選択画像
 	int stage_image[6];
 	int stage_movie[3];
-
 	// 画像調整用
 	int image_x = D_WIN_MAX_X / 2 + 200;
 	int image_y = D_WIN_MAX_Y / 2;
 	float image_scale = 1.0f;
-
 	// 選択UIの切り替え
 	bool select_ui = false;
+
 public:
 	SelectScene();
 	virtual ~SelectScene();

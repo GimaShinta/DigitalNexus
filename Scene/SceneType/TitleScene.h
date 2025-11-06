@@ -4,6 +4,15 @@
 class TitleScene : public SceneBase
 {
 private:
+	// 追加
+	enum class MenuLayer
+	{
+		MAIN,
+		SUB
+	};
+private:
+	MenuLayer m_menuLayer; // 現在のメニュー階層
+
 	int m_selectedIndex = 0; // 選択中のインデックス
 	int m_menuFontHandle = 0;
 

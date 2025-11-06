@@ -108,13 +108,29 @@ eSceneType TitleScene::Update(float delta_second)
     {
         if (movedUp)
         {
-            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-            m_selectedIndex = (m_selectedIndex + 3) % 4;
+            if (m_menuLayer == MenuLayer::MAIN)
+            {
+                PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+                m_selectedIndex = (m_selectedIndex + 3) % 2;
+            }
+            else
+            {
+                PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+                m_selectedIndex = (m_selectedIndex + 3) % 4;
+            }
         }
         if (movedDown)
         {
-            PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-            m_selectedIndex = (m_selectedIndex + 1) % 4;
+            if (m_menuLayer == MenuLayer::MAIN)
+            {
+                PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+                m_selectedIndex = (m_selectedIndex + 1) % 2;
+            }
+            else
+            {
+                PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+                m_selectedIndex = (m_selectedIndex + 1) % 4;
+            }
         }
     }
 
@@ -124,21 +140,33 @@ eSceneType TitleScene::Update(float delta_second)
         && !exit_scene                                      // ★追加：Exit 演出中は決定無効
         && (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)))
     {
-        PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
+        if (m_menuLayer == MenuLayer::MAIN)
+        {
+            PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
 
-        if (m_selectedIndex == 0) {
-            m_startTransitioning = true;
-            m_transitionTimer = 0.0f;
+            if (m_selectedIndex == 0)
+                m_menuLayer = MenuLayer::SUB;
+            else
+                exit_scene = true;                   // ← 一度 true になったら以降は無効
         }
-        else if (m_selectedIndex == 1) {
-            return eSceneType::eRanking;
-        }
-        else if (m_selectedIndex == 2) {
-            return eSceneType::eCredit;
-        }
-        else if (m_selectedIndex == 3) {
-            exit_scene = true;                   // ← 一度 true になったら以降は無効
-            // （既存の Exit 演出タイマー進行はそのまま）
+        else
+        {
+            PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
+
+            if (m_selectedIndex == 0) {
+                m_startTransitioning = true;
+                m_transitionTimer = 0.0f;
+            }
+            else if (m_selectedIndex == 1) {
+                return eSceneType::eRanking;
+            }
+            else if (m_selectedIndex == 2) {
+                return eSceneType::eCredit;
+            }
+            else if (m_selectedIndex == 3) {
+                m_menuLayer = MenuLayer::MAIN;
+                m_selectedIndex = 0;
+            }
         }
     }
 
@@ -385,111 +413,50 @@ void TitleScene::DrawParticles()
 
 void TitleScene::DrawMenu()
 {
-    const char* menuItems[] = {
-    "START GAME",
-    "RANKING",
-    "CREDITS",
-    "EXIT"
-    };
+    const char** menuItems;  // ★ここが重要：「配列」ではなく「ポインタのポインタ」
+    int menuCount = 0;       // メニュー項目数を記録する
 
-    for (int i = 0; i < 4; ++i)
+    if (m_menuLayer == MenuLayer::MAIN)
     {
-        int y = 400 + i * 50;
-        int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
-        int x = (D_WIN_MAX_X - textWidth) / 2;
-
-        if (i == m_selectedIndex)
-        {
-            // =========================
-            // 背景ハイライトバー（画面端まで）
-            // =========================
-            int barHeight = 40;
-            int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50); // パルス
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
-            DrawBox(
-                0, y - 5,
-                D_WIN_MAX_X, y + barHeight,
-                GetColor(0, 200, 255), TRUE
-            );
-
-            // =========================
-            // 両端のエッジエフェクト（流れる光）
-            // =========================
-            int edgeWidth = 80;
-            int edgeHeight = 4;
-            int scrollSpeed = 2;
-            int edgeOffset = (GetNowCount() * scrollSpeed) % (D_WIN_MAX_X + edgeWidth * 2);
-
-            // 左から右へ流れる（2個表示してループ感を出す）
-            for (int j = 0; j < 2; ++j)
-            {
-                int edgeX = edgeOffset - edgeWidth * j;
-                SetDrawBlendMode(DX_BLENDMODE_ADD, 50);
-                DrawBox(
-                    edgeX, y + 10,
-                    edgeX + edgeWidth, y + 10 + edgeHeight,
-                    GetColor(200, 255, 255), TRUE
-                );
-                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-            }
-
-            // =========================
-            // テキスト（アウトライン＋グロー）
-            // =========================
-            int offsetX = (rand() % 3) - 1;
-            int offsetY = (rand() % 3) - 1;
-
-            DrawStringToHandle(x + offsetX - 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-            DrawStringToHandle(x + offsetX + 1, y + offsetY, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-            DrawStringToHandle(x + offsetX, y + offsetY - 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-            DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
-
-            int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
-            DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
-        }
-        else
-        {
-            DrawStringToHandle(x, y, menuItems[i], GetColor(180, 180, 180), m_menuFontHandle);
-        }
+        static const char* mainItems[] = {
+            "START GAME",
+            "EXIT"
+        };
+        menuItems = mainItems;
+        menuCount = 2;
+    }
+    else
+    {
+        static const char* subItems[] = {
+            "SELECT GAME",
+            "RANKING",
+            "CREDITS",
+            "BACK"
+        };
+        menuItems = subItems;
+        menuCount = 4;
     }
 
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < menuCount; ++i)
     {
         int y = 400 + i * 50;
         int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
         int x = (D_WIN_MAX_X - textWidth) / 2;
 
-        // --- 出撃中の特別演出 ---
-        if (m_startTransitioning)
-        {
-            if (i == m_selectedIndex)
-            {
-                // 拡大・発光・フェード演出
-                float glowScale = m_menuScale;
-                int baseTextWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
-                int scaledTextWidth = (int)(baseTextWidth * glowScale);
-
-                int drawX = (D_WIN_MAX_X - scaledTextWidth) / 2;
-                int drawY = (int)(400 + i * 50 - (glowScale - 1.0f) * 20); // 少し上に補正
-
-                SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)m_menuAlpha);
-                DrawExtendStringToHandle(drawX, drawY, glowScale, glowScale,
-                    menuItems[i], GetColor(255, 255, 255), m_menuFontHandle);
-                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-            }
-
-            continue; // 他メニューは非表示
-        }
-
-        // 通常の描画処理（省略せずそのまま）
         if (i == m_selectedIndex)
         {
+            // =========================
+            // 背景ハイライトバー
+            // =========================
             int barHeight = 40;
             int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50);
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
             DrawBox(0, y - 5, D_WIN_MAX_X, y + barHeight, GetColor(0, 200, 255), TRUE);
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
+            // =========================
+            // テキストのグロー・アウトライン
+            // =========================
             int offsetX = (rand() % 3) - 1;
             int offsetY = (rand() % 3) - 1;
 
