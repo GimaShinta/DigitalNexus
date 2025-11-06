@@ -101,6 +101,7 @@ private:
 	bool spawned_enemy1_wave3 = false;
 
 private:
+
 	// 結果演出用
 	float result_timer = 0.0f;
 	float total_score = 0.0f;
@@ -118,35 +119,33 @@ private:
 	// 描画用
 	float delta_draw = 0.0f;
 
-	// リザルト後の戻り演出
-	bool  return_fx_started = false;
-	float return_fx_timer = 0.0f;
-
-	// ▼ リザルト後 自動でセレクトへ戻すための簡易UI（カウントダウン＋円ローディング）
-	bool  auto_return_enabled = false;     // オン/オフ（必要に応じて切り替え可）
-	bool  auto_return_started = false;    // カウント開始フラグ
-	bool  auto_return_after_result = false; // true=リザルト終了後に開始 / false=リザルト表示中から開始
-	float auto_return_timer = 0.0f;     // 経過秒
-	float auto_return_wait = 10.0f;     // 何秒で戻るか（お好みで 2.0?5.0）
-	float spinner_angle_deg = 0.0f;     // スピナー角度（度数）
-
-	// ★ リザルト開始からUIを出すまでの遅延（秒）
-	float auto_return_ui_delay = 20.0f;
+	//リザルト開始からUIを出すまでの遅延（秒）
+	float auto_return_ui_delay = 30.0f;
 
 	// リザルト後の選択メニュー
 	bool  result_menu_active = false;
 	int   result_menu_selected = 0;  // 1項目なので将来拡張用
 	float result_menu_timer = 0.0f;
 
+	// ▼ 追加（演出進行用）
+	float result_menu_open_t = 0.0f;  // パネル横伸び 0→1
+	float result_menu_text_t = 0.0f;  // 文字フェード 0→1
+	float result_menu_blink_t = 0.0f; // 「Press A」点滅
+
+
 	// 描画/更新ヘルパ
 	void DrawResultMenu();
 	void UpdateResultMenu(float dt);
 
-	//void DrawAutoReturnUI(float delta_second);
-
-
-	// ヘルパ
+	// リザルト描画
 	void ResultDraw(float delta_second);
+
+	float Clamp01(float v)
+	{
+		if (v < 0.0f) v = 0.0f;
+		else if (v > 1.0f) v = 1.0f;
+		return v;
+	}
 
 
 public:
