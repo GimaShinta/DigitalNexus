@@ -160,4 +160,46 @@ private:
     // Boss2 のスポーン（Warning撤廃で直接スポーン）
     bool  s2_boss_spawned = false;
 
+private:
+        // ===== リザルト演出 =====
+        float result_timer = 0.0f;
+        bool  result_started = false;
+        bool  result_finished = false;
+
+        float result_fadeout_timer = 0.0f;
+        bool  result_fadeout_started = false;
+
+        // リザルト後のメニュー
+        bool  result_menu_active = false;
+        float result_menu_open_t = 0.0f;
+        float result_menu_text_t = 0.0f;
+        float result_menu_blink_t = 0.0f;
+        float result_menu_timer = 0.0f;
+
+        // 結果演出用
+        float total_score = 0.0f;
+        bool  result_displayed = false;
+        float clear_wait_timer = 0.0f;
+        float glitch_timer = 0.0f;
+        bool  glitch_started = false;
+        bool  glitch_done = false;
+        float post_result_wait_timer = 0.0f;
+        bool  result_ended = false;
+
+
+        // 描画/更新ヘルパ
+        void DrawResultMenu();
+
+        float Clamp01(float v)
+        {
+            if (v < 0.0f) v = 0.0f;
+            else if (v > 1.0f) v = 1.0f;
+            return v;
+        }
+
+        void UpdateResultMenu(float dt);
+
+        // リザルト描画
+        void ResultDraw(float delta_second);
+
 };

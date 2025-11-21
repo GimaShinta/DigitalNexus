@@ -12,6 +12,7 @@
 #include "../../../../Object/Character/Boss/Boss2.h"
 #include "../../../../Utility/EffectManager.h"
 #include "../../../../Object/GameObjectManager.h"
+#include "../../../../Utility/InputManager.h"
 #include <cmath>
 
 Stage2::Stage2(Player* player)
@@ -147,6 +148,34 @@ void Stage2::Update(float delta_second)
 
     // ステージ導入ラベル更新
     UpdateRabel(delta_second);
+
+    // Update の最後あたり
+    delta_draw = delta_second;
+
+    // UpdateGameStatus のクリア後ブロック差し替え
+    if (is_clear == true && result_started == false) {
+        clear_wait_timer += delta_second;
+        if (clear_wait_timer >= 5.0f) {
+            result_started = true;
+            result_timer = 0.0f;
+            time_stop = true;
+        }
+    }
+
+    if (result_menu_active) {
+        UpdateResultMenu(delta_second);
+    }
+
+    // 最終的にフェードアウト完了で:
+    if (result_fadeout_started && !result_ended) {
+        result_ended = true;
+        result_menu_active = true;
+        result_menu_timer = 0.0f;
+        // auto_return_enabled = false;  // 初期化時 or クラス内初期値
+    }
+
+    // （毎フレーム）
+    delta_draw = delta_second;
 }
 
 // 描画
@@ -192,6 +221,24 @@ void Stage2::Draw()
 
     // ステージ演出ラベル（WARNING含む）
     StageLabel();
+
+
+    // クリア時の演出
+    if (is_clear) {
+        if (result_started) {
+            // これは既存：リザルト描画（背景の黒板＋スコア面）
+            int fade_alpha = (result_timer * 12.0f < 60.0f) ? (int)(result_timer * 12.0f) : 60;
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade_alpha);
+            DrawBox((D_WIN_MAX_X / 2) - 350, 0, (D_WIN_MAX_X / 2) + 350, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+            ResultDraw(delta_draw);
+        }
+
+        // リザルト終了後のメニュー
+        if (result_menu_active) {
+            DrawResultMenu();
+        }
+    }
 }
 
 // 次のステージ
@@ -548,11 +595,14 @@ void Stage2::EnemyAppearance(float dt)
 // クリア・ゲームオーバーの判定
 void Stage2::UpdateGameStatus(float delta_second)
 {
-    // 遷移ノイズ
+    // 遷移時のノイズ演出
     if (entry_effect_playing)
     {
         entry_effect_timer += delta_second;
-        if (entry_effect_timer >= 1.0f) entry_effect_playing = false;
+        if (entry_effect_timer >= 1.0f)
+        {
+            entry_effect_playing = false;
+        }
     }
 
     // ボスが倒れたらクリア
@@ -560,22 +610,25 @@ void Stage2::UpdateGameStatus(float delta_second)
     {
         boss2->SetDestroy();
         is_clear = true;
+        // ノイズ演出を開始
+        entry_effect_playing = true;
+        entry_effect_timer = 0.0f;
     }
 
-    // プレイヤー死亡でゲームオーバー
-    if (player != nullptr && player->GetGameOver() && !is_clear)
+    // プレイヤーが倒れたらゲームオーバー
+    if (player != nullptr && player->GetGameOver() && is_clear == false)
     {
         is_over = true;
         is_finished = true;
     }
 
-    // ステージ終了処理
-    if (is_clear)
-    {
-        scene_timer += delta_second;
-        if (scene_timer >= 2.0f)
-        {
-            is_finished = true;
+    //クリア後の待機状態
+    if (is_clear == true && result_started == false) {
+        clear_wait_timer += delta_second;
+        if (clear_wait_timer >= 5.0f) {
+            result_started = true;
+            result_timer = 0.0f;
+            time_stop = true;
         }
     }
 }
@@ -717,3 +770,276 @@ void Stage2::DrawFrontGrid() const
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 
+void Stage2::UpdateResultMenu(float dt)
+{
+    result_menu_timer += dt;
+    result_menu_blink_t += dt;
+
+    const float OPEN_SEC = 0.40f;
+    if (result_menu_open_t < 1.0f)
+    {
+        result_menu_open_t += dt / OPEN_SEC;
+        if (result_menu_open_t > 1.0f) result_menu_open_t = 1.0f;
+    }
+
+    const float TEXT_START = 0.70f;
+    const float TEXT_FADE_SEC = 0.30f;
+    if (result_menu_open_t >= TEXT_START && result_menu_text_t < 1.0f)
+    {
+        result_menu_text_t += dt / TEXT_FADE_SEC;
+        if (result_menu_text_t > 1.0f) result_menu_text_t = 1.0f;
+    }
+
+    // 決定（A or Space）
+    InputManager* input = Singleton<InputManager>::GetInstance();
+    if (input->GetButtonDown(XINPUT_BUTTON_A) || input->GetKeyDown(KEY_INPUT_SPACE))
+    {
+        is_finished = true;   // ← セレクトへ戻る
+    }
+}
+
+// 横伸びのアウトバック（少し勢いを付ける）
+static float EaseOutBack(float t, float s = 1.70158f) {
+    float u = t - 1.0f;
+    return 1.0f + (u * u * ((s + 1.0f) * u + s));
+}
+
+void Stage2::DrawResultMenu()
+{
+    const int cx = D_WIN_MAX_X / 2;
+    const int cy = D_WIN_MAX_Y - 120; // 画面下寄り
+
+    // パネル最大サイズ
+    const int PANEL_W_FULL = 640;
+    const int PANEL_H = 140;
+    const int PANEL_W_MIN = 40;
+
+    // 背景のうっすら暗転
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
+    DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+    // 横に伸びる幅（EaseOutBack）
+    float w01 = EaseOutBack(Clamp01(result_menu_open_t));
+    int panel_w = PANEL_W_MIN + (int)((PANEL_W_FULL - PANEL_W_MIN) * w01);
+
+    int x0 = cx - panel_w / 2;
+    int y0 = cy - PANEL_H / 2;
+    int x1 = cx + panel_w / 2;
+    int y1 = cy + PANEL_H / 2;
+
+    // パネル本体（内側→外枠）
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 190);
+    DrawBox(x0, y0, x1, y1, GetColor(18, 22, 46), TRUE); // 濃紺
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 90);
+    DrawBox(x0 - 6, y0 - 6, x1 + 6, y1 + 6, GetColor(40, 70, 160), FALSE);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+    // 文字フェード（RETURN / Press A）
+    float t01 = EaseOutBack(Clamp01(result_menu_open_t));
+    int alpha_text = (int)(255.0f * t01);
+
+    // タイトル
+    const char* TITLE = "RETURN TO STAGE SELECT";
+    int tw = GetDrawStringWidth(TITLE, (int)strlen(TITLE));
+    int tx = cx - tw / 2;
+    int ty = cy - 30;
+
+    // 影
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)(alpha_text * 0.5f));
+    DrawStringToHandle(tx + 2, ty + 2, TITLE, GetColor(0, 0, 0), font_orbitron);
+
+    // 本体
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_text);
+    DrawStringToHandle(tx, ty, TITLE, GetColor(230, 240, 255), font_orbitron);
+
+    // ヒント（Press A）? フェード＋点滅
+    float blink = 0.7f + 0.3f * sinf(result_menu_blink_t * 6.0f);
+    int alpha_press = (int)(alpha_text * blink);
+
+    const char* HINT = "Press A";
+    int hw = GetDrawStringWidth(HINT, (int)strlen(HINT));
+    int hx = cx - hw / 2;
+    int hy = cy + 24;
+
+    // 影
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)(alpha_press * 0.45f));
+    DrawStringToHandle(hx + 1, hy + 1, HINT, GetColor(0, 0, 0), font_orbitron);
+
+    // 本体（ネオンシアン寄り）
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_press);
+    DrawStringToHandle(hx, hy, HINT, GetColor(120, 240, 255), font_orbitron);
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
+void Stage2::ResultDraw(float delta_second)
+{
+    if (!result_started) return;
+
+    // 秒単位でタイマー進行
+    if (!result_fadeout_started)
+        result_timer += delta_second;
+    else
+        result_fadeout_timer += delta_second;
+
+    const int cx = D_WIN_MAX_X / 2;
+    const int cy = D_WIN_MAX_Y / 2 - 20;
+
+    // 背景フェード（最大60）
+    int fade_alpha = static_cast<int>((result_timer * 12.0f < 60.0f) ? result_timer * 12.0f : 60);
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade_alpha);
+    DrawBox(cx - 350, 0, cx + 350, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+    // フェード／スライド定数（秒）
+    const float fade_duration = 1.0f; // 60フレーム相当
+    const int slide_distance = 60;
+
+    // 表示補助関数
+    auto GetAlpha = [&](float delay_sec, bool is_fadeout = false) -> int {
+        float t = (result_fadeout_started ? result_fadeout_timer : result_timer) - delay_sec;
+        if (t < 0.0f) return is_fadeout ? 255 : 0;
+        if (t >= fade_duration) return is_fadeout ? 0 : 255;
+        return is_fadeout ? static_cast<int>(255 * (1.0f - t / fade_duration))
+            : static_cast<int>(255 * t / fade_duration);
+        };
+
+    auto GetSlideY = [&](int base_y, float delay_sec, bool is_fadeout = false) -> int {
+        float t = (result_fadeout_started ? result_fadeout_timer : result_timer) - delay_sec;
+        if (t < 0.0f) return base_y + (is_fadeout ? 0 : slide_distance);
+        if (t >= fade_duration) return base_y + (is_fadeout ? slide_distance : 0);
+        int offset = static_cast<int>((slide_distance * t) / fade_duration);
+        return is_fadeout ? base_y + offset : base_y + slide_distance - offset;
+        };
+
+    // スコア集計
+    ScoreData* score = Singleton<ScoreData>::GetInstance();
+    float base_score = score->GetTotalScore();
+    int life_bonus = player->GetLife() * 1000;
+
+    // 経過時間を秒に換算
+    float total_seconds = game_time_hun * 60.0f + game_time_byou + game_time_miri / 1000.0f;
+
+    // タイムボーナス計算
+    const int max_bonus = 60000;   // 最大ボーナス 60,000
+    const int decay_per_sec = 200; // 1秒ごとの減点 200
+    int time_bonus = static_cast<int>(max_bonus - total_seconds * decay_per_sec);
+    if (time_bonus < 0) time_bonus = 0;
+
+    total_score = base_score + life_bonus + time_bonus;
+
+    // 表示ライン設定
+    struct ResultLine {
+        int delay_frame;      // フレーム単位で定義（後で秒に変換）
+        int y_offset;
+        std::string label;
+        std::string format;
+    };
+
+    std::vector<ResultLine> lines = {
+        {  30, -100, "RESULT", "" },
+        {  70,  -40, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
+        { 110,    0, "LIFE BONUS", "LIFE BONUS : %d" },
+        { 150,   40, "TIME BONUS", "TIME BONUS : %d" },
+        { 190,  100, "FINAL SCORE", "FINAL SCORE : %.0f" },
+    };
+
+    // 表示位置（左右揃え用）
+    const int label_x = cx - 250;
+    const int value_x = cx + 250;
+
+    for (size_t i = 0; i < lines.size(); ++i)
+    {
+        const auto& line = lines[i];
+
+        int delay_frame = result_fadeout_started ? lines.back().delay_frame - line.delay_frame : line.delay_frame;
+        float delay_sec = static_cast<float>(delay_frame) / 60.0f;
+
+        int alpha = GetAlpha(delay_sec, result_fadeout_started);
+        int y = GetSlideY(cy + line.y_offset, delay_sec, result_fadeout_started);
+        int color = GetColor(255, 255, 255);
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+
+        if (line.format.empty()) {
+            // ラベルだけ描画（"RESULT" など）
+            int label_width = GetDrawStringWidth(line.label.c_str(), line.label.size());
+            DrawStringToHandle(cx - label_width / 2, y, line.label.c_str(), color, font_orbitron);
+        }
+        else {
+            // ラベルと値を分けて描画
+            char value_buf[64];
+
+            if (line.label == "TOTAL SCORE") {
+                sprintf_s(value_buf, "%.0f", base_score);
+            }
+            else if (line.label == "LIFE BONUS") {
+                sprintf_s(value_buf, "%d", life_bonus);
+            }
+            else if (line.label == "TIME BONUS") {
+                sprintf_s(value_buf, "%d", time_bonus);
+            }
+            else if (line.label == "FINAL SCORE") {
+                sprintf_s(value_buf, "%.0f", total_score);
+            }
+
+            // ラベル描画（左寄せ）
+            DrawStringToHandle(label_x, y, line.label.c_str(), color, font_orbitron);
+
+            // 数値描画（右寄せ）
+            int value_width = GetDrawStringWidth(value_buf, strlen(value_buf));
+            DrawStringToHandle(value_x - value_width, y, value_buf, color, font_orbitron);
+
+            // TOTAL SCORE の横線と終了判定
+            if (line.label == "FINAL SCORE") {
+                int line_y = y - 20;
+                DrawLine(cx - 600, line_y, cx + 600, line_y, GetColor(255, 255, 255));
+
+                if (alpha == 255 && !result_fadeout_started) {
+                    result_displayed = true;
+                }
+            }
+        }
+    }
+
+    //SetFontSize(16);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+    // 表示後のグリッチ待機
+    if (result_displayed && !glitch_started && !glitch_done) {
+        post_result_wait_timer += delta_second;
+        if (post_result_wait_timer >= 8.0f) {
+            glitch_started = true;
+            glitch_timer = 0.0f;
+        }
+    }
+
+    // グリッチ演出
+    if (glitch_started && !glitch_done) {
+        glitch_timer += delta_second;
+        if (glitch_timer > 2.0f) {
+            glitch_done = true;
+        }
+    }
+
+    // フェードアウト開始
+    if (glitch_done && !result_fadeout_started) {
+        result_fadeout_started = true;
+        result_fadeout_timer = 0.0f;
+    }
+
+    // （フェードアウト完了のところ）
+    if (result_fadeout_started && !result_ended) {
+        float last_delay_sec = static_cast<float>(lines.back().delay_frame) / 60.0f;
+        if (result_fadeout_timer >= fade_duration + last_delay_sec)
+        {
+            result_ended = true;
+            result_menu_timer = 0.0f;
+            result_menu_open_t = 0.0f;
+            result_menu_text_t = 0.0f;
+            result_menu_blink_t = 0.0f;
+        }
+    }
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
