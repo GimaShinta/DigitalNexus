@@ -328,6 +328,13 @@ void SelectScene::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
 		DrawBox(0, D_WIN_MAX_Y / 2 - 30, D_WIN_MAX_X, D_WIN_MAX_Y / 2 + 50,
 			GetColor(0, 0, 0), TRUE);
+		// 確認ボックス
+		int off_x = (D_WIN_MAX_X / 2) - 170;
+		for (int i = 0; i < 2; i++)
+		{
+			DrawBox(off_x + (i * 200), 430, (150 + off_x + (i * 200)), 480,
+				GetColor(0, 0, 0), TRUE);
+		}
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
 		// 確認文字
@@ -335,19 +342,14 @@ void SelectScene::Draw()
 		DrawString((D_WIN_MAX_X / 2) - 150, D_WIN_MAX_Y / 2, "Start this stage?", GetColor(255, 255, 255), TRUE);
 		SetFontSize(16);
 
-		// 確認ボックス
-		int off_x = (D_WIN_MAX_X / 2) - 170;
-		for (int i = 0; i < 2; i++)
-		{
-			DrawBox(off_x + (i * 200), 430, (150 + off_x + (i * 200)), 480,
-				select_color, TRUE);
-		}
-
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
 		// カーソルの表示
 		DrawBox(off_x + ((check_cursor * 200) - 200), 430, 150 + off_x + ((check_cursor * 200) - 200), 480,
-			GetColor(0, 255, 0), TRUE);
-		DrawString(off_x, 430, "back", GetColor(0, 0, 255), TRUE);
-		DrawString(off_x + 200, 430, "ok", GetColor(0, 0, 255), TRUE);
+			GetColor(255, 255, 255), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+
+		DrawString(off_x, 430, "no", GetColor(255, 255, 255), TRUE);
+		DrawString(off_x + 200, 430, "yes", GetColor(255, 255, 255), TRUE);
 	}
 	
 #if 0

@@ -30,22 +30,38 @@ void GameMainScene::Initialize()
     SelectStage* stage = Singleton<SelectStage>::GetInstance();
     StageID select_stage = stage->GetSelectStage();
 
+    // BGM読み込み（初回のみ）
+    ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
+    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/Stage1_Loop.mp3");
+    stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/Stage4Boss_01.mp3"); 
+
     // 選択したステージを生成
     switch (select_stage)
     {
     case StageID::Stage1:
+        // ステージ1用BGMを再生
+        current_bgm_handle = stage_bgm1;
         current_stage = new Stage1(player);
         break;
     case StageID::Stage2:
+        // ステージ2用BGMを再生
+        current_bgm_handle = stage_bgm1;
         current_stage = new Stage2(player);
         break;
     case StageID::Stage3:
+        // ステージ3用BGMを再生
+        current_bgm_handle = stage_bgm3;
         current_stage = new Stage3(player);
         break;
     case StageID::Unknown:
+        // ステージ1用BGMを再生
+        current_bgm_handle = stage_bgm1;
         current_stage = new Stage1(player);
         break;
     default:
+        // ステージ1用BGMを再生
+        current_bgm_handle = stage_bgm1;
         current_stage = new Stage1(player);
         break;
     }
@@ -53,14 +69,8 @@ void GameMainScene::Initialize()
     // 選択したステージの初期化処理
     current_stage->Initialize();
 
-    // BGM読み込み（初回のみ）
-    ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/Stage1_Loop.mp3");
-    stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
-
-   // stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage/Last_Boss.mp3"); // 任意のファイル
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/Stage4Boss_01.mp3"); // 任意のファイル
-    se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       // 警告音SE
+    // 警告音SE
+    se_warning = rm->GetSounds("Resource/sound/se/battle/Warning.mp3");       
 
     se_charge = rm->GetSounds("Resource/sound/se/effect/audiostock_1133382.mp3");
     ChangeVolumeSoundMem(255 * 100 / 70, se_charge);
@@ -76,9 +86,6 @@ void GameMainScene::Initialize()
     font_warning = CreateFontToHandle("Orbitron", 20, 6, DX_FONTTYPE_ANTIALIASING);
 
     m_menuFontHandle = CreateFontToHandle("Orbitron", 36, 6); // メニュー専用フォント
-
-    // ステージ1用BGMを再生
-    current_bgm_handle = stage_bgm1;
 
     ChangeVolumeSoundMem(255 * 80 / 100, current_bgm_handle);
 
