@@ -34,6 +34,13 @@ void SelectScene::Initialize()
 	PauseMovieToGraph(stage_movie[0]);
 	PauseMovieToGraph(stage_movie[1]);
 	PauseMovieToGraph(stage_movie[2]);
+
+	// AnimationManager による事前アニメ再生（0.01秒、画面外で一度だけ再生）
+	EffectManager* effe = Singleton<EffectManager>::GetInstance();
+	SEManager* se = Singleton<SEManager>::GetInstance();
+
+	effe->LoadAllEffects();
+	se->LoadSE();
 }
 
 /// <summary>

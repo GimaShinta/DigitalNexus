@@ -91,13 +91,6 @@ void GameMainScene::Initialize()
 
     PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
 
-    //AnimationManager による事前アニメ再生（0.01秒、画面外で一度だけ再生）
-    EffectManager* effe = Singleton<EffectManager>::GetInstance();
-    SEManager* se = Singleton<SEManager>::GetInstance();
-
-    effe->LoadAllEffects(); // ★ここで明示的に画像を先読みさせる！
-    se->LoadSE();
-
     previous_score_count = 0.0f;
     score_logs.clear(); // 念のためリセット
 }
