@@ -5,6 +5,7 @@
 #include "../../../../Object/Item/Shield/Shield.h"
 #include "../../../../Object/Item/PowerUp/PowerUp.h"
 #include "../../../../Utility/ScoreData.h"
+#include "../../../../Utility/InputManager.h"
 
 Stage3::Stage3(Player* player)
     : StageBase(player)
@@ -189,7 +190,13 @@ void Stage3::Draw()
 // 次のステージを取得
 StageBase* Stage3::GetNextStage(Player* player)
 {
-    return new Stage4(player);
+    if (goto_stage4) {
+        // YES を選んだときだけ Stage4 へ
+        return new Stage4(player);
+    }
+
+    // NO の場合は次ステージなし（GameMain側でセレクトへ）
+    return nullptr;
 }
 
 // 背景スクロールの描画
@@ -786,10 +793,77 @@ void Stage3::ResultDraw(float delta_second)
         float last_delay_sec = static_cast<float>(lines.back().delay_frame) / 60.0f;
         if (result_fadeout_timer >= fade_duration + last_delay_sec) {
             result_ended = true;
-            is_finished = true;
+            confirm_active = true;
+            confirm_index = 0;
             // シーン遷移処理など必要があればここに
         }
     }
+
+    // ========= ここから「次のステージへ進みますか？」確認メニュー =========
+    if (result_ended) {
+        // 画面を真っ黒にする
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        if (confirm_active) {
+            InputManager* input = Singleton<InputManager>::GetInstance();
+
+            // カーソル移動（↑でYES、↓でNO）
+            if (input->GetKeyDown(KEY_INPUT_UP) || input->GetKeyDown(KEY_INPUT_W) ||
+                input->GetButtonDown(XINPUT_BUTTON_DPAD_UP))
+            {
+                confirm_index = 0; // YES
+            }
+            if (input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_S) ||
+                input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN))
+            {
+                confirm_index = 1; // NO
+            }
+
+            // 決定（SPACE or Aボタン）
+            if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+                input->GetButtonDown(XINPUT_BUTTON_A))
+            {
+                if (confirm_index == 0) {
+                    // YES → Stage4へ進む
+                    goto_stage4 = true;
+                }
+                else {
+                    // NO → セレクトへ戻る
+                    goto_stage4 = false;
+                }
+
+                confirm_active = false;
+                is_finished = true;  // ここでステージ終了扱いにする
+            }
+
+            // 文字描画
+            const int cx = D_WIN_MAX_X / 2;
+            const int cy = D_WIN_MAX_Y / 2 - 40;
+
+            SetFontSize(28);
+            const char* msg = "Next Stage?";
+            DrawString(cx - 260, cy, msg, GetColor(255, 255, 255));
+
+            SetFontSize(24);
+            const char* yes_str = "YES";
+            const char* no_str = "NO";
+
+            int yes_x = cx - 40;
+            int yes_y = cy + 60;
+            int no_x = cx - 40;
+            int no_y = cy + 100;
+
+            DrawString(yes_x, yes_y, yes_str, GetColor(255, 255, 255));
+            DrawString(no_x, no_y, no_str, GetColor(255, 255, 255));
+
+            int cursor_y = (confirm_index == 0) ? yes_y : no_y;
+            DrawString(yes_x - 30, cursor_y, ">", GetColor(0, 255, 255));
+        }
+    }
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }

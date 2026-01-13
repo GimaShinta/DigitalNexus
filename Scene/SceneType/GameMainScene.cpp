@@ -1388,22 +1388,22 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
 {
     StageID id = current_stage->GetStageID();
 
-    // --- 単発プレイ（セレクト発進）の場合は、どのステージでもリザルト後に戻る ---
-    if (started_from_select) {
-        // お片付け
-        current_stage->Finalize();
-        delete current_stage;
-        current_stage = nullptr;
+    //// --- 単発プレイ（セレクト発進）の場合は、どのステージでもリザルト後に戻る ---
+    //if (started_from_select) {
+    //    // お片付け
+    //    current_stage->Finalize();
+    //    delete current_stage;
+    //    current_stage = nullptr;
 
-        // BGM後始末など必要ならここで
-        StopSoundMem(current_bgm_handle);
+    //    // BGM後始末など必要ならここで
+    //    StopSoundMem(current_bgm_handle);
 
-        // セレクト（いったん eTitle に合流）
-        return eSceneType::eSelect;
-    }
+    //    // セレクト（いったん eTitle に合流）
+    //    return eSceneType::eSelect;
+    //}
 
     // ステージ3 → ステージ4 専用フェード演出
-    if (id == StageID::Stage3)
+  /*  if (id == StageID::Stage3)
     {
         black_fade_timer += delta;
         if (alpha >= 255)
@@ -1426,6 +1426,18 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
                 return eSceneType::eTitle;
             }
         }
+    }*/
+    if (started_from_select && id != StageID::Stage3) {
+        // お片付け
+        current_stage->Finalize();
+        delete current_stage;
+        current_stage = nullptr;
+
+        // BGM後始末など必要ならここで
+        StopSoundMem(current_bgm_handle);
+
+        // セレクトへ戻る
+        return eSceneType::eSelect;
     }
     else if (id == StageID::Stage4)
     {
@@ -1448,6 +1460,47 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
         }
     }
     else
+    {
+        // ★追加：次ステージへ進む前に、今流れているBGMを必ず止める
+        StopSoundMem(current_bgm_handle);
+
+        StageBase* next_stage = current_stage->GetNextStage(player);
+
+        current_stage->Finalize();
+        delete current_stage;
+        current_stage = nullptr;
+
+        if (next_stage)
+        {
+            current_stage = next_stage;
+            current_stage->Initialize();
+
+            // ★追加：次のステージIDでBGMを切り替える
+            StageID nextId = current_stage->GetStageID();
+
+            if (nextId == StageID::Stage3)
+            {
+                current_bgm_handle = stage_bgm3;
+            }
+            else if (nextId == StageID::Stage4)
+            {
+                current_bgm_handle = stage_bgm4;
+            }
+            else
+            {
+                current_bgm_handle = stage_bgm1; // Stage1/2など共通扱いのBGM
+            }
+
+            ChangeVolumeSoundMem(255 * 95 / 100, current_bgm_handle);
+            //PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
+        }
+        else
+        {
+            return eSceneType::eSelect;
+        }
+    }
+
+    /*else
     {
         StageBase* next_stage = current_stage->GetNextStage(player);
 
@@ -1472,7 +1525,7 @@ eSceneType GameMainScene::ProceedToNextStage(float delta)
         {
             return eSceneType::eTitle;
         }
-    }
+    }*/
 
     return GetNowSceneType();
 }

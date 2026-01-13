@@ -51,6 +51,12 @@ private:
 
 	float game_timer = 0.0f;
 
+private:
+	bool confirm_active = false;     // Yes/Noメニューが出ているか
+	int  confirm_index = 0;          // 0: YES, 1: NO
+	bool goto_stage4 = false;        // YESを選んだら true
+
+
 public:
 	// コンストラクタ・デストラクタ
 	Stage3(Player* player);     // プレイヤー情報を引数に取るステージ初期化

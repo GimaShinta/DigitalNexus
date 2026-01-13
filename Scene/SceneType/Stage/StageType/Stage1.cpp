@@ -979,20 +979,6 @@ void Stage1::ResultDraw(float delta_second)
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
-
-//void Stage1::UpdateResultMenu(float dt)
-//{
-//    result_menu_timer += dt;
-//
-//    //入力機能取得
-//    InputManager* input = Singleton<InputManager>::GetInstance();
-//    // 決定（Space or Aボタン）
-//    if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)) {
-//        // セレクトへ戻る
-//        is_finished = true;    // ← GameMainScene がこれを見てセレクトへ戻す
-//    }
-//    // （任意）キャンセルで何かするならB等に割り当て
-//}
 void Stage1::UpdateResultMenu(float dt)
 {
     // 演出タイマ

@@ -20,7 +20,7 @@ private:
 	float entry_effect_timer = 0.0f;
 
 	//デバッグ用：ボス出現スタート
-	bool debug_boss_only = true; 
+	bool debug_boss_only = false; 
 
 	//ステージの流れ：時間
 	float intro_delay_sec = 6.0f;		 //最初のウェーブ開始までの時間
