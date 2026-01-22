@@ -474,7 +474,6 @@ void Stage4::ResultDraw(float delta_second)
     // 経過時間を秒に換算
     float total_seconds = game_time_hun * 60.0f + game_time_byou + game_time_miri / 1000.0f;
 
-    score->SetStageScore(4, total_score);
 
     // タイムボーナス計算
     const int max_bonus = 60000;   // 最大ボーナス 60,000
@@ -483,6 +482,8 @@ void Stage4::ResultDraw(float delta_second)
     if (time_bonus < 0) time_bonus = 0;
 
     total_score = base_score + life_bonus + time_bonus;
+
+    score->SetStageScore(3, total_score);
 
     // 表示ライン設定
     struct ResultLine {

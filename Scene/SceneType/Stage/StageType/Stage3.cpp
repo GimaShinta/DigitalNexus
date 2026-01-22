@@ -693,6 +693,8 @@ void Stage3::ResultDraw(float delta_second)
 
     total_score = base_score + life_bonus + time_bonus;
 
+    score->SetStageScore(3, total_score);
+
     // 表示ライン設定
     struct ResultLine {
         int delay_frame;      // フレーム単位で定義（後で秒に変換）
@@ -837,6 +839,8 @@ void Stage3::ResultDraw(float delta_second)
                 else {
                     // NO → セレクトへ戻る
                     goto_stage4 = false;
+                    ScoreData* score = Singleton<ScoreData>::GetInstance();
+                    score->Reset();
                 }
 
                 confirm_active = false;
