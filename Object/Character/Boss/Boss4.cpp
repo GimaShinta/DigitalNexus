@@ -18,7 +18,7 @@ void Boss4::Initialize()
 #if _DEBUG
 	hp = 15000;
 #else
-	hp = 170000;
+	hp = 300000;
 #endif
 
 	// 攻撃パターンの設定
@@ -372,7 +372,7 @@ void Boss4::Draw(const Vector2D& screen_offset) const
 	// アルファブレンド設定
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
-	const float max_hp = 150000.0f;
+	const float max_hp = 300000.0f;
 	const float bar_width = 650.0f;   // 中心から左右で350
 	const float bar_height = 8.0f;   // 細め
 	const float x = D_WIN_MAX_X / 2 - bar_width / 2;
@@ -672,7 +672,7 @@ void Boss4::Movement(float delta_second)
 void Boss4::Shot(float delta_second)
 {
 	// 次の攻撃パターン変更までの時間
-	const float shot_interval = 1.5f;
+	const float shot_interval = 1.0f;
 
 	// 攻撃パターン更新（is_shotがfalseのときだけ）
 	if (generate2 == true && is_shot == false)

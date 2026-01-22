@@ -21,6 +21,7 @@ private:
 private:
 	int current_bgm_handle = -1;
 	int stage_bgm1 = -1; // ステージ1,2の共通BGM
+	int stage_bgm2 = -1; // ステージ1,2の共通BGM
 	int stage_bgm3 = -1; // ステージ3用BGM
 	int stage_bgm4 = -1;
 	int se_warning = -1;

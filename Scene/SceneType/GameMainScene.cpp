@@ -32,9 +32,10 @@ void GameMainScene::Initialize()
 
     // BGM読み込み（初回のみ）
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
-    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/Stage1_Loop.mp3");
+    stage_bgm1 = rm->GetSounds("Resource/sound/bgm/Q-Side.mp3");
+    stage_bgm2 = rm->GetSounds("Resource/sound/bgm/Stage1_Loop.mp3");
     stage_bgm3 = rm->GetSounds("Resource/sound/bgm/stage/Cybernetic.mp3");
-    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/Stage4Boss_01.mp3"); 
+    stage_bgm4 = rm->GetSounds("Resource/sound/bgm/stage4_2026_2.mp3"); 
 
     // 選択したステージを生成
     switch (select_stage)
@@ -46,7 +47,7 @@ void GameMainScene::Initialize()
         break;
     case StageID::Stage2:
         // ステージ2用BGMを再生
-        current_bgm_handle = stage_bgm1;
+        current_bgm_handle = stage_bgm2;
         current_stage = new Stage2(player);
         break;
     case StageID::Stage3:
@@ -87,7 +88,7 @@ void GameMainScene::Initialize()
 
     m_menuFontHandle = CreateFontToHandle("Orbitron", 36, 6); // メニュー専用フォント
 
-    ChangeVolumeSoundMem(255 * 80 / 100, current_bgm_handle);
+    ChangeVolumeSoundMem(255 * 90 / 100, current_bgm_handle);
 
     PlaySoundMem(current_bgm_handle, DX_PLAYTYPE_LOOP);
 

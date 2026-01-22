@@ -29,9 +29,9 @@ void Boss3::Initialize()
 	box_size = 30;
 
  #if _DEBUG
-	hp = 10000;
+	hp = 1000;
  #else
-	hp = 110000;
+	hp = 200000;
  #endif
 
 	// 攻撃パターンの設定
@@ -422,7 +422,7 @@ void Boss3::Draw(const Vector2D& screen_offset) const
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
 	// スケーリング付き描画
-	const float max_hp = 100000.0f;
+	const float max_hp = 200000.0f;
 	const float bar_width_full = 650.0f;
 	const float bar_height = 8.0f;
 	const float x_center = D_WIN_MAX_X / 2;

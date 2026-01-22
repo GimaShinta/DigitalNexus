@@ -472,6 +472,8 @@ void Stage3::EnemyAppearance(float delta_second)
         zako->SetAppearParams(appear_pos, end_pos, 1.3f + delay, false); // ‰E‚©‚ç
         zako->SetPlayer(player);
 
+
+
         spawn_index_right++;
         if (spawn_index_right >= num)
         {
@@ -515,6 +517,9 @@ void Stage3::EnemyAppearance(float delta_second)
             zako->SetAppearParams(appear_pos, target_pos, delay, true);
             zako->SetPlayer(player);
         }
+
+        objm->CreateObject<PowerUp>(Vector2D(D_WIN_MAX_X / 2 - 60, 120))->SetPlayer(player);
+        objm->CreateObject<Shield>(Vector2D(D_WIN_MAX_X / 2 + 60, 120))->SetPlayer(player);
 
         enemy3_spawn_timer = 0.0f;
     }
