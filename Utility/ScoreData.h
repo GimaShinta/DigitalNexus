@@ -17,6 +17,9 @@ class ScoreData :
 	int player_stock;	//Žc‹@
 	bool submitted = false;
 	std::vector<ScoreEntry> entries;
+	float stage1_score = 0;
+	float stage2_score = 0;
+	float stage34_score = 0;
 
 public:
 	ScoreData();
@@ -35,5 +38,7 @@ public:
 	void SaveRankingToFile();
 	void SetResetRanking();
 	std::vector<ScoreEntry> GetEntries() const;
+	void SetStageScore(int stage_num, float stage_score);
+	float GetStageScore(int stage_num);
 };
 

@@ -93,6 +93,9 @@ void Stage1::Finalize()
         DeleteFontToHandle(font_warning);
         font_warning = -1;
     }
+
+    ScoreData* score = Singleton<ScoreData>::GetInstance();
+    score->Reset();
 }
 
 /// <summary>
@@ -863,6 +866,8 @@ void Stage1::ResultDraw(float delta_second)
     if (time_bonus < 0) time_bonus = 0;
 
     total_score = base_score + life_bonus + time_bonus;
+
+    score->SetStageScore(1, total_score);
 
     // •\¦ƒ‰ƒCƒ“İ’è
     struct ResultLine {

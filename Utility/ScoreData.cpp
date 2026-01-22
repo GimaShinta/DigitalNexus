@@ -79,3 +79,33 @@ std::vector<ScoreEntry> ScoreData::GetEntries() const
 {
     return entries;
 }
+
+void ScoreData::SetStageScore(int stage_num, float stage_score)
+{
+    if (stage_num <= 1)
+    {
+        if(stage1_score <= stage_score)
+            stage1_score = stage_score;
+    }
+    else if (stage_num == 2)
+    {
+        if (stage2_score <= stage_score)
+            stage2_score = stage_score;
+    }
+    else
+    {
+        if (stage34_score <= stage_score)
+            stage34_score = stage_score;
+    }
+}
+
+float ScoreData::GetStageScore(int stage_num)
+{
+    if (stage_num <= 1)
+        return stage1_score;
+    else if (stage_num == 2)
+        return stage2_score;
+    else
+        return stage34_score;
+}
+
