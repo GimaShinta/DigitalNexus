@@ -139,6 +139,8 @@ void Stage1::Update(float delta_second)
             result_started = true;
             result_timer = 0.0f;
             time_stop = true;
+            ScoreData* score = Singleton<ScoreData>::GetInstance();
+            score->SetTime(1, game_time_hun, game_time_byou, game_time_miri);
         }
     }
 

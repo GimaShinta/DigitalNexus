@@ -422,6 +422,8 @@ void Stage4::UpdateGameStatus(float delta_second)
             result_started = true;
             result_timer = 0.0f; // スコア演出タイマーリセット
             time_stop = true;
+            ScoreData* score = Singleton<ScoreData>::GetInstance();
+            score->SetTime(3, game_time_hun, game_time_byou, game_time_miri);
         }
     }
 }

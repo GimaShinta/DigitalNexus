@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <fstream>
 
-ScoreData::ScoreData()
+ScoreData::ScoreData() : stage_time(4, { 0.0f, 0.0f, 0.0f })
 {
 }
 
@@ -108,4 +108,34 @@ float ScoreData::GetStageScore(int stage_num)
     else
         return stage34_score;
 }
+
+void ScoreData::SetTime(int stage_num, float hun, float byou, float miri)
+{
+    if (stage_time[stage_num].time_hun <= hun)
+    {
+        stage_time[stage_num].time_hun = hun;
+        stage_time[stage_num].time_byou = byou;
+        stage_time[stage_num].time_miri = miri;
+    }
+    else if (stage_time[stage_num].time_byou <= byou)
+    {
+        stage_time[stage_num].time_byou = byou;
+        stage_time[stage_num].time_miri = miri;
+    }
+    else if (stage_time[stage_num].time_miri <= miri)
+    {
+        stage_time[stage_num].time_miri = miri;
+    }
+}
+
+Time ScoreData::GetTime(int stage_num)
+{
+    if (stage_num <= 1)
+        return stage_time[stage_num];
+    else if (stage_num == 2)
+        return stage_time[stage_num];
+    else
+        return stage_time[stage_num];
+}
+
 

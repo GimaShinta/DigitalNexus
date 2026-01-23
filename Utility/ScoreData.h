@@ -9,6 +9,13 @@ struct ScoreEntry
 	std::string date;
 };
 
+struct Time
+{
+	float time_hun;
+	float time_byou;
+	float time_miri;
+};
+
 class ScoreData :
     public Singleton<ScoreData>
 {
@@ -20,6 +27,8 @@ class ScoreData :
 	float stage1_score = 0;
 	float stage2_score = 0;
 	float stage34_score = 0;
+
+	std::vector<Time> stage_time;
 
 public:
 	ScoreData();
@@ -40,5 +49,7 @@ public:
 	std::vector<ScoreEntry> GetEntries() const;
 	void SetStageScore(int stage_num, float stage_score);
 	float GetStageScore(int stage_num);
+	void SetTime(int stage_num, float hun, float byou, float miri);
+	Time GetTime(int stage_num);
 };
 

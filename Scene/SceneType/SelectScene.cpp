@@ -1,5 +1,6 @@
 #include "SelectScene.h"
 #include "../../Utility/SelectStage.h"
+#include "../../Utility/ScoreData.h"
 
 SelectScene::SelectScene()
 {
@@ -284,10 +285,14 @@ void SelectScene::Draw()
 		// ステージ名オフセット
 		int im_x;
 		int im_y;
+
+		ScoreData* score = Singleton<ScoreData>::GetInstance();
+		Time time;
 		// カーソルが指したステージ名表示
 		switch (stage_cursor)
 		{
 		case 1:
+			time = score->GetTime(1);
 			// ステージ名オフセット
 			im_x = (D_WIN_MAX_X / 3) - 270;
 			im_y = D_WIN_MAX_Y / 2;
@@ -295,11 +300,12 @@ void SelectScene::Draw()
 			SetFontSize(32);
 			DrawString(im_x, im_y, "stage1", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawString(im_x - 120, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-			DrawString(im_x - 120, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+			DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(1), TRUE);
 			SetFontSize(16);
 			break;
 		case 2:
+			time = score->GetTime(2);
 			// ステージ名オフセット
 			im_x = (D_WIN_MAX_X / 2) - 70;
 			im_y = D_WIN_MAX_Y / 2;
@@ -307,11 +313,12 @@ void SelectScene::Draw()
 			SetFontSize(32);
 			DrawString(im_x, im_y, "stage2", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawString(im_x - 110, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-			DrawString(im_x - 110, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+			DrawFormatString(im_x - 110, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 110, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(2), TRUE);
 			SetFontSize(16);
 			break;
 		case 3:
+			time = score->GetTime(3);
 			// ステージ名オフセット
 			im_x = D_WIN_MAX_X - 270;
 			im_y = D_WIN_MAX_Y / 2;
@@ -319,8 +326,8 @@ void SelectScene::Draw()
 			SetFontSize(32);
 			DrawString(im_x, im_y, "stage3", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawString(im_x - 120, im_y + 230, "best time : 2'22'22", GetColor(255, 255, 255), TRUE);
-			DrawString(im_x - 120, im_y + 270, "high score : 1,000,000", GetColor(255, 255, 255), TRUE);
+			DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(3), TRUE);
 			SetFontSize(16);
 			break;
 		default:
