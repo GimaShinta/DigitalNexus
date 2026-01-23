@@ -166,7 +166,8 @@ eSceneType GameMainScene::Update(float delta_second)
 
         // スコアログ用メッセージ作成
         char buf[64];
-        sprintf_s(buf, sizeof(buf), "Score +%.0f", new_score);
+        sprintf_s(buf, sizeof(buf), "Score %+.0f", new_score);
+		
 
         // ★ 先に最大行数チェック（10行超えたら古いのから削除）
         if (score_logs.size() >= 10)
@@ -738,8 +739,22 @@ void GameMainScene::DrawUI()
             std::string label = "Score ";
             std::string value;
 
-            const char* plus_pos = strchr(log.text.c_str(), '+');
-            value = plus_pos ? plus_pos : "";
+            // log.text 例: "Score +100" / "Score -100" / "Score 0"
+            const std::string& text = log.text;
+
+            // 最後のスペース位置を探す
+            size_t space_pos = text.find_last_of(' ');
+            if (space_pos != std::string::npos && space_pos + 1 < text.size())
+            {
+                // スペースの「次の文字」から末尾までを数値部として切り出す
+                value = text.substr(space_pos + 1);   // → "+100" / "-100" / "0"
+            }
+            else
+            {
+                // 念のため、うまく見つからなかったときは全文をそのまま使う
+                value = text;
+            }
+
 
             int value_width = GetDrawStringWidthToHandle(value.c_str(), (int)value.size(), font_orbitron);
             int value_x = log_base_x + 200 - value_width;

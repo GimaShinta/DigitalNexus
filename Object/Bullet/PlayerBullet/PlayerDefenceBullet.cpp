@@ -75,7 +75,7 @@ void PlayerDefenceBullet::OnHitCollision(GameObjectBase* hit_object)
 		am->SetAlpha(anim_id, 255);       // ”¼“§–¾
 		am->SetScale(anim_id, 0.2f);      // 1.5”{Šg‘å
 
-		Singleton<ScoreData>::GetInstance()->AddScore(-50);
+		Singleton<ScoreData>::GetInstance()->AddScore(-300);
 		Singleton<ShakeManager>::GetInstance()->StartShake(0.5, 3, 3);
 
 		is_destroy = true;

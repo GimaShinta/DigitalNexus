@@ -29,7 +29,7 @@ void Boss3::Initialize()
 	box_size = 30;
 
  #if _DEBUG
-	hp = 1000;
+	hp = 5000;
  #else
 	hp = 200000;
  #endif
