@@ -28,7 +28,7 @@ Boss2::~Boss2()
 void Boss2::Initialize()
 {
     z_layer = 2;
-    box_size = 40;
+    box_size = Vector2D(80, 80);
     hp = BOSS2_MAX_HP;
 
     // ★ イントロ中は当たり判定オフ（被弾で爆発しない）
@@ -183,7 +183,7 @@ void Boss2::Update(float delta_second)
         if (damage_timer >= 0.05f)   // 0.05秒ごとに
         {
             damage_timer = 0.0f;
-            hp -= 8.0f;              // HPを減少
+            hp -= 4.0f;              // HPを減少
         }
     }
     // Boss2.cpp Update内
@@ -426,7 +426,7 @@ void Boss2::OnHitCollision(GameObjectBase* hit_object)
         beam_damage_timer += 1.0f / 60.0f;
         if (beam_damage_timer >= 0.15f)
         {
-            hp -= 10;             // Boss1 と同値
+            hp -= 5;             // Boss1 と同値
             beam_damage_timer = 0.0f;
         }
     }

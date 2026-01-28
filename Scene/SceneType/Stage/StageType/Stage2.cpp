@@ -14,6 +14,8 @@
 #include "../../../../Object/GameObjectManager.h"
 #include "../../../../Utility/InputManager.h"
 #include <cmath>
+#include "../../../../Object/Item/PowerUp/PowerUp.h"
+#include "../../../../Object/Item/Shield/Shield.h"
 
 Stage2::Stage2(Player* player)
     : StageBase(player)
@@ -591,6 +593,8 @@ void Stage2::EnemyAppearance(float dt)
     // Boss2 ¢Š«iWarningÈ—ª‚µ‚Ä‘¦oŒ»j
     // =========================
     if (!boss_spawned) {
+        objm->CreateObject<PowerUp>(Vector2D(D_WIN_MAX_X / 2 - 60, 120))->SetPlayer(player);
+        objm->CreateObject<Shield>(Vector2D(D_WIN_MAX_X / 2, 120))->SetPlayer(player);
         boss_spawned = true;
         boss2 = objm->CreateObject<Boss2>(Vector2D(CX, 220.0f));
         if (boss2) boss2->SetPlayer(player);

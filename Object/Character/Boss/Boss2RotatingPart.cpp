@@ -324,6 +324,68 @@ void Boss2RotatingPart::Update(float delta_second)
                 }
                 break;
             }
+            case BulletPattern::SimpleAlternate:
+            {
+                if (shot_timer >= 0.25f)
+                {
+                    shot_timer = 0.0f;
+
+                    float a = rad;
+                    if (ring_index % 2 == 1)
+                        a += DX_PI; // ”½‘ÎŒü‚«
+
+                    FireBullet(
+                        Vector2D(cosf(a), sinf(a)),
+                        260.0f
+                    );
+                }
+                break;
+            }
+            case BulletPattern::RotateShot:
+            {
+                if (shot_timer >= 0.18f)
+                {
+                    shot_timer = 0.0f;
+
+                    float a = rad + GetNowCount() * 0.002f;
+
+                    FireBullet(
+                        Vector2D(cosf(a), sinf(a)),
+                        250.0f
+                    );
+                }
+                break;
+            }
+            case BulletPattern::VShot:
+            {
+                if (shot_timer >= 0.35f)
+                {
+                    shot_timer = 0.0f;
+
+                    float spread = DX_PI / 12.0f;
+
+                    FireBullet(Vector2D(cosf(rad - spread), sinf(rad - spread)), 260.0f);
+                    FireBullet(Vector2D(cosf(rad + spread), sinf(rad + spread)), 260.0f);
+                }
+                break;
+            }
+
+            case BulletPattern::RhythmShot:
+            {
+                if (shot_timer >= 0.12f)
+                {
+                    shot_timer = 0.0f;
+
+                    if ((int)(GetNowCount() / 200) % 2 == 0)
+                    {
+                        FireBullet(
+                            Vector2D(cosf(rad), sinf(rad)),
+                            280.0f
+                        );
+                    }
+                }
+                break;
+            }
         } // switch
     }
 
@@ -387,15 +449,21 @@ void Boss2RotatingPart::NextPattern()
 {
     switch (pattern)
     {
-        case BulletPattern::Spiral:     pattern = BulletPattern::NWay;       break;
-        case BulletPattern::NWay:       pattern = BulletPattern::Ring;       break;
-        case BulletPattern::Ring:       pattern = BulletPattern::Spiral;     break;
+        //case BulletPattern::Spiral:     pattern = BulletPattern::NWay;       break;
+        //case BulletPattern::NWay:       pattern = BulletPattern::Ring;       break;
+        //case BulletPattern::Ring:       pattern = BulletPattern::Spiral;     break;
+
+        case BulletPattern::Spiral:  pattern = BulletPattern::SimpleAlternate; break;
+        case BulletPattern::SimpleAlternate: pattern = BulletPattern::VShot; break;
+        case BulletPattern::VShot:   pattern = BulletPattern::RotateShot; break;
+        default: pattern = BulletPattern::Spiral; break;
       //case BulletPattern::Pendulum:   pattern = BulletPattern::Burst;      break;
       //case BulletPattern::Burst:      pattern = BulletPattern::SemiHoming; break;
       //case BulletPattern::SemiHoming: pattern = BulletPattern::DecelBurst; break;
       //case BulletPattern::DecelBurst: pattern = BulletPattern::TimedSplit; break;
       //case BulletPattern::TimedSplit: pattern = BulletPattern::Spiral;     break;
-        default:   pattern = BulletPattern::Spiral;                          break;
+       
+        //default:   pattern = BulletPattern::Spiral;                          break;
 
     }
     ResetPatternState();

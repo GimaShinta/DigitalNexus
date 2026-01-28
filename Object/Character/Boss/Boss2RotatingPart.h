@@ -39,7 +39,11 @@ public:
         Burst,        // 連続リング（数波）
         SemiHoming,   // 追尾（位相遅延の半追尾）
         DecelBurst,   // 減速→停止→放射
-        TimedSplit    // 時限分裂（一定時間後にリングへ分裂）
+        TimedSplit,    // 時限分裂（一定時間後にリングへ分裂）
+        SimpleAlternate,
+        RotateShot,
+        VShot,
+        RhythmShot
     };
 
     void ForcePattern(BulletPattern p)
@@ -97,17 +101,17 @@ private:
     float pattern_cycle = 6.0f; // 自動切替
 
     // Spiral
-    float interval_spiral = 0.5f;
+    float interval_spiral = 0.25f;
     float speed_spiral = 240.0f;
 
     // NWay
-    float interval_nway = 1.0f;
+    float interval_nway = 0.6f;
     int   nway_count = 5;
     float nway_spread_deg = 40.0f;
     float speed_nway = 260.0f;
 
     // Ring
-    float interval_ring = 3.0f;
+    float interval_ring = 1.6f;
     int   ring_count = 24;
     float speed_ring = 220.0f;
 

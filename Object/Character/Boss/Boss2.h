@@ -45,7 +45,7 @@ private:
     void ReindexRing();
 
 private:
-    static constexpr int BOSS2_MAX_HP = 15000;
+    static constexpr int BOSS2_MAX_HP = 25000;
 
     // Boss2.h
     float rotation_angle = 0.0f;   // ‰~”Õ‰ñ“]—p
