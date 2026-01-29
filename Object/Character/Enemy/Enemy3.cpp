@@ -275,6 +275,7 @@ void Enemy3::Update(float delta_second)
         SEManager* sm = Singleton<SEManager>::GetInstance();
         EffectManager* manager = Singleton<EffectManager>::GetInstance();
         sm->PlaySE(SE_NAME::Destroy);
+        Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Destroy, 80);
         anim_id = manager->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
         manager->SetScale(anim_id, 0.5f);
 

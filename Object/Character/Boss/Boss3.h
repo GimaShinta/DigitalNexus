@@ -5,7 +5,7 @@
 //’è”
 const int MAX_ATTACK_PATTRN = 8;
 
-class Boss3 : public EnemyBase//public CharacterBase
+class Boss3 : public CharacterBase
 {
 private:
 

@@ -111,6 +111,8 @@ void EnemyBeam::Update(float delta_second)
         }
         if (state_timer >= warning_time)
         {
+            // U“®ŠJn
+            StartJoypadVibration(DX_INPUT_PAD1, 150, 5000, -1);
             state = BeamState::Firing;
             state_timer = 0.0f;
             beam_time = 0.0f;

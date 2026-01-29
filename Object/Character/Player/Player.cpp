@@ -496,6 +496,8 @@ void Player::Shot(float delta_second)
 			if (now_type == PlayerType::AlphaCode)
 			{
 				//ビーム発射
+				// 振動開始
+				StartJoypadVibration(DX_INPUT_PAD1, 500, 5000, -1);
 				beam_on = true;
 				stop = true;
 				beam_timer = 0.0f;

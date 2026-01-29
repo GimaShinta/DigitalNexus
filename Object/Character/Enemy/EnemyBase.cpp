@@ -69,7 +69,7 @@ void EnemyBase::OnHitCollision(GameObjectBase* hit_object)
 
 		if (beam_damage_timer >= 0.05f)
 		{
-			hp -= 10;
+			hp -= 60;
 			beam_damage_timer = 0;
 		}
 	}

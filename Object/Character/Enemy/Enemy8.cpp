@@ -124,7 +124,8 @@ void Enemy8::Update(float dt) {
         DropItems();
         SEManager::GetInstance()->PlaySE(SE_NAME::Destroy);
         SEManager::GetInstance()->PlaySE(SE_NAME::Dead1);
-        Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 80);
+        Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 50);
+        Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Destroy, 80);
         int anim_id = EffectManager::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.035f, false);
         Singleton<EffectManager>::GetInstance()->SetScale(anim_id, 0.5f);
         Singleton<ScoreData>::GetInstance()->AddScore(500);

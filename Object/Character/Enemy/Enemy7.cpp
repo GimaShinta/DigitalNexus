@@ -246,6 +246,7 @@ void Enemy7::UpdateRetreat(float dt) {
 
     if (location.y < -120.0f || alpha == 0) {
         is_destroy = true;
+        cleared = true;
     }
 }
 
@@ -253,7 +254,8 @@ void Enemy7::UpdateDead(float) {
     Singleton<EffectManager>::GetInstance()->PlayerAnimation(EffectName::eExprotion2, location, 0.06f, false);
     Singleton<SEManager>::GetInstance()->PlaySE(SE_NAME::Destroy);
     Singleton<SEManager>::GetInstance()->PlaySE(SE_NAME::Dead1);
-    Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 80);
+    Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Dead1, 50);
+    Singleton<SEManager>::GetInstance()->ChangeSEVolume(SE_NAME::Destroy, 80);
     Singleton<ScoreData>::GetInstance()->AddScore(1800); // íÜÉ{ÉXÇÁÇµÇ≠è≠ÇµëΩÇﬂ
     is_destroy = true;
     cleared = true;

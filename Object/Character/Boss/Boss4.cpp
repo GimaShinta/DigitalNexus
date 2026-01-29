@@ -211,6 +211,9 @@ void Boss4::Update(float delta_second)
 				PlaySoundMem(se[0], DX_PLAYTYPE_BACK);
 				PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
 
+				// 振動開始
+				StartJoypadVibration(DX_INPUT_PAD1, 100, 500, -1);
+
 				// 生成するランダムな位置を設定
 				float offset_x = static_cast<float>(GetRand(200) - 100);
 				float offset_y = static_cast<float>(GetRand(200) - 100);
@@ -231,6 +234,9 @@ void Boss4::Update(float delta_second)
 
 			// 全爆発完了後に大爆発＆削除
 			if (explosion_index >= max_explosions) {
+				// 振動開始
+				StartJoypadVibration(DX_INPUT_PAD1, 500, 4500, -1);
+
 				SEManager::GetInstance()->PlaySE(SE_NAME::Kill);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Bakuhatu_End);
 				int id = EffectManager::GetInstance()->PlayerAnimation(
@@ -484,7 +490,7 @@ void Boss4::OnHitCollision(GameObjectBase* hit_object)
 				}
 				else
 				{
-					hp -= 100;
+					hp -= 300;
 				}
 				beam_damage_timer = 0;
 

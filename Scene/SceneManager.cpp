@@ -68,7 +68,7 @@ bool SceneManager::Update(float delta_second)
 		input->GetKeyUp(KEY_INPUT_ESCAPE))
 	{
 		// êUìÆäJén
-		StartJoypadVibration(DX_INPUT_PAD1, 1000, 1000, -1);
+		//StartJoypadVibration(DX_INPUT_PAD1, 1000, 1000, -1);
 
 		// ÇPïbä‘åoâﬂÇ∑ÇÈÇ‹Ç≈ë“Ç¬
 		WaitTimer(1000);

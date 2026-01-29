@@ -29,7 +29,7 @@ void Boss3::Initialize()
 	box_size = 30;
 
  #if _DEBUG
-	hp = 5000;
+	hp = 10000;
  #else
 	hp = 200000;
  #endif
@@ -189,6 +189,9 @@ void Boss3::Update(float delta_second)
 			if (explosion_index < max_explosions && explosion_timer >= explosion_interval) {
 				explosion_timer = 0.0f;
 
+				// 振動開始
+				StartJoypadVibration(DX_INPUT_PAD1, 100, 500, -1);
+
 				float offset_x = static_cast<float>(GetRand(200) - 100);
 				float offset_y = static_cast<float>(GetRand(200) - 100);
 				Vector2D random_pos = location + Vector2D(offset_x, offset_y);
@@ -208,6 +211,9 @@ void Boss3::Update(float delta_second)
 
 			// 全爆発完了後に大爆発＆削除
 			if (explosion_index >= max_explosions) {
+				// 振動開始
+				StartJoypadVibration(DX_INPUT_PAD1, 500, 3500, -1);
+
 				//PlaySoundMem(se[1], DX_PLAYTYPE_BACK);
 				//PlaySoundMem(se[2], DX_PLAYTYPE_BACK);
 				SEManager::GetInstance()->PlaySE(SE_NAME::Kill);
@@ -519,7 +525,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					DropItems();
+					//DropItems();
 				}
 			}
 			else
@@ -546,7 +552,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					DropItems();
+					//DropItems();
 				}
 			}
 		}
@@ -573,9 +579,11 @@ void Boss3::Movement(float delta_second)
 	{
 		velocity.y = -900.0f;
 		base_position.x = generate_base_position.x;
-
+		// 振動開始
+		StartJoypadVibration(DX_INPUT_PAD1, 100, 2000, -1);
 		if (location.y < -400)
-		{
+		{ // 振動開始
+			StartJoypadVibration(DX_INPUT_PAD1, 250, 5500, -1);
 			generate = true;
 		}
 	}

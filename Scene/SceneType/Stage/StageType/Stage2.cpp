@@ -957,10 +957,10 @@ void Stage2::ResultDraw(float delta_second)
     };
 
 
-    // ===== Aボタンでリザルト項目スキップ =====
+    // ===== Xボタンでリザルト項目スキップ =====
     {
         InputManager* input = Singleton<InputManager>::GetInstance();
-        if (input->GetButtonDown(XINPUT_BUTTON_A))
+        if (input->GetButtonDown(XINPUT_BUTTON_X))
         {
             const float fade_duration = 1.0f; // ResultDraw内の fade_duration と同じ値にする
 
@@ -1069,6 +1069,37 @@ void Stage2::ResultDraw(float delta_second)
                     result_displayed = true;
                 }
             }
+        }
+    }
+
+    // ===== スキップ案内UI（Bボタン）=====
+    {
+        // どの状態かで文言を変える
+        const char* hint = nullptr;
+
+        // まだ項目が出切ってない → SKIP
+        if (!result_displayed && !result_fadeout_started)
+            hint = "X : SKIP";
+        // 出切ったが、まだメニューに行ってない → NEXT（待ち/グリッチ飛ばし用）
+        else if (result_displayed && !result_fadeout_started)
+            hint = "X : NEXT";
+        // フェードアウト中は出さない（好みで "A : FAST" でもOK）
+        else
+            hint = nullptr;
+
+        if (hint)
+        {
+            // 位置：中央黒帯の右下
+            const int cx = D_WIN_MAX_X / 2;
+            int x = (cx + 350) - 220;          // 黒帯右端 - 余白
+            int y = D_WIN_MAX_Y - 60;
+
+            // 点滅（控えめ）
+            int pulse = (GetNowCount() % 60 < 30) ? 255 : 140;
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, pulse);
+            DrawStringToHandle(x, y, hint, GetColor(120, 255, 255), font_orbitron);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
     }
 
