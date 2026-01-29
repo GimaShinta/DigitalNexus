@@ -36,6 +36,13 @@ void SelectScene::Initialize()
 	PauseMovieToGraph(stage_movie[1]);
 	PauseMovieToGraph(stage_movie[2]);
 
+	bgm = rm->GetSounds("Resource/sound/se/se_effect/select_01.mp3");
+	cursor_se = rm->GetSounds("Resource/sound/se/se_effect/cursor_01.mp3");
+	tap_se = rm->GetSounds("Resource/sound/se/se_effect/start_01.mp3");
+
+	ChangeVolumeSoundMem(255 * 40 / 100, bgm);
+	PlaySoundMem(bgm, DX_PLAYTYPE_LOOP);
+
 	// AnimationManager による事前アニメ再生（0.01秒、画面外で一度だけ再生）
 	EffectManager* effe = Singleton<EffectManager>::GetInstance();
 	SEManager* se = Singleton<SEManager>::GetInstance();
@@ -70,6 +77,7 @@ eSceneType SelectScene::Update(float delta_second)
 			if (stage_cursor < cur_max)
 			{
 				stage_cursor++;
+				PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
 			}
 		}
 		// カーソルを左に移動
@@ -78,12 +86,15 @@ eSceneType SelectScene::Update(float delta_second)
 			if (stage_cursor > cur_min)
 			{
 				stage_cursor--;
+				PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
 			}
 		}
 
 		// ステージの選択をする
-		if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A))
+		if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetButtonDown(XINPUT_BUTTON_A)) {
 			stage_check = true;
+			PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
+		}
 
 		// タイトル画面へ戻る
 		if (input->GetKeyDown(KEY_INPUT_Z) || input->GetButtonDown(XINPUT_BUTTON_B))
@@ -101,6 +112,7 @@ eSceneType SelectScene::Update(float delta_second)
 		{
 			if (check_cursor < cur_max)
 			{
+				PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
 				check_cursor++;
 			}
 		}
@@ -109,6 +121,7 @@ eSceneType SelectScene::Update(float delta_second)
 		{
 			if (check_cursor > cur_min)
 			{
+				PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
 				check_cursor--;
 			}
 		}
@@ -121,10 +134,12 @@ eSceneType SelectScene::Update(float delta_second)
 			{
 				stage_check = false;
 				check_cursor = cur_min;
+
 			}
 			// 決定
 			else
 			{
+				PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
 				// 選択したステージの情報を保存する
 				SelectStage* stage = Singleton<SelectStage>::GetInstance();
 				switch (stage_cursor)
@@ -143,7 +158,10 @@ eSceneType SelectScene::Update(float delta_second)
 					break;
 				}
 
-				return eSceneType::eGameMain;
+				stage_decide_effect = true;
+				stage_decide_timer = 0.0f;
+				PlaySoundMem(tap_se, DX_PLAYTYPE_BACK);
+
 			}
 		}
 
@@ -176,6 +194,19 @@ eSceneType SelectScene::Update(float delta_second)
 	default:
 		break;
 	}
+
+	// ===== ステージ決定演出中 =====
+	if (stage_decide_effect)
+	{
+		stage_decide_timer += delta_second;
+
+		// 0.45秒後にゲーム開始
+		if (stage_decide_timer >= 0.45f)
+		{
+			return eSceneType::eGameMain;
+		}
+	}
+
 
 #if 0
 	if (input->GetKeyDown(KEY_INPUT_UP))
@@ -273,7 +304,8 @@ void SelectScene::Draw()
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
 	// ベストタイムとハイスコア表示する帯
-	DrawBox(0, 580, D_WIN_MAX_X, 670, GetColor(0, 0, 0), TRUE);
+	DrawBox(0, 600, D_WIN_MAX_X, 670, GetColor(0, 0, 0), TRUE);
+	DrawBox(0, 350, D_WIN_MAX_X, 400, GetColor(0, 0, 0), TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 
 	DrawLine(D_WIN_MAX_X / 3, 0, D_WIN_MAX_X / 3, D_WIN_MAX_Y, GetColor(255, 255, 255), 1);
@@ -298,10 +330,10 @@ void SelectScene::Draw()
 			im_y = D_WIN_MAX_Y / 2;
 			// ステージ名
 			SetFontSize(32);
-			DrawString(im_x, im_y, "stage1", GetColor(255, 255, 255), TRUE);
+			DrawString(im_x, im_y, "STAGE 1", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
-			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(1), TRUE);
+			//DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 220, 80), "HIGH SCORE : %.0f", score->GetStageScore(1), TRUE);
 			SetFontSize(16);
 			break;
 		case 2:
@@ -311,10 +343,10 @@ void SelectScene::Draw()
 			im_y = D_WIN_MAX_Y / 2;
 			// ステージ名
 			SetFontSize(32);
-			DrawString(im_x, im_y, "stage2", GetColor(255, 255, 255), TRUE);
+			DrawString(im_x, im_y, "STAGE 2", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawFormatString(im_x - 110, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
-			DrawFormatString(im_x - 110, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(2), TRUE);
+			//DrawFormatString(im_x - 110, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 110, im_y + 270, GetColor(255, 220, 80), "HIGH SCORE : %.0f", score->GetStageScore(2), TRUE);
 			SetFontSize(16);
 			break;
 		case 3:
@@ -324,10 +356,10 @@ void SelectScene::Draw()
 			im_y = D_WIN_MAX_Y / 2;
 			// ステージ名
 			SetFontSize(32);
-			DrawString(im_x, im_y, "stage3", GetColor(255, 255, 255), TRUE);
+			DrawString(im_x, im_y, "STAGE 3", GetColor(255, 255, 255), TRUE);
 			SetFontSize(24);
-			DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
-			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 255, 255), "high score : %.0f", score->GetStageScore(3), TRUE);
+			//DrawFormatString(im_x - 120, im_y + 230, GetColor(255, 255, 255), "best time : %.0f'%.0f'%.0f", time.time_hun, time.time_byou, time.time_miri, TRUE);
+			DrawFormatString(im_x - 120, im_y + 270, GetColor(255, 220, 80), "HIGH SCORE : %.0f", score->GetStageScore(3), TRUE);
 			SetFontSize(16);
 			break;
 		default:
@@ -338,34 +370,154 @@ void SelectScene::Draw()
 	// ステージ選択の確認のカーソル
 	else
 	{
-		// 確認文字のラベル
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
-		DrawBox(0, D_WIN_MAX_Y / 2 - 30, D_WIN_MAX_X, D_WIN_MAX_Y / 2 + 50,
-			GetColor(0, 0, 0), TRUE);
-		// 確認ボックス
-		int off_x = (D_WIN_MAX_X / 2) - 170;
-		for (int i = 0; i < 2; i++)
-		{
-			DrawBox(off_x + (i * 200), 430, (150 + off_x + (i * 200)), 480,
-				GetColor(0, 0, 0), TRUE);
-		}
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+		// ===== 確認ウィンドウ（サイバー風） =====
+		int t = GetNowCount();
+		float pulse = (sinf(t / 120.0f) + 1.0f) * 0.5f;
 
-		// 確認文字
-		SetFontSize(32);
-		DrawString((D_WIN_MAX_X / 2) - 150, D_WIN_MAX_Y / 2, "Start this stage?", GetColor(255, 255, 255), TRUE);
+		// 背景パネル
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 170);
+		DrawBox(0, D_WIN_MAX_Y / 2 - 80, D_WIN_MAX_X, D_WIN_MAX_Y / 2 + 120,
+			GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		// 外枠ネオン
+		int frameCol = GetColor(0, 220, 255);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120 + (int)(80 * pulse));
+		DrawBox(200, D_WIN_MAX_Y / 2 - 80, D_WIN_MAX_X - 200, D_WIN_MAX_Y / 2 - 76, frameCol, TRUE);
+		DrawBox(200, D_WIN_MAX_Y / 2 + 116, D_WIN_MAX_X - 200, D_WIN_MAX_Y / 2 + 120, frameCol, TRUE);
+		DrawBox(200, D_WIN_MAX_Y / 2 - 80, 204, D_WIN_MAX_Y / 2 + 120, frameCol, TRUE);
+		DrawBox(D_WIN_MAX_X - 204, D_WIN_MAX_Y / 2 - 80, D_WIN_MAX_X - 200, D_WIN_MAX_Y / 2 + 120, frameCol, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		// タイトル
+		SetFontSize(36);
+
+		// 影
+		DrawString(D_WIN_MAX_X / 2 - 210 + 2, D_WIN_MAX_Y / 2 - 50 + 2,
+			"START THIS STAGE ?", GetColor(0, 0, 0), TRUE);
+
+		// グロー
+		SetDrawBlendMode(DX_BLENDMODE_ADD, 120 + (int)(80 * pulse));
+		DrawString(D_WIN_MAX_X / 2 - 210, D_WIN_MAX_Y / 2 - 50,
+			"START THIS STAGE ?", GetColor(120, 255, 255), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		// 下線
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
+		DrawLine(D_WIN_MAX_X / 2 - 210, D_WIN_MAX_Y / 2 - 18,
+			D_WIN_MAX_X / 2 + 210, D_WIN_MAX_Y / 2 - 18,
+			GetColor(0, 200, 255));
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 		SetFontSize(16);
 
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 150);
-		// カーソルの表示
-		DrawBox(off_x + ((check_cursor * 200) - 200), 430, 150 + off_x + ((check_cursor * 200) - 200), 480,
-			GetColor(255, 255, 255), TRUE);
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+		// ===== YES / NO ボタン =====
+		for (int i = 0; i < 2; ++i)
+		{
+			int off_x = (D_WIN_MAX_X / 2) - 170;
+			bool selected = (check_cursor == i + 1);
 
-		DrawString(off_x, 430, "no", GetColor(255, 255, 255), TRUE);
-		DrawString(off_x + 200, 430, "yes", GetColor(255, 255, 255), TRUE);
+			int bx = off_x + i * 200;
+			int by = 430;
+			int bw = 150;
+			int bh = 50;
+
+			// ボタン背景
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, selected ? 160 : 90);
+			DrawBox(bx, by, bx + bw, by + bh, GetColor(0, 0, 0), TRUE);
+
+			// 枠
+			int col = selected ? GetColor(0, 220, 255) : GetColor(80, 120, 140);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, selected ? 200 : 100);
+			DrawBox(bx, by, bx + bw, by + 2, col, TRUE);
+			DrawBox(bx, by + bh - 2, bx + bw, by + bh, col, TRUE);
+			DrawBox(bx, by, bx + 2, by + bh, col, TRUE);
+			DrawBox(bx + bw - 2, by, bx + bw, by + bh, col, TRUE);
+
+			// 選択中スキャンライン
+			if (selected)
+			{
+				int sy = by + (t / 3) % bh;
+				SetDrawBlendMode(DX_BLENDMODE_ADD, 80);
+				DrawBox(bx + 4, sy, bx + bw - 4, sy + 2, GetColor(120, 255, 255), TRUE);
+			}
+
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+			// テキスト
+			const char* txt = (i == 0) ? "NO" : "YES";
+			SetFontSize(24);
+
+			// 影
+			DrawString(bx + 45 + 1, by + 12 + 1, txt, GetColor(0, 0, 0), TRUE);
+
+			// 本体
+			DrawString(bx + 45, by + 12,
+				txt,
+				selected ? GetColor(255, 255, 255) : GetColor(180, 180, 180),
+				TRUE);
+		}
+
+		SetFontSize(16);
+
 	}
-	
+	// ===== ステージ決定：グリッチ遷移 =====
+	if (stage_decide_effect)
+	{
+		float tt = stage_decide_timer; // 0～0.45
+		float k = tt / 0.45f;
+		if (k > 1.0f) k = 1.0f;
+
+		// 画面の横ズレ（最初強く→だんだん弱く）
+		int jitter = (int)((1.0f - k) * 18.0f);
+		int ox = (GetRand(jitter * 2 + 1) - jitter);
+		int oy = (GetRand(5) - 2);
+
+		// 黒フェード（最後に暗転へ寄せる）
+		int fadeA = (int)(255 * k);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, fadeA);
+		DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		// ノイズ帯（横長の矩形をランダムに）
+		int bandCount = 22;
+		for (int i = 0; i < bandCount; ++i)
+		{
+			int y = GetRand(D_WIN_MAX_Y);
+			int h = 2 + GetRand(10);
+			int w = 80 + GetRand(520);
+			int x = GetRand(D_WIN_MAX_X) + ox; // 横ズレ反映
+			int a = 40 + GetRand(120);
+
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
+			DrawBox(x, y + oy, x + w, y + h + oy, GetColor(255, 255, 255), TRUE);
+		}
+
+		// 走査線（薄い横線を数本）
+		for (int i = 0; i < 10; ++i)
+		{
+			int y = (int)(D_WIN_MAX_Y * k) + GetRand(260) - 130;
+			if (y < 0) y = 0;
+			if (y > D_WIN_MAX_Y) y = D_WIN_MAX_Y;
+
+			int a = 30 + GetRand(80);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
+			DrawLine(0 + ox, y + oy, D_WIN_MAX_X + ox, y + oy, GetColor(120, 255, 255));
+		}
+
+		// 一瞬だけ強いフラッシュ（開始直後の“ビッ”）
+		if (tt < 0.08f)
+		{
+			int a = (int)(255 * (1.0f - tt / 0.08f));
+			SetDrawBlendMode(DX_BLENDMODE_ADD, a);
+			DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(255, 255, 255), TRUE);
+		}
+
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+
+
+
 #if 0
 	DrawFormatString(0, 100, GetColor(255, 255, 255), "image_x : %d", image_x, TRUE);
 	DrawFormatString(0, 130, GetColor(255, 255, 255), "image_y : %d", image_y, TRUE);
@@ -376,6 +528,7 @@ void SelectScene::Draw()
 // 終了時処理（使ったインスタンスの削除とか）
 void SelectScene::Finalize()
 {
+	StopSoundMem(bgm);
 }
 
 /// <summary>

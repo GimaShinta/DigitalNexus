@@ -18,6 +18,14 @@ private:
 	// ‘I‘ğUI‚ÌØ‚è‘Ö‚¦
 	bool select_ui = false;
 
+	int bgm = NULL;
+	int cursor_se = NULL;
+	int tap_se = NULL;
+
+	bool stage_decide_effect = false;
+	float stage_decide_timer = 0.0f;
+
+
 public:
 	SelectScene();
 	virtual ~SelectScene();

@@ -122,8 +122,8 @@ void Enemy6::Shot(float speed)
     EnemyBullet1* shot = gm->CreateObject<EnemyBullet1>(location);
     shot->SetPlayer(player);
 
-    am->PlaySE(SE_NAME::Bullet01);
-    am->ChangeSEVolume(SE_NAME::Bullet01, 100);
+    //am->PlaySE(SE_NAME::Bullet01);
+    //am->ChangeSEVolume(SE_NAME::Bullet01, 100);
 
     if (shot && player)
     {

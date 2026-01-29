@@ -102,8 +102,8 @@ void Enemy2::ShootToPlayer(float speed)
     EnemyBullet1* shot = gm->CreateObject<EnemyBullet1>(location);
     shot->SetPlayer(player);
 
-    am->PlaySE(SE_NAME::Bullet01);
-    am->ChangeSEVolume(SE_NAME::Bullet01, 100);
+   // am->PlaySE(SE_NAME::Bullet01);
+   // am->ChangeSEVolume(SE_NAME::Bullet01, 100);
 
     if (shot && player)
     {
@@ -163,7 +163,7 @@ void Enemy2::Update(float delta_second)
 
             if (t >= 1.0f) {
                 // 到達時に1発だけ撃つ（既存APIを利用）
-                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+                //SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
                 ShootToPlayer(0.002f);
                 // すぐ退場モードへ：左右へスライドアウト
                 state = Enemy2State::Leaving;
@@ -180,7 +180,7 @@ void Enemy2::Update(float delta_second)
             scale = scale_min + (scale_max - scale_min) * ease_t;
 
             if (t >= 1.0f) {
-                SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
+                //SEManager::GetInstance()->PlaySE(SE_NAME::EnemyShot);
                 Shot(delta_second);
                 state = Enemy2State::Floating;
                 base_location = location;
