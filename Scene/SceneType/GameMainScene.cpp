@@ -140,6 +140,23 @@ eSceneType GameMainScene::Update(float delta_second)
         isPaused = !isPaused;
         m_selectedIndex = 0;
     }
+    // ポーズに入った瞬間
+    if (isPaused && !bgm_muted_by_pause)
+    {
+        // いまの音量を覚えて（あなたは初期で90%にしてる） :contentReference[oaicite:2]{index=2}
+        bgm_saved_volume = 255 * 90 / 100;
+        ChangeVolumeSoundMem(0, current_bgm_handle);   // 無音化
+        bgm_muted_by_pause = true;
+    }
+
+    // ポーズ解除の瞬間
+    if (!isPaused && bgm_muted_by_pause)
+    {
+        ChangeVolumeSoundMem(bgm_saved_volume, current_bgm_handle); // 音量復帰
+        bgm_muted_by_pause = false;
+    }
+
+
 
 
     // ======= スコアログのスライド演出更新 =======

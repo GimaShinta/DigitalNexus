@@ -519,7 +519,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 			}
 			else
@@ -536,7 +536,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 			{
 				if (is_weakness == true)
 				{
-					hp -= 200;
+					hp -= 400;
 				}
 				else
 				{
@@ -546,7 +546,7 @@ void Boss3::OnHitCollision(GameObjectBase* hit_object)
 
 				if (GetRand(70) == 1)
 				{
-					//DropItems();
+					DropItems();
 				}
 			}
 		}

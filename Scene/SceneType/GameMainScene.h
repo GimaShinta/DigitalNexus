@@ -12,6 +12,11 @@ private:
 	StageBase* current_stage;
 	float next_scene_timer = 0.0f;
 	bool isPaused = false;
+	int bgm_saved_volume = 255;
+	bool bgm_muted_by_pause = false;
+
+
+
 private:
 	int font_digital;
 	int font_orbitron;

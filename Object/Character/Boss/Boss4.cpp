@@ -480,7 +480,7 @@ void Boss4::OnHitCollision(GameObjectBase* hit_object)
 			{
 				if (is_weakness == true)
 				{
-					hp -= 200;
+					hp -= 300;
 				}
 				else
 				{

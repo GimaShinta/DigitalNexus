@@ -887,6 +887,64 @@ void Stage1::ResultDraw(float delta_second)
         { 190,  100, "FINAL SCORE", "FINAL SCORE : %.0f" },
     };
 
+
+    // ===== Aボタンでリザルト項目スキップ =====
+    {
+        InputManager* input = Singleton<InputManager>::GetInstance();
+        if (input->GetButtonDown(XINPUT_BUTTON_A))
+        {
+            const float fade_duration = 1.0f; // ResultDraw内の fade_duration と同じ値にする
+
+            // フェードアウト中なら、最後まで飛ばす
+            if (result_fadeout_started && !result_ended)
+            {
+                float last_delay_sec = static_cast<float>(lines.back().delay_frame) / 60.0f;
+                result_fadeout_timer = fade_duration + last_delay_sec; // 完了条件まで一気に進める
+            }
+            // まだ全項目が出ていない：次の行が「完全表示」される所へ飛ぶ
+            else if (!result_displayed)
+            {
+                float now = result_timer;
+
+                // 「次に完全表示させたい行」の目標時間を探す
+                float target = now;
+                for (size_t i = 0; i < lines.size(); ++i)
+                {
+                    float delay_sec = static_cast<float>(lines[i].delay_frame) / 60.0f;
+                    float fully_time = delay_sec + fade_duration; // この時刻でその行がalpha=255になる
+
+                    if (now < fully_time)
+                    {
+                        target = fully_time;
+                        break;
+                    }
+                }
+
+                // その時刻まで一気に進める
+                result_timer = target;
+
+                // もし最後まで飛んだなら、確実に「表示完了扱い」にしておく
+                float last_full = static_cast<float>(lines.back().delay_frame) / 60.0f + fade_duration;
+                if (result_timer >= last_full) {
+                    result_displayed = true;
+                }
+            }
+            // 全部表示済み：待ち/グリッチも飛ばしてフェードアウトへ
+            else
+            {
+                glitch_started = true;
+                glitch_done = true;
+
+                if (!result_fadeout_started) {
+                    result_fadeout_started = true;
+                    result_fadeout_timer = 0.0f;
+                }
+            }
+        }
+    }
+
+
+
     // 表示位置（左右揃え用）
     const int label_x = cx - 250;
     const int value_x = cx + 250;
