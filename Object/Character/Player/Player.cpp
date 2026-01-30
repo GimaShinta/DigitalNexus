@@ -535,6 +535,7 @@ void Player::Shot(float delta_second)
 	// Bを押したらビーム発射
 	if ((input->GetKeyDown(KEY_INPUT_B) || input->GetButtonDown(XINPUT_BUTTON_B))) // チャージ完了時のみ
 	{
+		specialmove_use = true;
 		if (stop == false)
 		{
 			if (now_type == PlayerType::AlphaCode && CanUseSpecial())
@@ -976,6 +977,10 @@ void Player::SetShotStop(bool stoping)
 bool Player::GetGameOver() const
 {
 	return game_over_player;
+}
+bool Player::GetSpecialMove() const
+{
+	return specialmove_use;
 }
 PlayerType Player::GetNowType() const
 {

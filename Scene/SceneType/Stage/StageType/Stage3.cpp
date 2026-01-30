@@ -693,25 +693,100 @@ void Stage3::ResultDraw(float delta_second)
     int time_bonus = static_cast<int>(max_bonus - total_seconds * decay_per_sec);
     if (time_bonus < 0) time_bonus = 0;
 
-    total_score = base_score + life_bonus + time_bonus;
+    // =====================
+    // ボーナス条件
+    // =====================
+    int p_life = player->GetLife();
 
-    score->SetStageScore(3, total_score);
+    bool no_damage = (p_life >= 8);
+    bool no_special = !player->GetSpecialMove(); // 必殺技未使用
+    bool boss_clear = is_clear;
 
-    // 表示ライン設定
+    // 各ボーナス値
+    int boss_defeat_bonus = boss_clear ? 1000000 : 0;
+    int no_damage_bonus = no_damage ? 1000000 : 0;
+    int no_special_bonus = no_special ? 2000000 : 0;
+
+    // =====================
+    // 合計スコア（※一度だけ）
+    // =====================
+    total_score =
+        base_score +
+        life_bonus +
+        time_bonus +
+        boss_defeat_bonus +
+        no_damage_bonus +
+        no_special_bonus;
+
+    // ステージスコア保存
+    score->SetStageScore(1, total_score);
+
+    // =====================
+    // 表示ライン定義
+    // =====================
     struct ResultLine {
-        int delay_frame;      // フレーム単位で定義（後で秒に変換）
+        int delay_frame;
         int y_offset;
         std::string label;
         std::string format;
     };
 
-    std::vector<ResultLine> lines = {
+    std::vector<ResultLine> lines;
+
+    // ===== 固定で上に表示 =====
+    lines = {
         {  30, -100, "RESULT", "" },
         {  70,  -40, "TOTAL SCORE", "TOTAL SCORE : %.0f" },
-        { 110,    0, "LIFE BONUS", "LIFE BONUS : %d" },
-        { 150,   40, "TIME BONUS", "TIME BONUS : %d" }, 
-        { 190,  100, "FINAL SCORE", "FINAL SCORE : %.0f" },
+        { 110,    0, "LIFE BONUS",  "LIFE BONUS : %d" },
+        { 150,   40, "TIME BONUS",  "TIME BONUS : %d" },
     };
+
+    // ここから下を積み上げ
+    int delay = 190;
+    int y = 80;
+
+    // ===== ボス撃破 =====
+    if (boss_clear)
+    {
+        lines.push_back({
+            delay, y,
+            "BOSS DEFEAT BONUS",
+            "BOSS DEFEAT BONUS : %d"
+            });
+        delay += 30;
+        y += 40;
+    }
+
+    // ===== ノーダメージ =====
+    if (no_damage)
+    {
+        lines.push_back({
+            delay, y,
+            "NO DAMAGE BONUS",
+            "NO DAMAGE BONUS : %d"
+            });
+        delay += 30;
+        y += 40;
+    }
+
+    // ===== 必殺技未使用 =====
+    if (no_special)
+    {
+        lines.push_back({
+            delay, y,
+            "NO SPECIAL BONUS",
+            "NO SPECIAL BONUS : %d"
+            });
+        delay += 30;
+        y += 40;
+    }
+
+    // ===== FINAL（必ず最後）=====
+    lines.push_back({
+        delay, y,
+        "FINAL SCORE",
+        "FINAL SCORE : %.0f"
+        });
 
     // ===== Xボタンでリザルト項目スキップ =====
     {

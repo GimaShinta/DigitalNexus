@@ -50,6 +50,7 @@ private:
 	bool is_shot = false;
 	bool on_hit = false;
 	bool beam_on = false;
+	bool specialmove_use = false;
 	bool recovery_on = false;
 	bool stop = false;
 	bool is_damage = false;
@@ -235,6 +236,7 @@ public:
 	int GetLife() const;
 	void SetShotStop(bool stoping);
 	bool GetGameOver() const;
+	bool GetSpecialMove() const;
 
 	//プレイヤーの攻撃タイプ
 	PlayerType GetNowType() const;
