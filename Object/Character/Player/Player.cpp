@@ -304,6 +304,9 @@ void Player::OnHitCollision(GameObjectBase* hit_object)
 			{
 				life--;
 				is_damage = true;
+				SEManager::GetInstance()->PlaySE(SE_NAME::Keikoku);
+				SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Keikoku, 70);
+				StartJoypadVibration(DX_INPUT_PAD1, 150, 250, -1);
 				Singleton<ShakeManager>::GetInstance()->StartShake(3.0f, 30, 20);
 			}
 			else
@@ -610,9 +613,6 @@ void Player::Damage(float delta_second)
 	// ダメージを受けたときチカチカさせる
 	if (is_damage == true)
 	{
-		SEManager::GetInstance()->PlaySE(SE_NAME::Keikoku);
-		SEManager::GetInstance()->ChangeSEVolume(SE_NAME::Keikoku, 70);
-
 		// カウント加算
 		damage_timer += delta_second;
 		if (damage_timer >= 0.05f)
