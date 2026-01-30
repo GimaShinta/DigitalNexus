@@ -40,7 +40,7 @@ void SelectScene::Initialize()
 	cursor_se = rm->GetSounds("Resource/sound/se/se_effect/cursor_01.mp3");
 	tap_se = rm->GetSounds("Resource/sound/se/se_effect/start_01.mp3");
 
-	ChangeVolumeSoundMem(255 * 40 / 100, bgm);
+	ChangeVolumeSoundMem(255 * 70 / 100, bgm);
 	PlaySoundMem(bgm, DX_PLAYTYPE_LOOP);
 
 	// AnimationManager による事前アニメ再生（0.01秒、画面外で一度だけ再生）
