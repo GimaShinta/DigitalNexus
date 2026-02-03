@@ -13,7 +13,7 @@ void StartScene::Initialize()
 {
     ResourceManager* rm = Singleton<ResourceManager>::GetInstance();
     m_seTypeSound = rm->GetSounds("Resource/sound/se/se_effect/tap.mp3");
-    movie_handle = LoadGraph("Resource/pv/pv.mp4");
+    movie_handle = LoadGraph("Resource/pv/pv03.mp4");
 
     m_nextCharDelay = 0.08f + (GetRand(120) / 1000.0f);  // 0.08Å`0.2ïb
 
