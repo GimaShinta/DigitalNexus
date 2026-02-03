@@ -116,7 +116,7 @@ eSceneType TitleScene::Update(float delta_second)
             else
             {
                 PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-                m_selectedIndex = (m_selectedIndex + 3) % 4;
+                m_selectedIndex = (m_selectedIndex + 2) % 3;
             }
         }
         if (movedDown)
@@ -129,7 +129,7 @@ eSceneType TitleScene::Update(float delta_second)
             else
             {
                 PlaySoundMem(cursor_se, DX_PLAYTYPE_BACK);
-                m_selectedIndex = (m_selectedIndex + 1) % 4;
+                m_selectedIndex = (m_selectedIndex + 1) % 3;
             }
         }
     }
@@ -158,12 +158,9 @@ eSceneType TitleScene::Update(float delta_second)
                 m_transitionTimer = 0.0f;
             }
             else if (m_selectedIndex == 1) {
-                return eSceneType::eRanking;
-            }
-            else if (m_selectedIndex == 2) {
                 return eSceneType::eCredit;
             }
-            else if (m_selectedIndex == 3) {
+            else if (m_selectedIndex == 2) {
                 m_menuLayer = MenuLayer::MAIN;
                 m_selectedIndex = 0;
             }
@@ -413,8 +410,8 @@ void TitleScene::DrawParticles()
 
 void TitleScene::DrawMenu()
 {
-    const char** menuItems;  // ★ここが重要：「配列」ではなく「ポインタのポインタ」
-    int menuCount = 0;       // メニュー項目数を記録する
+    const char** menuItems;
+    int menuCount = 0;
 
     if (m_menuLayer == MenuLayer::MAIN)
     {
@@ -429,34 +426,37 @@ void TitleScene::DrawMenu()
     {
         static const char* subItems[] = {
             "SELECT GAME",
-            "RANKING",
             "CREDITS",
             "BACK"
         };
         menuItems = subItems;
-        menuCount = 4;
+        menuCount = 3;
     }
 
     for (int i = 0; i < menuCount; ++i)
     {
-        int y = 400 + i * 50;
-        int textWidth = GetDrawStringWidthToHandle(menuItems[i], strlen(menuItems[i]), m_menuFontHandle);
+        const int lineHeight = 50;
+        int baseY = 400 + lineHeight;   // ★ 全メニューを1行下へ
+
+        int y = baseY + i * lineHeight;
+
+        int textWidth = GetDrawStringWidthToHandle(
+            menuItems[i],
+            strlen(menuItems[i]),
+            m_menuFontHandle
+        );
+
         int x = (D_WIN_MAX_X - textWidth) / 2;
 
         if (i == m_selectedIndex)
         {
-            // =========================
-            // 背景ハイライトバー
-            // =========================
             int barHeight = 40;
             int barAlpha = 120 + (int)(sinf(GetNowCount() / 60.0f) * 50);
+
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, barAlpha);
             DrawBox(0, y - 5, D_WIN_MAX_X, y + barHeight, GetColor(0, 200, 255), TRUE);
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-            // =========================
-            // テキストのグロー・アウトライン
-            // =========================
             int offsetX = (rand() % 3) - 1;
             int offsetY = (rand() % 3) - 1;
 
@@ -466,11 +466,16 @@ void TitleScene::DrawMenu()
             DrawStringToHandle(x + offsetX, y + offsetY + 1, menuItems[i], GetColor(0, 0, 0), m_menuFontHandle);
 
             int glow = (int)((sinf(GetNowCount() / 30.0f) + 1.0f) * 127);
-            DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i], GetColor(100 + glow, 255, 255), m_menuFontHandle);
+            DrawStringToHandle(x + offsetX, y + offsetY, menuItems[i],
+                GetColor(100 + glow, 255, 255), m_menuFontHandle);
         }
         else
         {
-            DrawStringToHandle(x, y, menuItems[i], GetColor(180, 180, 180), m_menuFontHandle);
+            DrawStringToHandle(
+                x, y, menuItems[i],
+                GetColor(180, 180, 180),
+                m_menuFontHandle
+            );
         }
     }
 }
