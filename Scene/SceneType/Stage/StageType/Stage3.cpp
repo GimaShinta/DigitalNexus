@@ -981,70 +981,140 @@ void Stage3::ResultDraw(float delta_second)
         }
     }
 
-    // ========= ここから「次のステージへ進みますか？」確認メニュー =========
-    if (result_ended) {
-        // 画面を真っ黒にする
+    // ==================================================
+    // 次のステージへ進みますか？ 確認メニュー（完成版）
+    // ※ 描画処理の一番最後に置くこと
+    // ==================================================
+    if (result_ended && confirm_active)
+    {
+        InputManager* input = Singleton<InputManager>::GetInstance();
+
+        // ---------- 入力処理 ----------
+        if (input->GetKeyDown(KEY_INPUT_UP) ||
+            input->GetKeyDown(KEY_INPUT_W) ||
+            input->GetButtonDown(XINPUT_BUTTON_DPAD_UP))
+        {
+            confirm_index = 0; // YES
+        }
+
+        if (input->GetKeyDown(KEY_INPUT_DOWN) ||
+            input->GetKeyDown(KEY_INPUT_S) ||
+            input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN))
+        {
+            confirm_index = 1; // NO
+        }
+
+        if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+            input->GetButtonDown(XINPUT_BUTTON_A))
+        {
+            if (confirm_index == 0)
+            {
+                // YES → 次ステージ
+                goto_stage4 = true;
+            }
+            else
+            {
+                // NO → セレクトへ
+                goto_stage4 = false;
+                Singleton<ScoreData>::GetInstance()->Reset();
+            }
+
+            confirm_active = false;
+            is_finished = true;
+        }
+
+        // ==================================================
+        // 暗転（最前面・完全黒）
+        // ==================================================
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
-        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y, GetColor(0, 0, 0), TRUE);
+        DrawBox(0, 0, D_WIN_MAX_X, D_WIN_MAX_Y,
+            GetColor(0, 0, 0), TRUE);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-        if (confirm_active) {
-            InputManager* input = Singleton<InputManager>::GetInstance();
+        // ==================================================
+        // パネル設定
+        // ==================================================
+        const int panel_w = 420;
+        const int panel_h = 220;
+        const int panel_x = D_WIN_MAX_X / 2 - panel_w / 2;
+        const int panel_y = D_WIN_MAX_Y / 2 - panel_h / 2;
 
-            // カーソル移動（↑でYES、↓でNO）
-            if (input->GetKeyDown(KEY_INPUT_UP) || input->GetKeyDown(KEY_INPUT_W) ||
-                input->GetButtonDown(XINPUT_BUTTON_DPAD_UP))
-            {
-                confirm_index = 0; // YES
-            }
-            if (input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_S) ||
-                input->GetButtonDown(XINPUT_BUTTON_DPAD_DOWN))
-            {
-                confirm_index = 1; // NO
-            }
+        // ---------- パネル背景 ----------
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+        DrawBox(panel_x, panel_y,
+            panel_x + panel_w, panel_y + panel_h,
+            GetColor(10, 20, 30), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-            // 決定（SPACE or Aボタン）
-            if (input->GetKeyDown(KEY_INPUT_SPACE) ||
-                input->GetButtonDown(XINPUT_BUTTON_A))
-            {
-                if (confirm_index == 0) {
-                    // YES → Stage4へ進む
-                    goto_stage4 = true;
-                }
-                else {
-                    // NO → セレクトへ戻る
-                    goto_stage4 = false;
-                    ScoreData* score = Singleton<ScoreData>::GetInstance();
-                    score->Reset();
-                }
+        // ネオン枠
+        DrawBox(panel_x, panel_y,
+            panel_x + panel_w, panel_y + panel_h,
+            GetColor(0, 220, 255), FALSE);
 
-                confirm_active = false;
-                is_finished = true;  // ここでステージ終了扱いにする
-            }
+        DrawBox(panel_x + 6, panel_y + 6,
+            panel_x + panel_w - 6, panel_y + panel_h - 6,
+            GetColor(255, 0, 200), FALSE);
 
-            // 文字描画
-            const int cx = D_WIN_MAX_X / 2;
-            const int cy = D_WIN_MAX_Y / 2 - 40;
+        // ==================================================
+        // タイトル
+        // ==================================================
+        SetFontSize(32);
+        DrawString(panel_x + 90, panel_y + 20,
+            "NEXT STAGE ?", GetColor(0, 255, 255));
 
-            SetFontSize(28);
-            const char* msg = "Next Stage?";
-            DrawString(cx - 260, cy, msg, GetColor(255, 255, 255));
+        DrawLine(panel_x + 20, panel_y + 70,
+            panel_x + panel_w - 20, panel_y + 70,
+            GetColor(120, 255, 255));
 
-            SetFontSize(24);
-            const char* yes_str = "YES";
-            const char* no_str = "NO";
+        // ==================================================
+        // YES / NO
+        // ==================================================
+        SetFontSize(26);
 
-            int yes_x = cx - 40;
-            int yes_y = cy + 60;
-            int no_x = cx - 40;
-            int no_y = cy + 100;
+        const int yes_y = panel_y + 100;
+        const int no_y = panel_y + 145;
 
-            DrawString(yes_x, yes_y, yes_str, GetColor(255, 255, 255));
-            DrawString(no_x, no_y, no_str, GetColor(255, 255, 255));
+        if (confirm_index == 0)
+        {
+            // YES 選択中
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
+            DrawBox(panel_x + 40, yes_y - 5,
+                panel_x + panel_w - 40, yes_y + 30,
+                GetColor(0, 180, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-            int cursor_y = (confirm_index == 0) ? yes_y : no_y;
-            DrawString(yes_x - 30, cursor_y, ">", GetColor(0, 255, 255));
+            DrawString(panel_x + 40, yes_y, ">", GetColor(0, 255, 255));
+            DrawString(panel_x + 70, yes_y, "YES", GetColor(255, 255, 255));
+            DrawString(panel_x + 70, no_y, "NO", GetColor(140, 140, 140));
         }
+        else
+        {
+            // NO 選択中
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
+            DrawBox(panel_x + 40, no_y - 5,
+                panel_x + panel_w - 40, no_y + 30,
+                GetColor(0, 180, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+            DrawString(panel_x + 40, no_y, ">", GetColor(0, 255, 255));
+            DrawString(panel_x + 70, yes_y, "YES", GetColor(140, 140, 140));
+            DrawString(panel_x + 70, no_y, "NO", GetColor(255, 255, 255));
+        }
+
+        // ==================================================
+        // スキャンライン演出
+        // ==================================================
+        static float scan_y = 0.0f;
+        scan_y += 140.0f * delta_second;
+        if (scan_y > panel_h) scan_y = 0.0f;
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 70);
+        DrawBox(panel_x,
+            panel_y + (int)scan_y,
+            panel_x + panel_w,
+            panel_y + (int)scan_y + 4,
+            GetColor(0, 255, 255), TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);

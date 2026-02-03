@@ -1017,6 +1017,8 @@ void GameMainScene::DrawUI()
     {
         ScoreData* score = Singleton<ScoreData>::GetInstance();
         float total_score = score->GetTotalScore();
+        if (total_score < 0)
+            total_score = 0;
 
         int x = 30 + (int)offset.x + GetUIXOffsetLeft(); // © C³Ï
         int y = 80 + (int)offset.y;
