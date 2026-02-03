@@ -719,7 +719,7 @@ void Stage3::ResultDraw(float delta_second)
         no_special_bonus;
 
     // ステージスコア保存
-    score->SetStageScore(1, total_score);
+    score->SetStageScore(3, total_score);
 
     // =====================
     // 表示ライン定義
@@ -879,6 +879,15 @@ void Stage3::ResultDraw(float delta_second)
             }
             else if (line.label == "TIME BONUS") {
                 sprintf_s(value_buf, "%d", time_bonus);
+            }
+            else if (line.label == "BOSS DEFEAT BONUS") {
+                sprintf_s(value_buf, "%d", boss_defeat_bonus);
+            }
+            else if (line.label == "NO DAMAGE BONUS") {
+                sprintf_s(value_buf, "%d", no_damage_bonus);
+            }
+            else if (line.label == "NO SPECIAL BONUS") {
+                sprintf_s(value_buf, "%d", no_special_bonus);
             }
             else if (line.label == "FINAL SCORE") {
                 sprintf_s(value_buf, "%.0f", total_score);

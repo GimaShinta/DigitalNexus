@@ -612,7 +612,7 @@ void Boss3::Movement(float delta_second)
 				check = false;
 			}
 
-			collision.object_type = eObjectType::eBoss;
+			collision.object_type = eObjectType::eEnemy;
 			collision.hit_object_type = { eObjectType::eAttackShot, eObjectType::eBeam };
 
 			//box_size = Vector2D(190, 80);

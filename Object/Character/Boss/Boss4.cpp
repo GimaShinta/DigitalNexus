@@ -29,7 +29,7 @@ void Boss4::Initialize()
 	// 当たり判定のオブジェクト設定
 	collision.is_blocking = true;
 	// 自分のオブジェクトタイプ
-	collision.object_type = eObjectType::eBoss;
+	collision.object_type = eObjectType::eEnemy;
 	// 当たる相手のオブジェクトタイプ
 	collision.hit_object_type.push_back(eObjectType::eAttackShot);
 	collision.hit_object_type.push_back(eObjectType::eBeam);
