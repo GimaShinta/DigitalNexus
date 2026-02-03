@@ -493,9 +493,9 @@ void Stage4::ResultDraw(float delta_second)
     bool boss_clear = is_clear;
 
     // 各ボーナス値
-    int boss_defeat_bonus = boss_clear ? 1000000 : 0;
-    int no_damage_bonus = no_damage ? 1000000 : 0;
-    int no_special_bonus = no_special ? 2000000 : 0;
+    int boss_defeat_bonus = boss_clear ? 10000 : 0;
+    int no_damage_bonus = no_damage ? 20000 : 0;
+    int no_special_bonus = no_special ? 10000 : 0;
 
     // =====================
     // 合計スコア（※一度だけ）
