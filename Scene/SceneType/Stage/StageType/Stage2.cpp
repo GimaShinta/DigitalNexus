@@ -525,24 +525,36 @@ void Stage2::EnemyAppearance(float dt)
             }
         }
 
-        // 2体とも終了したら先へ
-        bool left_done = (!enemy7_left) || enemy7_left->IsCleared();
-        bool right_done = (!enemy7_right) || enemy7_right->IsCleared();
+        // ---- Enemy7 生存管理 ----
 
-        if (!left_done && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec) {
-            enemy7_left->ForceRetreat(); 
-        }
-        if (!right_done && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec) {
-            enemy7_right->ForceRetreat(); 
+// タイムアウト処理
+        if (enemy7_left && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec)
+        {
+            enemy7_left->ForceRetreat();
         }
 
-        if (left_done && right_done) {
+        if (enemy7_right && (stage_timer - enemy7_start_t) >= enemy7_timeout_sec)
+        {
+            enemy7_right->ForceRetreat();
+        }
+
+        // 削除検出（ここが超重要）
+        if (enemy7_left && enemy7_left->IsCleared())
+            enemy7_left = nullptr;
+
+        if (enemy7_right && enemy7_right->IsCleared())
+            enemy7_right = nullptr;
+
+        // 終了判定
+        if (!enemy7_left && !enemy7_right)
+        {
             enemy7_done = true;
         }
-        else {
-            //中ボスが生きている間はここで止める
+        else
+        {
             return;
         }
+
     }
     // =========================
     // ウェーブ３：中央から小集団 × 3
